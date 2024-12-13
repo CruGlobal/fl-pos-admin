@@ -23,14 +23,14 @@ gem "tzinfo-data", platforms: %i[ windows jruby ]
 
 # Use the database-backed adapters for Rails.cache, Active Job, and Action Cable
 gem "solid_cache"
-gem "solid_queue"
+# gem "solid_queue"
 gem "solid_cable"
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
 # Deploy this application anywhere as a Docker container [https://kamal-deploy.org]
-gem "kamal", require: false
+# gem "kamal", require: false
 
 # Add HTTP asset caching/compression and X-Sendfile acceleration to Puma [https://github.com/basecamp/thruster/]
 gem "thruster", require: false
@@ -43,7 +43,7 @@ group :development, :test do
   gem "brakeman", require: false
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
-  gem "rubocop-rails-omakase", require: false
+  # gem "rubocop-rails-omakase", require: false
 end
 
 group :development do
@@ -51,3 +51,24 @@ group :development do
   gem "web-console"
 end
 
+gem "awesome_print"
+gem "ddtrace", "~> 1.4"
+gem "dogstatsd-ruby", "~> 5.3"
+gem "lograge"
+gem "lightspeed_pos", github: "marketplacer/lightspeed_pos"
+gem "marco-polo"
+gem "ougai", "~> 1.7"
+gem "rollbar"
+gem "omniauth-oktaoauth", github: "CruGlobal/omniauth-oktaoauth"
+gem "omniauth-rails_csrf_protection", "~> 1.0"
+gem "salesforce_bulk_api"
+gem "sidekiq"
+gem "sidekiq-cron"
+gem "woocommerce_api"
+
+group :development, :test do
+  gem "bundler-audit"
+  gem "dotenv-rails"
+  gem "pry-rails"
+  gem "standard"
+end
