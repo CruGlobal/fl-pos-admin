@@ -40,3 +40,4 @@ module FlPosAdmin
     config.generators.system_tests = nil
   end
 end
+

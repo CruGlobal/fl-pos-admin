@@ -65,6 +65,7 @@ gem "salesforce_bulk_api"
 gem "sidekiq"
 gem "sidekiq-cron"
 gem "woocommerce_api"
+gem "httparty"
 
 group :development, :test do
   gem "bundler-audit"

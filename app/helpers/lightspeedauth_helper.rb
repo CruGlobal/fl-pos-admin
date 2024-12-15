@@ -1,0 +1,2 @@
+module LightspeedauthHelper
+end

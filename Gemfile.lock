@@ -460,6 +460,7 @@ DEPENDENCIES
   dogstatsd-ruby (~> 5.3)
   dotenv-rails
   factory_bot_rails
+  httparty
   importmap-rails
   lightspeed_pos!
   lograge
