@@ -10,8 +10,27 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 0) do
+ActiveRecord::Schema[8.0].define(version: 2024_12_16_182221) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
+  create_table "jobs", force: :cascade do |t|
+    t.string "status"
+    t.string "event_code"
+    t.date "start_date"
+    t.date "end_date"
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "logs", force: :cascade do |t|
+    t.text "content"
+    t.bigint "jobs_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["jobs_id"], name: "index_logs_on_jobs_id"
+  end
+
+  add_foreign_key "logs", "jobs", column: "jobs_id"
 end

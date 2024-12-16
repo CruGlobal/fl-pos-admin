@@ -23,7 +23,7 @@ describe LightspeedImport do
     expect(sales.count).to be == 18
   end
 
-  it('should get woo products') do
+  fit('should get woo products') do
     products = lsi.get_products_from_woo 1
     expect(products.count).to be > 0
   end

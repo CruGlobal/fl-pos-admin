@@ -74,4 +74,5 @@ group :development, :test do
   gem "pry-rails"
   gem "rspec-rails"
   gem "standard"
+  gem "webmock"
 end

@@ -60,7 +60,7 @@ class LightspeedImport
       end_date: end_date,
       event_code: shop.Contact['custom']
     }
-    # eventually save this in the job table
+    # TODO: eventually save this in the job table
     context
   end
 
