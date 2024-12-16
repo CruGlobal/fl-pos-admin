@@ -1,6 +1,8 @@
 require 'rails_helper'
 
+
 describe LightspeedImport do
+
   # set global lightspeed import service
   lsi = LightspeedImport.new
 

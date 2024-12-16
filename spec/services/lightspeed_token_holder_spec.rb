@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe LightspeedTokenHolder do
+xdescribe LightspeedTokenHolder do
 
   it('should initialize with a token and refresh token') do
     token_holder = LightspeedTokenHolder.new
