@@ -1,0 +1,7 @@
+default: &DEFAULT
+  :db: <%= ENV.fetch('STORAGE_REDIS_DB_INDEX') %>
+
+sidekiq:
+  <<: *DEFAULT
+  :host: <%= ENV.fetch('STORAGE_REDIS_HOST') %>
+  :port: <%= ENV.fetch('STORAGE_REDIS_PORT', 6379) %>

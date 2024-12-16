@@ -13,7 +13,7 @@ gem "importmap-rails"
 # Hotwire's SPA-like page accelerator [https://turbo.hotwired.dev]
 gem "turbo-rails"
 # Hotwire's modest JavaScript framework [https://stimulus.hotwired.dev]
-gem "stimulus-rails"
+# gem "stimulus-rails"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
@@ -51,19 +51,22 @@ group :development do
   gem "web-console"
 end
 
-gem "awesome_print"
-gem "ddtrace", "~> 1.4"
-gem "dogstatsd-ruby", "~> 5.3"
+gem "amazing_print"
+gem "ddtrace"
+gem "dogstatsd-ruby"
+gem "google-apis-sheets_v4"
 gem "lograge"
 gem "lightspeed_pos", github: "marketplacer/lightspeed_pos"
 gem "marco-polo"
 gem "ougai", "~> 1.7"
+gem "redis"
 gem "rollbar"
 gem "omniauth-oktaoauth", github: "CruGlobal/omniauth-oktaoauth"
 gem "omniauth-rails_csrf_protection", "~> 1.0"
 gem "salesforce_bulk_api"
 gem "sidekiq"
 gem "sidekiq-cron"
+gem "sidekiq-unique-jobs"
 gem "woocommerce_api"
 gem "httparty"
 

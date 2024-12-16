@@ -19,10 +19,15 @@ default: &default
   # https://guides.rubyonrails.org/configuring.html#database-pooling
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
+  database: <%= ENV['DB_ENV_POSTGRESQL_DB'] || 'fl_pos_admin' %>
+  username: <%= ENV['DB_ENV_POSTGRESQL_USER'] || 'postgres' %>
+  password: <%= ENV['DB_ENV_POSTGRESQL_PASS'] || 'postgres' %>
+  host: <%= ENV['DB_PORT_5432_TCP_ADDR'] || 'localhost' %>
+  port: <%= ENV['DB_PORT_5432_TCP_PORT'] %>
 
 development:
   <<: *default
-  database: fl_pos_admin_development
+  # database: fl_pos_admin_development
 
   # The specified database role being used to connect to PostgreSQL.
   # To create additional roles in PostgreSQL see `$ createuser --help`.
@@ -56,7 +61,14 @@ development:
 # Do not set this db to the same as development or production.
 test:
   <<: *default
-  database: fl_pos_admin_test
+
+  database: <%= ENV['DB_ENV_POSTGRESQL_DB_TEST'] || 'fl_pos_admin_test' %>
+  username: <%= ENV['DB_ENV_POSTGRESQL_USER_TEST'] || ENV['DB_ENV_POSTGRESQL_USER'] || 'postgres' %>
+  password: <%= ENV['DB_ENV_POSTGRESQL_PASS_TEST'] || ENV['DB_ENV_POSTGRESQL_PASS'] || 'postgres' %>
+  host: <%= ENV['DB_PORT_5432_TCP_ADDR_TEST'] || ENV['DB_PORT_5432_TCP_ADDR'] || 'localhost' %>
+  port: <%= ENV['DB_PORT_5432_TCP_PORT_TEST'] || ENV['DB_PORT_5432_TCP_PORT'] %>
+
+  # database: fl_pos_admin_test
 
 # As with config/credentials.yml, you never want to store sensitive information,
 # like your database password, in your source code. If your source code is
@@ -81,18 +93,37 @@ test:
 production:
   primary: &primary_production
     <<: *default
-    database: fl_pos_admin_production
-    username: fl_pos_admin
-    password: <%= ENV["FL_POS_ADMIN_DATABASE_PASSWORD"] %>
+    # database: fl_pos_admin_production
+    # username: fl_pos_admin
+    # password: <%= ENV["FL_POS_ADMIN_DATABASE_PASSWORD"] %>
   cache:
     <<: *primary_production
-    database: fl_pos_admin_production_cache
-    migrations_paths: db/cache_migrate
+    # database: fl_pos_admin_production_cache
+    # migrations_paths: db/cache_migrate
   queue:
     <<: *primary_production
-    database: fl_pos_admin_production_queue
-    migrations_paths: db/queue_migrate
+    # database: fl_pos_admin_production_queue
+    # migrations_paths: db/queue_migrate
   cable:
     <<: *primary_production
-    database: fl_pos_admin_production_cable
-    migrations_paths: db/cable_migrate
+    # database: fl_pos_admin_production_cable
+    # migrations_paths: db/cable_migrate
+
+staging:
+  primary: &primary_staging
+    <<: *default
+    # database: fl_pos_admin_staging
+    # username: fl_pos_admin
+    # password: <%= ENV["FL_POS_ADMIN_DATABASE_PASSWORD"] %>
+  cache:
+    <<: *primary_staging
+    # database: fl_pos_admin_staging_cache
+    # migrations_paths: db/cache_migrate
+  queue:
+    <<: *primary_staging
+    # database: fl_pos_admin_staging_queue
+    # migrations_paths: db/queue_migrate
+  cable:
+    <<: *primary_staging
+    # database: fl_pos_admin_staging_cable
+    # migrations_paths: db/cable_migrate
