@@ -15,6 +15,12 @@ GIT
       yajl-ruby
 
 GEM
+  remote: https://gems.contribsys.com/
+  specs:
+    sidekiq-pro (7.3.3)
+      sidekiq (>= 7.3.0, < 8)
+
+GEM
   remote: https://rubygems.org/
   specs:
     actioncable (8.0.1)
@@ -528,6 +534,7 @@ DEPENDENCIES
   salesforce_bulk_api
   sidekiq
   sidekiq-cron
+  sidekiq-pro!
   sidekiq-unique-jobs
   solid_cable
   solid_cache
