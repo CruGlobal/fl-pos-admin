@@ -118,7 +118,7 @@ staging:
   cache:
     <<: *primary_staging
     # database: fl_pos_admin_staging_cache
-    # migrations_paths: db/cache_migrate
+    migrations_paths: db/cache_migrate
   queue:
     <<: *primary_staging
     # database: fl_pos_admin_staging_queue
