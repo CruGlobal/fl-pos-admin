@@ -5,7 +5,9 @@ module WooCommerce
 
       endpoint += "?" unless endpoint.include? "?"
       endpoint += "&" unless endpoint.end_with? "?"
-      endpoint + CGI.escape(flatten_hash(data).join("&"))
+      qs = URI::Parser.new.escape(data.to_query)
+      endpoint = endpoint + qs
+      endpoint
     end
   end
 end
