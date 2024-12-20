@@ -36,9 +36,9 @@ COPY . .
 # Environment required to build the application
 ARG RAILS_ENV=production
 ARG BUNDLE_DEPLOYMENT="1"
-ARG SESSION_REDIS_DB_INDEX=1
-ARG SESSION_REDIS_HOST=redis
-ARG SESSION_REDIS_PORT=6379
+ARG STORAGE_REDIS_DB_INDEX=1
+ARG STORAGE_REDIS_HOST=redis
+ARG STORAGE_REDIS_PORT=6379
 ARG SECRET_KEY_BASE=abc123
 
 # Precompile bootsnap code for faster boot times
