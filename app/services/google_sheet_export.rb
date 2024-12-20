@@ -1,3 +1,0 @@
-class GoogleSheetExport
-
-end

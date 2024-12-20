@@ -1,4 +1,4 @@
-class WoocommerceRefresh
+class WooRefresh
   @woo = nil
 
   def woo

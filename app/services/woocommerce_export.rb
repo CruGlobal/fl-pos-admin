@@ -1,2 +1,0 @@
-class WoocommerceExport
-end

@@ -1,9 +1,9 @@
 
-describe WoocommerceRefresh do
+describe WooRefresh do
   self.use_transactional_tests = false
 
   # set global lightspeed import service
-  woo = WoocommerceRefresh.new
+  woo = WooRefresh.new
 
   xit('it should initialize with a woo client') do
     expect(woo.woo).not_to be_nil
