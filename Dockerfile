@@ -39,7 +39,7 @@ ARG BUNDLE_DEPLOYMENT="1"
 ARG STORAGE_REDIS_DB_INDEX=1
 ARG STORAGE_REDIS_HOST=redis
 ARG STORAGE_REDIS_PORT=6379
-ARG SECRET_KEY_BASE=abc123
+ARG SECRET_KEY_BASE="abc123"
 
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
