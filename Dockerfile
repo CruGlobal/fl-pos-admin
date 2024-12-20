@@ -45,7 +45,7 @@ ARG SECRET_KEY_BASE="abc123"
 RUN bundle exec bootsnap precompile app/ lib/
 
 # Compile assets
-RUN RAILS_ENV=production bundle exec rake assets:clobber assets:precompile \
+RUN RAILS_ENV=production SECRET_KEY_BASE=abc123 bundle exec rake assets:clobber assets:precompile \
     && chown -R webapp:webapp /home/webapp/
 
 # Define volumes used by ECS to share public html and extra nginx config with nginx container
