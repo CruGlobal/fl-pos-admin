@@ -47,15 +47,15 @@ RUN RAILS_ENV=production bundle exec rake assets:clobber assets:precompile \
     && chown -R webapp:webapp /home/webapp/
 
 # Define volumes used by ECS to share public html and extra nginx config with nginx container
-VOLUME /home/webapp/app/public
-VOLUME /home/webapp/app/nginx-conf
+# VOLUME /home/webapp/app/public
+# VOLUME /home/webapp/app/nginx-conf
 
 # Run container process as non-root user
 USER webapp
 
 # Start server via Thruster by default, this can be overwritten at runtime
-# EXPOSE 80
-# CMD ["./bin/thrust", "./bin/rails", "server"]
+EXPOSE 80
+CMD ["./bin/thrust", "./bin/rails", "server"]
 
 # Command to start rails
-CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+# CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
