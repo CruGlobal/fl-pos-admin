@@ -21,6 +21,7 @@ RUN apk --no-cache add libc6-compat git postgresql-libs tzdata mariadb-connector
 COPY Gemfile Gemfile.lock .ruby-version ./
 
 # Install bundler version which created the lock file and configure it
+ARG SIDEKIQ_CREDS
 RUN gem install bundler -v $(awk '/^BUNDLED WITH/ { getline; print $1; exit }' Gemfile.lock) \
     && bundle config --global gems.contribsys.com $SIDEKIQ_CREDS
 
