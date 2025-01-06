@@ -17,8 +17,8 @@ GIT
 GEM
   remote: https://gems.contribsys.com/
   specs:
-    sidekiq-pro (7.3.3)
-      sidekiq (>= 7.3.0, < 8)
+    sidekiq-pro (7.3.4)
+      sidekiq (>= 7.3.7, < 8)
 
 GEM
   remote: https://rubygems.org/
@@ -224,7 +224,7 @@ GEM
     libddwaf (1.14.0.0.0-x86_64-linux)
       ffi (~> 1.0)
     lint_roller (1.1.0)
-    logger (1.6.3)
+    logger (1.6.4)
     lograge (0.14.0)
       actionpack (>= 4)
       activesupport (>= 4)
@@ -417,7 +417,7 @@ GEM
       json
       xml-simple
     securerandom (0.4.0)
-    sidekiq (7.3.6)
+    sidekiq (7.3.7)
       connection_pool (>= 2.3.0)
       logger
       rack (>= 2.2.4)
@@ -629,7 +629,7 @@ CHECKSUMS
   libddwaf (1.14.0.0.0-x86_64-linux) sha256=030640a4158ae05f9276cc1e09bfe9d19dda5af26703235cf17cf3752f1985b1
   lightspeed_pos (0.7.0)
   lint_roller (1.1.0) sha256=2c0c845b632a7d172cb849cc90c1bce937a28c5c8ccccb50dfd46a485003cc87
-  logger (1.6.3) sha256=4533ce015c75d8ae442ecb9dc10e3ca82e9f36c55b829dcde0fc964f4e7ce494
+  logger (1.6.4) sha256=b627b91c922231050932e7bf8ee886fe54790ba2238a468ead52ba21911f2ee7
   lograge (0.14.0) sha256=42371a75823775f166f727639f5ddce73dd149452a55fc94b90c303213dc9ae1
   loofah (2.23.1) sha256=d0a07422cb3b69272e124afa914ef6d517e30d5496b7f1c1fc5b95481f13f75e
   mail (2.8.1) sha256=ec3b9fadcf2b3755c78785cb17bc9a0ca9ee9857108a64b6f5cfc9c0b5bfc9ad
@@ -706,9 +706,9 @@ CHECKSUMS
   ruby-progressbar (1.13.0) sha256=80fc9c47a9b640d6834e0dc7b3c94c9df37f08cb072b7761e4a71e22cff29b33
   salesforce_bulk_api (1.1.0) sha256=2145e4ac47f71e813e9fc924d908ada2935ac1e0a792952479560b3f56a06f74
   securerandom (0.4.0) sha256=37a844aa4fe4dac8e47c5bc35f91531d4dc636ccee54a1ba1629087dda0a53a8
-  sidekiq (7.3.6) sha256=cded34a6f9585113b0189f6871d27ca885f8355e27f317110196fade22c0043a
+  sidekiq (7.3.7) sha256=5eb29c9431562f97cd82022a1588d5852142ac72cad59627ae04a4e28cdeca16
   sidekiq-cron (2.0.1) sha256=8ab61fd367b59850e80a786a216b95b0ae49b247520cd83fec4a2c627255dd4d
-  sidekiq-pro (7.3.3) sha256=84d3d624aade641243544244026f56ca9a0d48cdc22e2d58263d791a747f5c08
+  sidekiq-pro (7.3.4) sha256=e1c3d0e67cd125142be36af5a3037f114cfb3b70651bce350141b4d826407b14
   sidekiq-unique-jobs (8.0.10) sha256=d8abed98f863b2f830a75839e8325b892e72a2fda7cf335f10540382393c950c
   signet (0.19.0) sha256=537f3939f57f141f691e6069a97ec40f34fadafc4c7e5ba94edb06cf4350dd31
   snaky_hash (2.0.1) sha256=1ac87ec157fcfe7a460e821e0cd48ae1e6f5e3e082ab520f03f31a9259dbdc31
