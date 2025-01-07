@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Fl Pos Admin" %></title>
+    <title><%= content_for(:title) || "Family Life POS Admin" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -23,6 +23,16 @@
   </head>
 
   <body>
+    <div class="beside big"><%= "Welcome to the Family Life POS Admin Tool (#{Rails.env.upcase})"%></div>
+    <div class="beside"><%= link_to 'Logout', logout_path, class: "btn btn-help" %></div>
+    <br/>
+    <% flash.each do |type, msg| %>
+      <% msg.split("\n\n").compact_blank.each do |m| %>
+        <div class="alert alert-danger">
+          <%= m %>
+        </div>
+      <% end %>
+    <% end %>
     <%= yield %>
   </body>
 </html>

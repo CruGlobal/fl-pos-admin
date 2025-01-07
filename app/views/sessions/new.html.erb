@@ -1,0 +1,15 @@
+<!-- because of https://github.com/omniauth/omniauth/wiki/Resolving-CVE-2015-9284, we need to do a post to /auth/oktaoauth, so this page will do it seamlessly without being visible to the user -->
+<html>
+<head>
+  <script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+      document.getElementById('auth_form').submit();
+    })
+  </script>
+</head>
+
+<body>
+<%= form_tag "/auth/oktaoauth", id: "auth_form" do %>
+<% end %>
+</body>
+</html>

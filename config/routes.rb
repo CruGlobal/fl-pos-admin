@@ -14,7 +14,11 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Defines the root path route ("/")
-  # root "posts#index"
+  root "home#index"
+
+  match "/logout", to: "sessions#destroy", as: :logout, via: [:get, :post, :delete]
+  get "auth/:provider/callback", to: "sessions#create"
+  resource :session, only: %i[new create destroy]
 
   constraints ->(request) { user_constraint(request) } do
     mount Sidekiq::Web => "/sidekiq"
