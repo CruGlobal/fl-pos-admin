@@ -64,6 +64,9 @@ gem "rollbar"
 gem "omniauth-oktaoauth", github: "CruGlobal/omniauth-oktaoauth"
 gem "omniauth-rails_csrf_protection", "~> 1.0"
 gem "salesforce_bulk_api"
+gem "restforce"
+gem 'faraday'
+gem 'faraday_middleware'
 gem "sidekiq"
 gem "sidekiq-cron"
 gem "sidekiq-unique-jobs"

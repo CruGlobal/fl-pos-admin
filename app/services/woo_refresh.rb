@@ -38,6 +38,11 @@ class WooRefresh
     response
   end
 
+  def latest_refresh_timestamp
+    job = Job.where('type': 'WOO_REFRESH').order(created_at: :desc).first
+    return nil if job.nil?
+    job.created_at
+  end
 
   def get_products_from_woo(job)
     results = []

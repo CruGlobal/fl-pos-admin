@@ -144,12 +144,17 @@ GEM
     factory_bot_rails (6.4.4)
       factory_bot (~> 6.5)
       railties (>= 5.0.0)
-    faraday (2.12.2)
-      faraday-net_http (>= 2.0, < 3.5)
-      json
-      logger
+    faraday (1.2.0)
+      multipart-post (>= 1.2, < 3)
+      ruby2_keywords
+    faraday-follow_redirects (0.3.0)
+      faraday (>= 1, < 3)
+    faraday-multipart (1.1.0)
+      multipart-post (~> 2.0)
     faraday-net_http (3.4.0)
       net-http (>= 0.5.0)
+    faraday_middleware (1.2.1)
+      faraday (~> 1.0)
     ffi (1.17.0-aarch64-linux-gnu)
     ffi (1.17.0-arm-linux-gnu)
     ffi (1.17.0-arm64-darwin)
@@ -241,6 +246,7 @@ GEM
     multi_json (1.15.0)
     multi_xml (0.7.1)
       bigdecimal (~> 3.1)
+    multipart-post (2.4.1)
     mutex_m (0.3.0)
     net-http (0.6.0)
       uri
@@ -370,6 +376,13 @@ GEM
       uber (< 0.2.0)
     request_store (1.7.0)
       rack (>= 1.4)
+    restforce (8.0.0)
+      faraday (>= 1.1.0, < 3.0.0)
+      faraday-follow_redirects (<= 0.3.0, < 1.0.0)
+      faraday-multipart (>= 1.0.0, < 2.0.0)
+      faraday-net_http (< 4.0.0)
+      hashie (>= 1.2.0, < 6.0)
+      jwt (>= 1.5.6)
     retriable (3.1.2)
     rexml (3.3.9)
     rollbar (3.6.0)
@@ -406,6 +419,7 @@ GEM
       rubocop (>= 1.48.1, < 2.0)
       rubocop-ast (>= 1.31.1, < 2.0)
     ruby-progressbar (1.13.0)
+    ruby2_keywords (0.0.5)
     salesforce_bulk_api (1.1.0)
       json
       xml-simple
@@ -508,6 +522,8 @@ DEPENDENCIES
   dogstatsd-ruby
   dotenv-rails
   factory_bot_rails
+  faraday
+  faraday_middleware
   google-apis-sheets_v4
   httparty
   importmap-rails
@@ -523,6 +539,7 @@ DEPENDENCIES
   puma (>= 5.0)
   rails (~> 8.0.1)
   redis
+  restforce
   rollbar
   rspec-rails
   salesforce_bulk_api

@@ -1,76 +1,19 @@
-require 'woocommerce_api'
-require 'google/apis/sheets_v4'
-
 class LSExtract
 
-  @ls_client = nil
-  @ls_account = nil
+  # Google Sheets Service Instance
   @sheets = nil
+
+  # Lightspeed API Helper
+  @lsh = nil
+
   SHEET_ID = ENV['GOOGLE_SHEET_ID']
   SHEETS_SCOPE = Google::Apis::SheetsV4::AUTH_SPREADSHEETS
 
 
   def initialize
-    @ls_client = Lightspeed::Client.new(oauth_token_holder: LightspeedTokenHolder.new)
-    @ls_account = @ls_client.accounts.all.first
+    @lsh = LightspeedApiHelper.new
     @sheets = Google::Apis::SheetsV4::SheetsService.new
     @sheets.authorization = Google::Auth::ServiceAccountCredentials.make_creds(scope: SHEETS_SCOPE)
-  end
-
-  def ls_client
-    @ls_client
-  end
-
-  def ls_account
-    @ls_account
-  end
-
-  def get_shops
-    shops = @ls_account.shops.all
-    shops
-  end
-
-  def strip_to_named_fields(record, fields_to_keep)
-    if(record.is_a?(Array))
-      return record.map { |r| recurse_strip(r, fields_to_keep) }
-    end
-    recurse_strip(record, fields_to_keep)
-  end
-
-  def recurse_strip(record, fields_to_keep)
-    strip(record, fields_to_keep)
-  end
-
-  def strip(record, fields_to_keep)
-    rec = record.as_json
-    return unless fields_to_keep['root']
-
-    output = {}
-
-    fields_to_keep['root'].each do |field|
-      unless fields_to_keep[field]# Scalar value if no child fields are defined
-        value = rec[field.to_sym] || rec[field]
-        output[field] = value
-        next
-      end
-
-      child = rec[field.to_sym] || rec[field]
-      unless child
-        next
-      end
-      unless fields_to_keep[field]
-        next
-      end
-
-      unless fields_to_keep[field]['arrayable']
-        output[field] = recurse_strip(child, fields_to_keep[field])
-        next
-      end
-      child = child.is_a?(Array) ? child : [child]
-      output[field] = child.map { |c| recurse_strip(c, fields_to_keep[field]) }
-    end
-
-    output
   end
 
   def get_products(limit = 0)
@@ -81,7 +24,7 @@ class LSExtract
   end
 
   def create_job(shop_id, start_date, end_date)
-    shop = @ls_account.shops.find(shop_id)
+    shop = @lsh.find_shop(shop_id)
     context = {
       shop_id: shop_id,
       start_date: start_date,
@@ -106,34 +49,10 @@ class LSExtract
     puts log.content
   end
 
-  def get_sales(job, shop_id, start_date, end_date)
-    # /Account/27010/Sale.json?
-    # sort=completeTime
-    # &completed=true
-    # &load_relations=all
-    # &shopID=16
-    # &completed=true
-    # &completeTime=><,2020-01-01,2020-01-31
-    params = {
-      shopID: shop_id,
-      load_relations: 'all',
-      completed: 'true',
-      voided: 'false',
-      completeTime: "><,#{start_date},#{end_date}",
-    }
-    count = @ls_account.sales.size(params: params)
-    log job, "Found #{count} sales."
-    @ls_account.sales.all(params: params)
-  end
-
   def poll_jobs
     # if there are any current WOO_REFRESH jobs running, don't start another one
     if Job.where('type': 'WOO_REFRESH', status: :status_processing).count > 0
       puts "POLLING: A WOO_REFRESH job is currently running."
-      return
-    end
-    if Job.where('type': 'LS_EXTRACT', status: :status_processing).count > 0
-      puts "POLLING: A LS_EXTRACT job is currently running."
       return
     end
     jobs = Job.where('type': 'LS_EXTRACT', status: :status_created).all
@@ -152,7 +71,7 @@ class LSExtract
     end
   end
 
-  def process_job(job)
+  def handle_job(job)
     # Process the job
     job.status_processing!
     job.save!
@@ -160,9 +79,9 @@ class LSExtract
     # Get the job context, which is a jsonb store in the context column
     context = job.context
     # Get list of all sales for the shop_id between start_date and end_date (paging included)
-    context['sales'] = get_sales(job, context['shop_id'], context['start_date'], context['end_date'])
+    context['sales'] = @lsh.get_sales(job, context['shop_id'], context['start_date'], context['end_date'])
     # Optimize sales data to remove extreneous data from the Object
-    context['sales'] = context['sales'].map { |sale| strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep) }
+    context['sales'] = context['sales'].map { |sale| @lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep) }
     # delete the sales variable to free up memory
     # Save the sales data to the context object
     job.context = context
@@ -182,28 +101,9 @@ class LSExtract
     end
   end
 
-  def get_shipping_customers(job, sales)
-    ids = []
-    sales.each do |sale|
-      ship_to_id = sale['shipToID'].to_i
-      next unless ship_to_id > 0
-
-      ids << sale['shipToID']
-    end
-    return [] unless ids.count > 0
-
-    params = {
-      customerID: "IN,[#{ids.uniq.join(',')}]",
-      load_relations: 'all'
-    }
-    count = @ls_account.customers.size(params: params)
-    log job, "Found #{count} shipping customers."
-    @ls_account.customers.all(params: params)
-  end
-
   def generate_report(job,sales)
     products = get_products
-    shipping_customers = get_shipping_customers(job, sales)
+    shipping_customers = @lsh.get_shipping_customers(job, sales)
     lines = []
     sales.each do |sale|
       lines << get_report_line(job, sale, products, shipping_customers)
@@ -222,195 +122,27 @@ class LSExtract
       OrderTotal: sale['calcTotal'],
       ItemSubtotal: sale['calcSubtotal'],
       SalesTax: (sale['calcTax1'].to_f + sale['calcTax2'].to_f).round(2),
-      SpecialOrderFlag: get_special_order_flag(sale),
-      TaxableOrderFlag: get_taxable_order_flag(sale),
-      ProductCode: get_all_product_codes(sale).join('|'),
-      Quantity: get_all_quantities(sale).join('|'),
-      UnitPrice: get_all_unit_prices(sale).join('|'),
-      ItemSalesTax: get_all_unit_taxes(sale).join('|'),
-      AddressLine1: get_address(sale,'address1'),
+      SpecialOrderFlag: @lsh.get_special_order_flag(sale),
+      TaxableOrderFlag: @lsh.get_taxable_order_flag(sale),
+      ProductCode: @lsh.get_all_product_codes(sale).join('|'),
+      Quantity: @lsh.get_all_quantities(sale).join('|'),
+      UnitPrice: @lsh.get_all_unit_prices(sale).join('|'),
+      ItemSalesTax: @lsh.get_all_unit_taxes(sale).join('|'),
+      AddressLine1: @lsh.get_address(sale,'address1'),
       AddressLine2: '',
-      City: get_address(sale,'city'),
-      State: get_address(sale,'state'),
-      ZipPostal: get_address(sale,'zip'),
+      City: @lsh.get_address(sale,'city'),
+      State: @lsh.get_address(sale,'state'),
+      ZipPostal: @lsh.get_address(sale,'zip'),
       Country: 'US',
-      ShipAddressLine1: get_shipping_address(sale, customers,'address1'),
+      ShipAddressLine1: @lsh.get_shipping_address(sale, customers,'address1'),
       ShipAddressLine2: '',
-      ShipCity: get_shipping_address(sale, customers,'city'),
-      ShipState: get_shipping_address(sale, customers,'state'),
-      ShipZipPostal: get_shipping_address(sale, customers,'zip'),
+      ShipCity: @lsh.get_shipping_address(sale, customers,'city'),
+      ShipState: @lsh.get_shipping_address(sale, customers,'state'),
+      ShipZipPostal: @lsh.get_shipping_address(sale, customers,'zip'),
       ShipCountry: 'US',
-      EmailAddress: get_email_addresses(sale).join('|'),
+      EmailAddress: @lsh.get_email_addresses(sale).join('|'),
       POSImportID: sale['saleID']
     }
-  end
-
-  def get_address_object(customer)
-    contact = customer['Contact']
-    return unless contact
-
-    addresses = contact['Addresses']
-    return unless addresses
-
-    unless addresses.is_a?(Array)
-      addresses = [addresses]
-    end
-
-    address = addresses.first
-
-    ca = address['ContactAddress']
-    return unless ca
-
-    ca
-  end
-
-  def get_address(sale, field)
-    customer = sale['Customer'];
-    return unless customer
-
-    address = get_address_object(customer)
-    return unless address[field]
-
-    address[field]
-  end
-
-  def get_shipping_address(sale, customers, field)
-    return unless sale['shipToID'].to_i != 0
-
-    filtered = customers.select { |c| c.customerID == sale['shipToID'].to_i }
-    customer = filtered.first
-    return unless customer
-
-    addresses = customer.Contact['Addresses']
-    return unless addresses
-
-    unless addresses.is_a?(Array)
-      addresses = [addresses]
-    end
-
-    return unless addresses.count > 0
-
-    address = addresses.first
-
-    ca = address['ContactAddress']
-    return unless ca
-
-    return unless ca[field]
-
-    ca[field]
-  end
-
-  def get_email_addresses(sale)
-    customer = sale['Customer'];
-    return unless customer
-
-    contact = customer['Contact']
-    return unless contact
-
-    emails = contact['Emails']
-    return unless emails
-
-    unless emails.is_a?(Array)
-      emails = [emails]
-    end
-
-    addys = []
-    emails.each do |email|
-      ce = email['ContactEmail']
-      next unless ce
-
-      addys << ce['address']
-    end
-    addys
-  end
-
-  def get_all_product_codes(sale)
-    codes = []
-    sale['SaleLines'].each do |line|
-      line.each do |salelines|
-        next unless salelines.is_a?(Array)
-
-        salelines.each do |sl|
-          codes << sl['Item']['customSku']
-        end
-      end
-    end
-    codes
-  end
-
-  def get_all_quantities(sale)
-    quantities = []
-    sale['SaleLines'].each do |line|
-      line.each do |salelines|
-        if salelines.is_a?(Array)
-          salelines.each do |sl|
-            quantities << sl['unitQuantity']
-          end
-        end
-      end
-    end
-    quantities
-  end
-
-  def get_all_unit_prices(sale)
-    prices = []
-    sale['SaleLines'].each do |line|
-      line.each do |salelines|
-        if salelines.is_a?(Array)
-          salelines.each do |sl|
-            prices << sl['calcTotal']
-          end
-        end
-      end
-    end
-    prices
-  end
-
-  def get_all_unit_taxes(sale)
-    taxes = []
-    sale['SaleLines'].each do |line|
-      line.each do |salelines|
-        if salelines.is_a?(Array)
-          salelines.each do |sl|
-            taxes << sl['calcTax1'].to_f + sl['calcTax2'].to_f
-          end
-        end
-      end
-    end
-    taxes
-  end
-
-  def get_taxable_order_flag(sale)
-    sale['SaleLines'].each do |line|
-      line.each do |salelines|
-        if salelines.is_a?(Array)
-          salelines.each do |sl|
-            if sl['tax'] == true
-              return 'Y'
-            end
-          end
-        end
-      end
-    end
-
-    'N'
-  end
-
-  # If a any SaleLines.SaleLine.isSpecialOrder is true, then the SpecialOrderFlag should be set to 'Y'
-  def get_special_order_flag(sale)
-    sale['SaleLines'].each do |line|
-      line.each do |salelines|
-        if salelines.is_a?(Array)
-          salelines.each do |sl|
-            if sl['isSpecialOrder'] == true
-              return 'Y'
-            end
-          end
-        end
-      end
-    end
-
-    'N'
   end
 
   def put_sheet(job)
