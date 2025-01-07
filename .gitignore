@@ -34,3 +34,5 @@
 /config/master.key
 
 .idea
+
+lightspeed_auth.json
