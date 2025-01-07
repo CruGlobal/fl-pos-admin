@@ -8,3 +8,27 @@
  *
  * Consider organizing styles into separate files for maintainability.
  */
+
+.beside {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: .8rem;
+}
+.big {
+    font-size: 1.2rem;
+}
+.btn {
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    margin: 0 auto;
+    display: block;
+    padding: 10px 20px;
+    cursor: pointer;
+    text-decoration: none;
+}
+.btn-help {
+    background-color: lightgrey;
+    color: black;
+    padding: 5px 10px;
+}
