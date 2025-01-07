@@ -1,3 +1,7 @@
+require 'sidekiq/pro/web'
+require 'sidekiq/cron/web'
+require 'sidekiq_unique_jobs/web'
+
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -11,4 +15,14 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
+
+  constraints ->(request) { user_constraint(request) } do
+    mount Sidekiq::Web => "/sidekiq"
+  end
+
+  def user_constraint(request)
+    omniauth = request.session[:omniauth_hash]
+    user_guid = omniauth&.extra&.raw_info&.ssoguid&.upcase
+    User.find_by(guid: user_guid) if user_guid.present?
+  end
 end

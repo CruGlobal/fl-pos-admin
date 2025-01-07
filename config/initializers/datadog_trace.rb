@@ -34,8 +34,8 @@ if ENV["AWS_EXECUTION_ENV"].present?
     c.tracing.instrument :sidekiq, service_name: "#{ENV['PROJECT_NAME']}-sidekiq"
 
     # skipping the health check: if it returns true, the trace is dropped
-    Datadog::Pipeline.before_flush(Datadog::Pipeline::SpanFilter.new do |span|
-      span.name == 'rack.request' && span.get_tag('http.url') == '/monitors/lb'
-    end)
+    #Datadog::Pipeline.before_flush(Datadog::Pipeline::SpanFilter.new do |span|
+    #  span.name == 'rack.request' && span.get_tag('http.url') == '/monitors/lb'
+    #end)
   end
 end

@@ -21,11 +21,13 @@ RUN apk --no-cache add libc6-compat git postgresql-libs tzdata mariadb-connector
 COPY Gemfile Gemfile.lock .ruby-version ./
 
 # Install bundler version which created the lock file and configure it
-RUN gem install bundler -v $(awk '/^BUNDLED WITH/ { getline; print $1; exit }' Gemfile.lock)
+ARG SIDEKIQ_CREDS
+RUN gem install bundler -v $(awk '/^BUNDLED WITH/ { getline; print $1; exit }' Gemfile.lock) \
+    && bundle config --global gems.contribsys.com $SIDEKIQ_CREDS
 
 # Install build-dependencies, then install gems, subsequently removing build-dependencies
 RUN apk --no-cache add --virtual build-deps build-base postgresql-dev mariadb-dev \
-    && bundle install --jobs 20 --retry 2 \
+    && bundle install --deployment --jobs 20 --retry 2 \
     && apk del build-deps
 
 # Copy the application
@@ -34,28 +36,28 @@ COPY . .
 # Environment required to build the application
 ARG RAILS_ENV=production
 ARG BUNDLE_DEPLOYMENT="1"
-ARG SESSION_REDIS_DB_INDEX=1
-ARG SESSION_REDIS_HOST=redis
-ARG SESSION_REDIS_PORT=6379
-ARG SECRET_KEY_BASE=abc123
+ARG STORAGE_REDIS_DB_INDEX=1
+ARG STORAGE_REDIS_HOST=redis
+ARG STORAGE_REDIS_PORT=6379
+ARG SECRET_KEY_BASE="abc123"
 
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
 
 # Compile assets
-RUN RAILS_ENV=production bundle exec rake assets:clobber assets:precompile \
+RUN RAILS_ENV=production SECRET_KEY_BASE=abc123 bundle exec rake assets:clobber assets:precompile \
     && chown -R webapp:webapp /home/webapp/
 
 # Define volumes used by ECS to share public html and extra nginx config with nginx container
-VOLUME /home/webapp/app/public
-VOLUME /home/webapp/app/nginx-conf
+# VOLUME /home/webapp/app/public
+# VOLUME /home/webapp/app/nginx-conf
 
 # Run container process as non-root user
 USER webapp
 
 # Start server via Thruster by default, this can be overwritten at runtime
-# EXPOSE 80
-# CMD ["./bin/thrust", "./bin/rails", "server"]
+EXPOSE 80
+CMD ["./bin/thrust", "./bin/rails", "server"]
 
 # Command to start rails
-CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+# CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
