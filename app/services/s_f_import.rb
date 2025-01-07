@@ -12,7 +12,11 @@ class SFImport
       username:        ENV['SF_USERNAME'],
       password:        ENV['SF_PASSWORD'],
       security_token:  ENV['SF_TOKEN'],
-      host:            ENV['SF_INSTANCE_URL']
+      instance_url:    ENV['SF_INSTANCE_URL'],
+      host:            ENV['SF_HOST'],
+      client_id:       ENV['SF_CLIENT_ID'],
+      client_secret:   ENV['SF_CLIENT_SECRET'],
+      api_version:     ENV['SF_API_VERSION']
     )
   end
 
