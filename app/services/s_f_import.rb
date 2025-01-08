@@ -114,7 +114,14 @@ class SFImport
     ps_objects = convert_inventory_to_sf_objects(job, inventory)
 
     # Push the inventory to SalesForce
-    salesforce.upsert('Product_Sale__c', records_to_upsert, "External_Field_Name")
+    ps_objects.each do |ps_object|
+      @sf_client.upsert('Product_Sale__c', "Upsert_Key__c", ps_object)
+    end
+  end
+
+  def get_inventory_from_salesforce(job, source_code)
+    # Get all records from Product_Sale__c where Source_Code__c = source_code
+    @sf_client.query("SELECT Id, Product_Code__c, Quantity__c, Angent__c, Upsert_Key__c FROM Product_Sale__c WHERE Source_Code__c = '#{source_code}'")
   end
 
   def get_products
