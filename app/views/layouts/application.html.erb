@@ -25,17 +25,12 @@
 
   <body>
     <div class="beside big"><%= "Welcome to the Family Life POS Admin Tool (#{Rails.env.upcase})"%></div>
-    <div class="beside"><%= link_to 'Dashboard', root_path, class: "btn btn-help" %></div>
-    <div class="beside"><%= link_to 'Sidekiq Dashboard', "/sidekiq", class: "btn btn-help" %></div>
-    <div class="beside"><%= link_to 'Logout', logout_path, class: "btn btn-help" %></div>
+    <div class="beside"><%= link_to 'Jobs Dashboard', root_path, class: "bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-md dark:bg-gray-700 dark:text-green-400 border border-green-100 dark:border-green-500" %></div>
+    <div class="beside"><%= link_to 'New Job', new_job_path, class: "bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-md dark:bg-gray-700 dark:text-green-400 border border-green-100 dark:border-green-500" %></div>
+    <div class="beside"><%= link_to 'Google Sheets', google_sheets_path, class: "bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-md dark:bg-gray-700 dark:text-green-400 border border-green-100 dark:border-green-500" %></div>
+    <div class="beside"><%= link_to 'Sidekiq Dashboard', "/sidekiq", class: "bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-md dark:bg-gray-700 dark:text-green-400 border border-green-100 dark:border-green-500" %></div>
+    <div class="beside"><%= link_to 'Logout', logout_path, class: "bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-md dark:bg-gray-700 dark:text-green-400 border border-green-100 dark:border-green-500" %></div>
     <br/>
-    <% flash.each do |type, msg| %>
-      <% msg.split("\n\n").compact_blank.each do |m| %>
-        <div class="alert alert-danger">
-          <%= m %>
-        </div>
-      <% end %>
-    <% end %>
     <%= yield %>
   </body>
 </html>

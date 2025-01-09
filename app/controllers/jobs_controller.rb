@@ -1,13 +1,10 @@
 class JobsController < ApplicationController
-  before_action :set_job, only: %i[ show edit update destroy ]
+  before_action :set_job, only: %i[ edit update ]
+  before_action :set_form_defaults, only: %i[ new edit ]
 
   # GET /jobs
   def index
     @jobs = Job.order(updated_at: :desc).includes(:logs).paginate(page: params[:page], per_page: 10)
-  end
-
-  # GET /jobs/1
-  def show
   end
 
   # GET /jobs/new
@@ -39,20 +36,25 @@ class JobsController < ApplicationController
     end
   end
 
-  # DELETE /jobs/1
-  def destroy
-    @job.destroy!
-    redirect_to jobs_path, notice: "Job was successfully destroyed.", status: :see_other
+  private
+  # Use callbacks to share common setup or constraints between actions.
+  def set_job
+    @job = Job.find(params.expect(:id))
   end
 
-  private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_job
-      @job = Job.find(params.expect(:id))
-    end
+  # Only allow a list of trusted parameters through.
+  def job_params
+    params.fetch(:job, {})
+  end
 
-    # Only allow a list of trusted parameters through.
-    def job_params
-      params.fetch(:job, {})
-    end
+  def set_form_defaults
+    @event_options = get_event_options
+    @start_date_default = Date.today.last_week(:thursday)
+    @end_date_default = @start_date_default + 4.days
+  end
+
+  def get_event_options
+    # TODO: Add event options
+    {}
+  end
 end
