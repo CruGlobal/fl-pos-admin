@@ -1,0 +1,38 @@
+<p style="color: green"><%= notice %></p>
+
+<% content_for :title, "Google Sheets" %>
+
+<h1>Google Sheets</h1>
+
+<div class="flex flex-col mt-6">
+  <div class="overflow-x-auto rounded-lg">
+    <div class="inline-block min-w-full align-middle">
+      <div class="overflow-hidden shadow sm:rounded-lg">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="p-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+              Tab Name
+            </th>
+            <th scope="col" class="p-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+              Actions
+            </th>
+          </tr>
+          </thead>
+          <tbody class="bg-white">
+            <% @google_sheet_tab_names.each do |tab_name| %>
+              <tr>
+                <td class="p-4 text-sm text-gray-900">
+                  <%= tab_name %>
+                </td>
+                <td class="p-4 text-sm text-gray-900">
+                  <%= button_to 'Import Into Woo', google_sheets_import_path(tab_name: tab_name), class: "bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-md dark:bg-gray-700 dark:text-green-400 border border-green-100 dark:border-green-500" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

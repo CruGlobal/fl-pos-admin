@@ -12,6 +12,20 @@
   <% end %>
 
   <div>
-    <%= form.submit %>
+    <div class="py-3">
+      <%= form.label :event_code, "Event", class: "block mb-2 text-sm font-medium text-gray-900 dark:text-black" %>
+      <%= form.select :event_code, @event_options, required: true, class: "bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" %>
+    </div>
+    <div class="py-3">
+      <%= form.label :start_date, class: "block mb-2 text-sm font-medium text-gray-900 dark:text-black" %>
+      <%= form.date_select :start_date, default: @start_date_default, required: true, class: "bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500", placeholder: "John" %>
+    </div>
+    <div class="py-3">
+      <%= form.label :end_date, class: "block mb-2 text-sm font-medium text-gray-900 dark:text-black" %>
+      <%= form.date_select :end_date, default: @end_date_default, required: true, class: "bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500", placeholder: "Doe" %>
+    </div>
+    <div class="py-3">
+      <%= form.submit "Save Job", class: "bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-md dark:bg-gray-700 dark:text-green-400 border border-green-100 dark:border-green-500" %>
+    </div>
   </div>
 <% end %>

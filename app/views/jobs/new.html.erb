@@ -1,11 +1,15 @@
 <% content_for :title, "New job" %>
 
-<h1>New job</h1>
+<div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+  <div class="items-center justify-between lg:flex">
+    <div class="mb-4 lg:mb-0">
+      <h3 class="mb-2 text-xl font-bold text-gray-900">New Job</h3>
+    </div>
+  </div>
 
-<%= render "form", job: @job %>
-
-<br>
+  <%= render partial: 'form', locals: { job: @job } %>
+</div>
 
 <div>
-  <%= link_to "Back to jobs", jobs_path %>
+  <%= link_to "Back to jobs", jobs_path, class: "bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-md dark:bg-gray-700 dark:text-green-400 border border-green-100 dark:border-green-500" %>
 </div>

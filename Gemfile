@@ -81,7 +81,6 @@ group :development, :test do
   gem "bundler-audit"
   gem "dotenv-rails"
   gem "factory_bot_rails"
-  gem "foreman"
   gem "pry-rails"
   gem "rspec-rails"
   gem "standard"

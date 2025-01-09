@@ -16,7 +16,9 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   root "jobs#index"
 
-  resources :jobs
+  resources :jobs, except: %i[show destroy]
+  match "/google_sheets", to: "google_sheets#index", via: [:get]
+  match "/google_sheets/import", to: "google_sheets#import", via: [:post]
 
   match "/logout", to: "sessions#destroy", as: :logout, via: [:get, :post, :delete]
   get "auth/:provider/callback", to: "sessions#create"
