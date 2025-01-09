@@ -15,8 +15,7 @@ class SFImport
       instance_url:    ENV['SF_INSTANCE_URL'],
       host:            ENV['SF_HOST'],
       client_id:       ENV['SF_CLIENT_ID'],
-      client_secret:   ENV['SF_CLIENT_SECRET'],
-      api_version:     ENV['SF_API_VERSION']
+      client_secret:   ENV['SF_CLIENT_SECRET']
     )
   end
 
@@ -97,13 +96,13 @@ class SFImport
 
   def convert_inventory_to_sf_objects(job, inventory)
     ps_objects = []
-    inventory.each do |key, value|
+    inventory.each do |inv, v|
       ps_objects << {
-        Product_Code__c: key.to_s,
-        Quantity__c: value.to_s,
-        Source_Code__c: job.event_code,
-        Agent__c: 'Lightspeed',
-        Upsert_Key__c: "#{job.event_code}-#{key.to_s}"
+        Product_Code__c: inv.to_s,
+        Quantity__c: v.to_i,
+        Source_Code__c: job['event_code'],
+        Agent__c: 'LightSpeed',
+        Upsert_Key__c: "#{job['event_code']}-#{inv.to_s}"
       }
     end
     ps_objects
@@ -114,14 +113,17 @@ class SFImport
     ps_objects = convert_inventory_to_sf_objects(job, inventory)
 
     # Push the inventory to SalesForce
+    upserts = []
     ps_objects.each do |ps_object|
-      @sf_client.upsert('Product_Sale__c', "Upsert_Key__c", ps_object)
+      upserts << @sf_client.create!('Product_Sale__c',
+        Upsert_Key__c:    ps_object[:Upsert_Key__c],
+        Product_Code__c:  ps_object[:Product_Code__c],
+        Quantity__c:      ps_object[:Quantity__c],
+        Source_Code__c:   ps_object[:Source_Code__c],
+        Agent__c:         ps_object[:Agent__c]
+      )
     end
-  end
-
-  def get_inventory_from_salesforce(job, source_code)
-    # Get all records from Product_Sale__c where Source_Code__c = source_code
-    @sf_client.query("SELECT Id, Product_Code__c, Quantity__c, Angent__c, Upsert_Key__c FROM Product_Sale__c WHERE Source_Code__c = '#{source_code}'")
+    upserts
   end
 
   def get_products
