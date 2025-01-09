@@ -14,7 +14,9 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Defines the root path route ("/")
-  root "home#index"
+  root "jobs#index"
+
+  resources :jobs
 
   match "/logout", to: "sessions#destroy", as: :logout, via: [:get, :post, :delete]
   get "auth/:provider/callback", to: "sessions#create"
@@ -25,8 +27,6 @@ Rails.application.routes.draw do
   end
 
   def user_constraint(request)
-    omniauth = request.session[:omniauth_hash]
-    user_guid = omniauth&.extra&.raw_info&.ssoguid&.upcase
-    User.find_by(guid: user_guid) if user_guid.present?
+    request.session[:id_token].present?
   end
 end

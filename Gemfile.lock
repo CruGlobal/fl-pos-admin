@@ -167,6 +167,7 @@ GEM
     ffi (1.17.0-x86_64-darwin)
     ffi (1.17.0-x86_64-linux-gnu)
     ffi (1.17.0-x86_64-linux-musl)
+    foreman (0.88.1)
     fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
@@ -468,6 +469,15 @@ GEM
       lint_roller (~> 1.1)
       rubocop-performance (~> 1.23.0)
     stringio (3.1.2)
+    tailwindcss-rails (3.1.0)
+      railties (>= 7.0.0)
+      tailwindcss-ruby
+    tailwindcss-ruby (3.4.17)
+    tailwindcss-ruby (3.4.17-aarch64-linux)
+    tailwindcss-ruby (3.4.17-arm-linux)
+    tailwindcss-ruby (3.4.17-arm64-darwin)
+    tailwindcss-ruby (3.4.17-x86_64-darwin)
+    tailwindcss-ruby (3.4.17-x86_64-linux)
     thor (1.3.2)
     thruster (0.1.9)
     thruster (0.1.9-aarch64-linux)
@@ -501,6 +511,7 @@ GEM
     websocket-driver (0.7.6)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
+    will_paginate (4.0.1)
     woocommerce_api (1.4.0)
       httparty (~> 0.14, >= 0.14.0)
       json (~> 2.0, >= 2.0.0)
@@ -528,6 +539,7 @@ DEPENDENCIES
   dogstatsd-ruby
   dotenv-rails
   factory_bot_rails
+  foreman
   google-apis-sheets_v4
   httparty
   importmap-rails
@@ -553,11 +565,13 @@ DEPENDENCIES
   sidekiq-unique-jobs
   solid_cache
   standard
+  tailwindcss-rails
   thruster
   turbo-rails
   tzinfo-data
   web-console
   webmock
+  will_paginate
   woocommerce_api
 
 CHECKSUMS
@@ -605,7 +619,7 @@ CHECKSUMS
   et-orbi (1.2.11) sha256=d26e868cc21db88280a9ec1a50aa3da5d267eb9b2037ba7b831d6c2731f5df64
   factory_bot (6.5.0) sha256=6374b3a3593b8077ee9856d553d2e84d75b47b912cc24eafea4062f9363d2261
   factory_bot_rails (6.4.4) sha256=139e17caa2c50f098fddf5e5e1f29e8067352024e91ca1186d018b36589e5c88
-  faraday (2.12.2)
+  faraday (2.12.2) sha256=157339c25c7b8bcb739f5cf1207cb0cefe8fa1c65027266bcbc34c90c84b9ad6
   faraday-follow_redirects (0.3.0) sha256=d92d975635e2c7fe525dd494fcd4b9bb7f0a4a0ec0d5f4c15c729530fdb807f9
   faraday-multipart (1.1.0) sha256=856b0f1c7316a4d6c052dd2eef5c42f887d56d93a171fe8880da1af064ca0751
   faraday-net_http (3.4.0) sha256=a1f1e4cd6a2cf21599c8221595e27582d9936819977bbd4089a601f24c64e54a
@@ -616,6 +630,7 @@ CHECKSUMS
   ffi (1.17.0-x86_64-darwin) sha256=fdcd48c69db3303ef95aec5c64d6275fcf9878a02c0bec0afddc506ceca0f56b
   ffi (1.17.0-x86_64-linux-gnu) sha256=1015e59d5919dd6bbcb0704325b0bd639be664a79b1e2189943ceb18faa34198
   ffi (1.17.0-x86_64-linux-musl) sha256=6573299eedf8dd16668f8a435b72c4236b61bca0279bb73c811e3cbdb395e877
+  foreman (0.88.1) sha256=59c022125b6a328a2ce63da8d70b731f5dd13519e8d9a4184c696538088ea00a
   fugit (1.11.1) sha256=e89485e7be22226d8e9c6da411664d0660284b4b1c08cacb540f505907869868
   globalid (1.2.1) sha256=70bf76711871f843dbba72beb8613229a49429d1866828476f9c9d6ccc327ce9
   google-apis-core (0.15.1) sha256=91484122791af5b2f3d3f4297912748febe2b5d704d04ad54cbf5df87339a71a
@@ -734,6 +749,13 @@ CHECKSUMS
   standard-custom (1.0.2) sha256=424adc84179a074f1a2a309bb9cf7cd6bfdb2b6541f20c6bf9436c0ba22a652b
   standard-performance (1.6.0) sha256=2d8b71aa190489e0775ec308d405ece3f6ac06e303a4a7d7560ce1ca074749f4
   stringio (3.1.2) sha256=204f1828f85cdb39d57cac4abc6dc44b04505a223f131587f2e20ae3729ba131
+  tailwindcss-rails (3.1.0) sha256=bcd468fae3ffce33d6fc81170e8fec7febd4fd1c14695f2bde72256c92ccfc75
+  tailwindcss-ruby (3.4.17) sha256=464fb7cc45f1bd7446af3457a2007651eee07491df9b03ae2f1ac53b5203c427
+  tailwindcss-ruby (3.4.17-aarch64-linux) sha256=a013deb088c6f32d62bb17fa804b5599486e60d76dd826d4be7697a92e881284
+  tailwindcss-ruby (3.4.17-arm-linux) sha256=5562183cd75418e18427ff227a47bccba1d325f3c6a2384d752fadfe8d4ce1ba
+  tailwindcss-ruby (3.4.17-arm64-darwin) sha256=07d83952b0bd380fd759e7b95ea75ee3babe08425ea290d078a50cb592791658
+  tailwindcss-ruby (3.4.17-x86_64-darwin) sha256=94ec8a042507c1281060872b661d590491ac763bbbd5c84f16555a69a1f6c528
+  tailwindcss-ruby (3.4.17-x86_64-linux) sha256=5c607785d4d38d3d70f5ee5cb6a0e846fa1de32f911a7dcaca9cb94feaa864ff
   thor (1.3.2) sha256=eef0293b9e24158ccad7ab383ae83534b7ad4ed99c09f96f1a6b036550abbeda
   thruster (0.1.9) sha256=8ef3e143012ce2a3b7b6a876cc1878dff8b865f2e95a70561326eca92b0c7f01
   thruster (0.1.9-aarch64-linux) sha256=8e8b53662f1701097b61fa3074ef12ee52da50c9ec68ba337a984a444f9f06eb
@@ -755,6 +777,7 @@ CHECKSUMS
   webmock (3.24.0) sha256=be01357f6fc773606337ca79f3ba332b7d52cbe5c27587671abc0572dbec7122
   websocket-driver (0.7.6) sha256=f69400be7bc197879726ad8e6f5869a61823147372fd8928836a53c2c741d0db
   websocket-extensions (0.1.5) sha256=1c6ba63092cda343eb53fc657110c71c754c56484aad42578495227d717a8241
+  will_paginate (4.0.1) sha256=107b226ebe1d393d274575956a7c472e1eefdd97d8828e01b72d425d15a875b9
   woocommerce_api (1.4.0) sha256=ff198456066ed4400eae3f9d42c54cfabed61a9728df0e633b232cc82569b0ae
   xml-simple (1.1.9) sha256=d21131e519c86f1a5bc2b6d2d57d46e6998e47f18ed249b25cad86433dbd695d
   yajl-ruby (1.4.3) sha256=8c974d9c11ae07b0a3b6d26efea8407269b02e4138118fbe3ef0d2ec9724d1d2

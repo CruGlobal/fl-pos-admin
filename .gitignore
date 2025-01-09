@@ -36,3 +36,6 @@
 .idea
 
 lightspeed_auth.json
+
+/app/assets/builds/*
+!/app/assets/builds/.keep

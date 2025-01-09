@@ -18,12 +18,15 @@
     <link rel="apple-touch-icon" href="/icon.png">
 
     <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
   <body>
     <div class="beside big"><%= "Welcome to the Family Life POS Admin Tool (#{Rails.env.upcase})"%></div>
+    <div class="beside"><%= link_to 'Dashboard', root_path, class: "btn btn-help" %></div>
+    <div class="beside"><%= link_to 'Sidekiq Dashboard', "/sidekiq", class: "btn btn-help" %></div>
     <div class="beside"><%= link_to 'Logout', logout_path, class: "btn btn-help" %></div>
     <br/>
     <% flash.each do |type, msg| %>
