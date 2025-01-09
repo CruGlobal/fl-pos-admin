@@ -1,0 +1,44 @@
+<p style="color: green"><%= notice %></p>
+
+<% content_for :title, "Jobs" %>
+
+<h1>Jobs</h1>
+
+<div class="flex flex-col mt-6">
+  <div class="overflow-x-auto rounded-lg">
+    <div class="inline-block min-w-full align-middle">
+      <div class="overflow-hidden shadow sm:rounded-lg">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="p-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+              Type
+            </th>
+            <th scope="col" class="p-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+              Status
+            </th>
+            <th scope="col" class="p-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+              Updated At
+            </th>
+            <th scope="col" class="p-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+              Log Message
+            </th>
+            <th scope="col" class="p-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+              Log Timestamp
+            </th>
+            <th scope="col" class="p-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+              Actions
+            </th>
+          </tr>
+          </thead>
+          <tbody class="bg-white">
+          <%= render @jobs %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%= will_paginate @jobs %>
+<%= link_to "New job", new_job_path %>
