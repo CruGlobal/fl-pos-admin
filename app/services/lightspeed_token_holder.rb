@@ -33,11 +33,32 @@ class LightspeedTokenHolder
   def initialize(token: nil, refresh_token: nil)
     File.open(Rails.root.join('lightspeed_auth.json').to_s, 'r') do |f|
       auth = JSON.parse(f.read)
+      break if !auth
+
       @token = auth['access_token']
       @refresh_token = auth['refresh_token']
     end
     @expires_in = 3600
     @token_type = "Bearer"
+  end
+
+  def trade_access_token(code)
+    puts "Getting Lightspeed API token..."
+    url = LIGHTSPEED_API_AUTH_ROOT.dup
+    # use httparty to make a post request to the lightspeed auth endpoint
+    response = HTTParty.post(url, body: {
+      client_id: LIGHTSPEED_CLIENT_ID,
+      client_secret: LIGHTSPEED_CLIENT_SECRET,
+      grant_type: 'authorization_code',
+      code: code
+    })
+    if response.code == 200
+      response.body
+    else
+      # log the error
+      Rails.logger.error("Error retrieving token: #{response.code} - #{response.body}")
+      false
+    end
   end
 
   def oauth_token
