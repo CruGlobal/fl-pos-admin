@@ -91,6 +91,11 @@ class LSExtract
     context['report'] = generate_report(job,context['sales'])
     job.context = context
     job.save!
+    log job, "Report generated and saved locally"
+    put_sheet job
+    log job, "Report saved to Google Sheets"
+    job.status_complete!
+    job.save!
   end
 
   def is_bundle?(sku, products)
@@ -280,6 +285,7 @@ class LSExtract
                   values: [
                     { user_entered_value: 'IN REVIEW' },
                     { user_entered_value: 'READY FOR WOO IMPORT' },
+                    { user_entered_value: 'PROCESSING' },
                     { user_entered_value: 'IMPORTED TO WOO' },
                     { user_entered_value: 'ERROR' }
                   ]
