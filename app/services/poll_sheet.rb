@@ -50,7 +50,9 @@ class PollSheet
     log job, "Processing job #{job.id}"
     ready_sheets = get_ready_sheets
     return if ready_sheets.empty?
-    ready_sheets.each do |tab_event_code|
+    ready_sheets.each do |row|
+      tab_event_code = row[0]
+      index = row[1]
       # Create a new WOO_IMPORT job for each tab only if a job by the same
       # event_code does not already exist
       job = Job.where('type': 'WOO_IMPORT', event_code: tab_event_code).first
@@ -59,7 +61,7 @@ class PollSheet
         job.type = 'WOO_IMPORT'
         job.event_code = tab_event_code
         job.save!
-        set_ready_status tab_event_code
+        set_ready_status tab_event_code, index, 'PROCESSING'
       end
     end
     job.status_complete!
@@ -76,20 +78,22 @@ class PollSheet
       range = "#{tab_event_code}!A1:B"
       response = @sheets.get_spreadsheet_values(SHEET_ID, range, value_render_option: 'UNFORMATTED_VALUE')
       values = response.values
+      index = 0
       values.each do |row|
+        index += 1
         next if row[0].nil? || row[0].empty?
         if row[0] == 'Status' && row[1] == 'READY FOR WOO IMPORT'
-          ready_sheets << tab_event_code
+          ready_sheets << [tab_event_code, index]
         end
       end
     end
     ready_sheets
   end
 
-  def set_ready_status tab_event_code
-    range = "#{tab_event_code}!A1:B"
+  def set_ready_status event_code, index, status
+    range = "#{event_code}!A#{index}:B"
     values = [
-      ['Status', 'PROCESSING']
+      ['Status', status]
     ]
     value_range = Google::Apis::SheetsV4::ValueRange.new(values: values)
     @sheets.update_spreadsheet_value(SHEET_ID, range, value_range, value_input_option: 'RAW')

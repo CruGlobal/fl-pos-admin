@@ -1,3 +1,4 @@
+require 'rails_helper'
 
 describe WooRefresh do
   self.use_transactional_tests = false
