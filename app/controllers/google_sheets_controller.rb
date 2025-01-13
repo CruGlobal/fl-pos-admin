@@ -14,7 +14,6 @@ class GoogleSheetsController < ApplicationController
   private
 
   def get_sheet_tab_names
-    # TODO: Implement Google Sheets API to get the tab names
-    ["placeholder_tab_name_1", "placeholder_tab_name_2"]
+    SheetTabNamesService.get_tab_names
   end
 end

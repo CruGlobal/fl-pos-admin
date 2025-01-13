@@ -1,6 +1,5 @@
-#sample_job:
-#  cron: "*/30 * * * *" # execute at every 30 minutes
-#  class: "HardWorker"
-#  queue: hard_worker_long
-#  args:
-#    hard: "stuff"
+WoocommerceRefreshJob:
+  cron: "0 */12 * * *"
+  class: "WoocommerceRefreshJob"
+  queue: default
+  description: "Refresh WooCommerce data every 30 minutes"
