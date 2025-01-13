@@ -16,6 +16,10 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   root "jobs#index"
 
+  # Lightspeed handlers
+  match "/lightspeedinit", to: "lightspeedinit#index", via: [:get]
+  match "/lightspeedauth", to: "lightspeedauth#index", via: [:get]
+  
   resources :jobs, except: %i[show destroy]
   match "/google_sheets", to: "google_sheets#index", via: [:get]
   match "/google_sheets/import", to: "google_sheets#import", via: [:post]
