@@ -4,43 +4,21 @@
 
 <h1>Jobs</h1>
 
-<div class="flex flex-col mt-6">
-  <div class="overflow-x-auto rounded-lg">
-    <div class="inline-block min-w-full align-middle">
-      <div class="overflow-hidden shadow sm:rounded-lg">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-          <tr>
-            <th scope="col" class="p-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-              Job ID
-            </th>
-            <th scope="col" class="p-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-              Type
-            </th>
-            <th scope="col" class="p-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-              Status
-            </th>
-            <th scope="col" class="p-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-              Updated At
-            </th>
-            <th scope="col" class="p-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-              Log Message
-            </th>
-            <th scope="col" class="p-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-              Log Timestamp
-            </th>
-            <th scope="col" class="p-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-              Actions
-            </th>
-          </tr>
-          </thead>
-          <tbody class="bg-white">
-          <%= render @jobs %>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
+<table class="table-dark table-striped">
+  <thead>
+  <tr>
+    <th scope="col"> Job ID </th>
+    <th scope="col"> Type </th>
+    <th scope="col"> Status </th>
+    <th scope="col"> Updated At </th>
+    <th scope="col"> Log Message </th>
+    <th scope="col"> Log Timestamp </th>
+    <th scope="col"> Actions </th>
+  </tr>
+  </thead>
+  <tbody>
+  <%= render @jobs %>
+  </tbody>
+</table>
 
 <%= will_paginate @jobs %>

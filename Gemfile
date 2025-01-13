@@ -72,9 +72,11 @@ gem "restforce"
 gem "sidekiq"
 gem "sidekiq-cron"
 gem "sidekiq-unique-jobs"
-gem "tailwindcss-rails"
 gem "will_paginate"
 gem "woocommerce_api"
+gem "bootstrap"
+gem "popper_js"
+gem "dartsass-sprockets"
 
 
 group :development, :test do
