@@ -1,5 +1,11 @@
 WoocommerceRefreshJob:
-  cron: "0 */12 * * *"
+  cron: "*/50 * * * *"
   class: "WoocommerceRefreshJob"
   queue: default
   description: "Refresh WooCommerce data every 30 minutes"
+
+PollingJob:
+  cron: "*/30 * * * *"
+  class: "PollSheetJob"
+  queue: default
+  description: "Poll external API every 30 minutes"

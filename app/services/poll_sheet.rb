@@ -22,7 +22,7 @@ class PollSheet
   end
 
   def log job, message
-    log = job.logs.create(content: "[LS_EXTRACT] #{message}")
+    log = job.logs.create(content: "[POLL_SHEET] #{message}")
     log.save!
     puts log.content
   end
@@ -49,7 +49,11 @@ class PollSheet
     job.save!
     log job, "Processing job #{job.id}"
     ready_sheets = get_ready_sheets
-    return if ready_sheets.empty?
+    if ready_sheets.empty?
+      job.status_complete!
+      job.save!
+      return
+    end
     ready_sheets.each do |row|
       tab_event_code = row[0]
       index = row[1]
@@ -64,6 +68,7 @@ class PollSheet
         set_ready_status tab_event_code, index, 'PROCESSING'
       end
     end
+    WoocommerceImportJob.perform_later
     job.status_complete!
     job.save!
   end

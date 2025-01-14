@@ -21,6 +21,7 @@ class WooRefresh
     job = Job.create
     job.type = 'WOO_REFRESH'
     job.save!
+    job.status_created!
     job
   end
 

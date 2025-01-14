@@ -26,7 +26,12 @@ default: &default
   port: <%= ENV['DB_PORT_5432_TCP_PORT'] %>
 
 development:
-  <<: *default
+  primary:
+    <<: *default
+  cache:
+    <<: *default
+    database: fl_pos_admin_development_cache
+    migrations_paths: db/cache_migrate
   # database: fl_pos_admin_development
 
   # The specified database role being used to connect to PostgreSQL.
