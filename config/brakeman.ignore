@@ -1,0 +1,39 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "Dynamic Render Path",
+      "warning_code": 15,
+      "fingerprint": "74ad2769a123976e4cf7e1b52ad88c239059f3bafe13d8d653e84ab66739e1f7",
+      "check_name": "Render",
+      "message": "Render path contains parameter value",
+      "file": "app/views/jobs/index.html.erb",
+      "line": 20,
+      "link": "https://brakemanscanner.org/docs/warning_types/dynamic_render_path/",
+      "code": "render(action => Job.order(:updated_at => :desc).includes(:logs).paginate(:page => params[:page], :per_page => 10), {})",
+      "render_path": [
+        {
+          "type": "controller",
+          "class": "JobsController",
+          "method": "index",
+          "line": 8,
+          "file": "app/controllers/jobs_controller.rb",
+          "rendered": {
+            "name": "jobs/index",
+            "file": "app/views/jobs/index.html.erb"
+          }
+        }
+      ],
+      "location": {
+        "type": "template",
+        "template": "jobs/index"
+      },
+      "user_input": "params[:page]",
+      "confidence": "Weak",
+      "cwe_id": [
+        22
+      ],
+      "note": ""
+    }
+  ],
+  "brakeman_version": "7.0.0"
+}
