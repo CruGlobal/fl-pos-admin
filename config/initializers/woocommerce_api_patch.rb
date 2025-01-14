@@ -5,9 +5,8 @@ module WooCommerce
 
       endpoint += "?" unless endpoint.include? "?"
       endpoint += "&" unless endpoint.end_with? "?"
-      qs = URI::Parser.new.escape(data.to_query)
-      endpoint = endpoint + qs
-      endpoint
+      qs = URI::DEFAULT_PARSER.escape(data.to_query)
+      endpoint + qs
     end
   end
 end

@@ -1,13 +1,13 @@
-require 'sidekiq/pro/web'
-require 'sidekiq/cron/web'
-require 'sidekiq_unique_jobs/web'
+require "sidekiq/pro/web"
+require "sidekiq/cron/web"
+require "sidekiq_unique_jobs/web"
 
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
-  get "monitors/lb" => "monitors#lb", as: :rails_health_check
+  get "monitors/lb" => "monitors#lb", :as => :rails_health_check
 
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
@@ -19,7 +19,7 @@ Rails.application.routes.draw do
   # Lightspeed handlers
   match "/lightspeedinit", to: "lightspeedinit#index", via: [:get]
   match "/lightspeedauth", to: "lightspeedauth#index", via: [:get]
-  
+
   resources :jobs, except: %i[show destroy]
   match "/google_sheets", to: "google_sheets#index", via: [:get]
   match "/google_sheets/import", to: "google_sheets#import", via: [:post]

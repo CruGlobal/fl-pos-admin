@@ -8,7 +8,7 @@ class SessionsController < ApplicationController
   def create
     unless okta_signed_in?
       redirect_to new_session_path,
-                  flash: {error: "Sorry, the okta login failed."}
+        flash: {error: "Sorry, the okta login failed."}
       return
     end
 

@@ -1,104 +1,103 @@
 class LightspeedSaleSchema
-
   @fields_to_keep = {
-    'arrayable' => false,
-    'root' => [
-      'saleID',
-      'timeStamp',
-      'completed',
-      'voided',
-      'calcTotal',
-      'calcSubtotal',
-      'Customer',
-      'SaleLines',
-      'calcTax1',
-      'calcTax2',
-      'shipToID'
+    "arrayable" => false,
+    "root" => [
+      "saleID",
+      "timeStamp",
+      "completed",
+      "voided",
+      "calcTotal",
+      "calcSubtotal",
+      "Customer",
+      "SaleLines",
+      "calcTax1",
+      "calcTax2",
+      "shipToID"
     ],
-    'SaleLines' => {
-      'arrayable' => false,
-      'root' => [
-        'SaleLine'
+    "SaleLines" => {
+      "arrayable" => false,
+      "root" => [
+        "SaleLine"
       ],
-      'SaleLine' => {
-        'arrayable' => true,
-        'root' => [
-          'unitQuantity',
-          'unitPrice',
-          'displayableSubtotal',
-          'isSpecialOrder',
-          'calcTotal',
-          'calcTax1',
-          'calcTax2',
-          'tax',
-          'Item'
+      "SaleLine" => {
+        "arrayable" => true,
+        "root" => [
+          "unitQuantity",
+          "unitPrice",
+          "displayableSubtotal",
+          "isSpecialOrder",
+          "calcTotal",
+          "calcTax1",
+          "calcTax2",
+          "tax",
+          "Item"
         ],
-        'Item' => {
-          'arrayable' => false,
-          'root' => [
-            'customSku'
+        "Item" => {
+          "arrayable" => false,
+          "root" => [
+            "customSku"
           ]
         }
       }
     },
-    'SalePayments' => {
-      'arrayable' => false,
-      'root' => [
-        'SalePayment'
+    "SalePayments" => {
+      "arrayable" => false,
+      "root" => [
+        "SalePayment"
       ],
-      'SalePayment' => {
-        'arrayable' => true,
-        'root' => [
-          'amount'
+      "SalePayment" => {
+        "arrayable" => true,
+        "root" => [
+          "amount"
         ]
       }
     },
-    'Customer' => {
-      'arrayable' => false,
-      'root' => [
-        'firstName',
-        'lastName',
-        'Contact'
+    "Customer" => {
+      "arrayable" => false,
+      "root" => [
+        "firstName",
+        "lastName",
+        "Contact"
       ],
-      'Contact' => {
-        'arrayable' => false,
-        'root' => [
-          'Addresses',
-          'Phones',
-          'Emails'
+      "Contact" => {
+        "arrayable" => false,
+        "root" => [
+          "Addresses",
+          "Phones",
+          "Emails"
         ],
-        'Addresses' => {
-          'arrayable' => true,
-          'root' => [
-            'ContactAddress'
+        "Addresses" => {
+          "arrayable" => true,
+          "root" => [
+            "ContactAddress"
           ],
-          'ContactAddress' => {
-            'arrayable' => false,
-            'root' => [
-              'address1',
-              'city',
-              'state',
-              'zip'
+          "ContactAddress" => {
+            "arrayable" => false,
+            "root" => [
+              "address1",
+              "city",
+              "state",
+              "zip"
             ]
           }
         },
-        'Phones' => {
-          'arrayable' => true,
-          'root' => [
-            'number',
-            'useType'
+        "Phones" => {
+          "arrayable" => true,
+          "root" => [
+            "number",
+            "useType"
           ]
         },
-        'Emails' => {
-          'arrayable' => true,
-          'root' => [
-            'ContactEmail'
+        "Emails" => {
+          "arrayable" => true,
+          "root" => [
+            "ContactEmail"
           ],
-          'ContactEmail' => {
-            'arrayable' => false,
-            'root' => [
-              'address',
-              'useType'
+          "ContactEmail" => {
+            "arrayable" => false,
+            "root" => [
+              "address",
+              "useType"
             ]
           }
         }
@@ -109,5 +108,4 @@ class LightspeedSaleSchema
   def self.fields_to_keep
     @fields_to_keep
   end
-
 end

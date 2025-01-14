@@ -22,20 +22,20 @@ if ENV["AWS_EXECUTION_ENV"].present?
 
     # Instrumentation
     c.tracing.instrument :rails,
-                         service_name: ENV["PROJECT_NAME"],
-                         controller_service: "#{ENV["PROJECT_NAME"]}-controller",
-                         cache_service: "#{ENV["PROJECT_NAME"]}-cache",
-                         database_service: "#{ENV["PROJECT_NAME"]}-db"
+      service_name: ENV["PROJECT_NAME"],
+      controller_service: "#{ENV["PROJECT_NAME"]}-controller",
+      cache_service: "#{ENV["PROJECT_NAME"]}-cache",
+      database_service: "#{ENV["PROJECT_NAME"]}-db"
 
     c.tracing.instrument :redis, service_name: "#{ENV["PROJECT_NAME"]}-redis"
 
     c.tracing.instrument :http, service_name: "#{ENV["PROJECT_NAME"]}-http"
 
-    c.tracing.instrument :sidekiq, service_name: "#{ENV['PROJECT_NAME']}-sidekiq"
+    c.tracing.instrument :sidekiq, service_name: "#{ENV["PROJECT_NAME"]}-sidekiq"
 
     # skipping the health check: if it returns true, the trace is dropped
-    #Datadog::Pipeline.before_flush(Datadog::Pipeline::SpanFilter.new do |span|
+    # Datadog::Pipeline.before_flush(Datadog::Pipeline::SpanFilter.new do |span|
     #  span.name == 'rack.request' && span.get_tag('http.url') == '/monitors/lb'
-    #end)
+    # end)
   end
 end

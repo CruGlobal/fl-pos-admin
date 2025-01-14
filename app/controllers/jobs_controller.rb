@@ -1,6 +1,6 @@
 class JobsController < ApplicationController
-  before_action :set_job, only: %i[ edit update ]
-  before_action :set_form_defaults, only: %i[ new edit ]
+  before_action :set_job, only: %i[edit update]
+  before_action :set_form_defaults, only: %i[new edit]
 
   # GET /jobs
   def index
@@ -41,6 +41,7 @@ class JobsController < ApplicationController
   end
 
   private
+
   # Use callbacks to share common setup or constraints between actions.
   def set_job
     @job = Job.find(params.expect(:id))
@@ -48,7 +49,7 @@ class JobsController < ApplicationController
 
   # Only allow a list of trusted parameters through.
   def job_params
-    params.fetch(:job => [:shop_id, :start_date, :end_date])
+    params.fetch(job: [:shop_id, :start_date, :end_date])
   end
 
   def set_form_defaults
@@ -59,7 +60,7 @@ class JobsController < ApplicationController
 
   def get_event_options
     shops = LightspeedApiHelper.new.shops
-    shops.select! { |shop| !shop.Contact['custom'].start_with?('P-') }
+    shops.select! { |shop| !shop.Contact["custom"].start_with?("P-") }
     shops.map { |shop| [shop.name, shop.shopID] }
   end
 end

@@ -1,5 +1,5 @@
 class SheetTabNamesService
-  SHEET_ID = ENV['GOOGLE_SHEET_ID']
+  SHEET_ID = ENV["GOOGLE_SHEET_ID"]
   SHEETS_SCOPE = Google::Apis::SheetsV4::AUTH_SPREADSHEETS
 
   def self.get_tab_names

@@ -1,4 +1,4 @@
-require 'salesforce_bulk_api'
+require "salesforce_bulk_api"
 
 class SFImport
   @lsh = nil
@@ -9,13 +9,13 @@ class SFImport
     @lsh = LightspeedApiHelper.new
 
     @sf_client = Restforce.new(
-      username:        ENV['SF_USERNAME'],
-      password:        ENV['SF_PASSWORD'],
-      security_token:  ENV['SF_TOKEN'],
-      instance_url:    ENV['SF_INSTANCE_URL'],
-      host:            ENV['SF_HOST'],
-      client_id:       ENV['SF_CLIENT_ID'],
-      client_secret:   ENV['SF_CLIENT_SECRET']
+      username: ENV["SF_USERNAME"],
+      password: ENV["SF_PASSWORD"],
+      security_token: ENV["SF_TOKEN"],
+      instance_url: ENV["SF_INSTANCE_URL"],
+      host: ENV["SF_HOST"],
+      client_id: ENV["SF_CLIENT_ID"],
+      client_secret: ENV["SF_CLIENT_SECRET"]
     )
   end
 
@@ -25,14 +25,14 @@ class SFImport
       shop_id: shop_id,
       start_date: start_date,
       end_date: end_date,
-      event_code: shop.Contact['custom']
+      event_code: shop.Contact["custom"]
     }
     job = Job.create(
-      type: 'SF_IMPORT',
+      type: "SF_IMPORT",
       shop_id: shop_id,
       start_date: start_date,
       end_date: end_date,
-      event_code: shop.Contact['custom'],
+      event_code: shop.Contact["custom"],
       context: context
     )
     job.save!
@@ -41,11 +41,11 @@ class SFImport
 
   def poll_jobs
     # if there are any current WOO_REFRESH jobs running, don't start another one
-    if Job.where('type': 'WOO_REFRESH', status: :status_processing).count > 0
+    if Job.where(type: "WOO_REFRESH", status: :status_processing).count > 0
       puts "POLLING: A WOO_REFRESH job is currently running."
       return
     end
-    jobs = Job.where('type': 'SF_IMPORT', status: :status_created).all
+    jobs = Job.where(type: "SF_IMPORT", status: :status_created).all
     if jobs.count == 0
       puts "POLLING: No SF_IMPORT jobs found."
       return
@@ -80,14 +80,14 @@ class SFImport
 
     # Get the sales from Lightspeed
     context = job.context
-    context['sales'] = @lsh.get_sales(job, context['shop_id'], context['start_date'], context['end_date'])
+    context["sales"] = @lsh.get_sales(job, context["shop_id"], context["start_date"], context["end_date"])
 
-    context['sales'] = context['sales'].map { |sale| @lsh.strip_to_named_fields(sale, LightspeedInventorySchema.fields_to_keep) }
+    context["sales"] = context["sales"].map { |sale| @lsh.strip_to_named_fields(sale, LightspeedInventorySchema.fields_to_keep) }
 
-    context['inventory'] = get_inventory(job, context['sales'], products, bundles)
+    context["inventory"] = get_inventory(job, context["sales"], products, bundles)
 
     # Push the inventory to SalesForce
-    push_inventory_to_sf job, context['inventory']
+    push_inventory_to_sf job, context["inventory"]
 
     # Mark the job as complete
     job.status_complete!
@@ -100,28 +100,26 @@ class SFImport
       ps_objects << {
         Product_Code__c: inv.to_s,
         Quantity__c: v.to_i,
-        Source_Code__c: job['event_code'],
-        Agent__c: 'LightSpeed',
-        Upsert_Key__c: "#{job['event_code']}-#{inv.to_s}"
+        Source_Code__c: job["event_code"],
+        Agent__c: "LightSpeed",
+        Upsert_Key__c: "#{job["event_code"]}-#{inv}"
       }
     end
     ps_objects
   end
 
   def push_inventory_to_sf(job, inventory)
-
     ps_objects = convert_inventory_to_sf_objects(job, inventory)
 
     # Push the inventory to SalesForce
     upserts = []
     ps_objects.each do |ps_object|
-      upserts << @sf_client.create!('Product_Sale__c',
-        Upsert_Key__c:    ps_object[:Upsert_Key__c],
-        Product_Code__c:  ps_object[:Product_Code__c],
-        Quantity__c:      ps_object[:Quantity__c],
-        Source_Code__c:   ps_object[:Source_Code__c],
-        Agent__c:         ps_object[:Agent__c]
-      )
+      upserts << @sf_client.create!("Product_Sale__c",
+        Upsert_Key__c: ps_object[:Upsert_Key__c],
+        Product_Code__c: ps_object[:Product_Code__c],
+        Quantity__c: ps_object[:Quantity__c],
+        Source_Code__c: ps_object[:Source_Code__c],
+        Agent__c: ps_object[:Agent__c])
     end
     upserts
   end
@@ -135,7 +133,7 @@ class SFImport
   end
 
   def get_bundled_items(id, bundles)
-    bundles.select { |bundle| bundle['product_id'] == id }
+    bundles.select { |bundle| bundle["product_id"] == id }
   end
 
   def get_inventory(job, sales, products, bundles)
@@ -143,28 +141,28 @@ class SFImport
     # The skus hash is used for uniqueness. Only one object per sku is allowed.
     skus = {}
     sales.each do |sale|
-      next unless sale['SaleLines']['SaleLine']
-      lines = sale['SaleLines']['SaleLine']
+      next unless sale["SaleLines"]["SaleLine"]
+      lines = sale["SaleLines"]["SaleLine"]
       unless lines.is_a? Array
         lines = [lines]
       end
       lines.each do |item|
-        item = item['Item']
-        sku = item['customSku']
+        item = item["Item"]
+        sku = item["customSku"]
         if is_bundle?(sku, products)
           bundle = get_bundle(sku, products)
           bundle.each do |bundled_item|
-            bundled_product = products.select { |product| product['product_id'] == bundled_item['bundled_product_id'] }
+            bundled_product = products.select { |product| product["product_id"] == bundled_item["bundled_product_id"] }
             next if bundled_product.count.zero?
 
-            bundled_sku = bundled_product['sku']
+            bundled_sku = bundled_product["sku"]
             if skus[bundled_sku]
               skus[bundled_sku] += 1
             else
               skus[bundled_sku] = 1
             end
           end
-        elseif skus[sku]
+          elseif skus[sku]
           skus[sku] += 1
         else
           skus[sku] = 1
@@ -173,14 +171,14 @@ class SFImport
     end
     inventory = []
     skus.each do |sku, quantity|
-      inventory << { sku:, quantity: }
+      inventory << {sku:, quantity:}
     end
   end
 
   def is_bundle?(sku, products)
     products.each do |product|
-      if product['sku'] == sku
-        return product['type'] == 'bundle'
+      if product["sku"] == sku
+        return product["type"] == "bundle"
       end
     end
   end
@@ -188,11 +186,10 @@ class SFImport
   def get_bundle(sku, bundles)
     ret = []
     bundles.each do |bundle|
-      if bundle['sku'] == sku
+      if bundle["sku"] == sku
         ret << bundle
       end
     end
     ret
   end
-
 end

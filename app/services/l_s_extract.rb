@@ -1,14 +1,12 @@
 class LSExtract
-
   # Google Sheets Service Instance
   @sheets = nil
 
   # Lightspeed API Helper
   @lsh = nil
 
-  SHEET_ID = ENV['GOOGLE_SHEET_ID']
+  SHEET_ID = ENV["GOOGLE_SHEET_ID"]
   SHEETS_SCOPE = Google::Apis::SheetsV4::AUTH_SPREADSHEETS
-
 
   def initialize
     @lsh = LightspeedApiHelper.new
@@ -17,7 +15,7 @@ class LSExtract
   end
 
   def get_products(limit = 0)
-    if(limit == 0)
+    if limit == 0
       return WooProduct.all
     end
     WooProduct.all.limit(limit)
@@ -29,14 +27,14 @@ class LSExtract
       shop_id: shop_id,
       start_date: start_date,
       end_date: end_date,
-      event_code: shop.Contact['custom']
+      event_code: shop.Contact["custom"]
     }
     job = Job.create(
-      type: 'LS_EXTRACT',
+      type: "LS_EXTRACT",
       shop_id: shop_id,
       start_date: start_date,
       end_date: end_date,
-      event_code: shop.Contact['custom'],
+      event_code: shop.Contact["custom"],
       context: context
     )
     job.save!
@@ -51,11 +49,11 @@ class LSExtract
 
   def poll_jobs
     # if there are any current WOO_REFRESH jobs running, don't start another one
-    if Job.where('type': 'WOO_REFRESH', status: :status_processing).count > 0
+    if Job.where(type: "WOO_REFRESH", status: :status_processing).count > 0
       puts "POLLING: A WOO_REFRESH job is currently running."
       return
     end
-    jobs = Job.where('type': 'LS_EXTRACT', status: :status_created).all
+    jobs = Job.where(type: "LS_EXTRACT", status: :status_created).all
     if jobs.count == 0
       puts "POLLING: No LS_EXTRACT jobs found."
       return
@@ -79,16 +77,16 @@ class LSExtract
     # Get the job context, which is a jsonb store in the context column
     context = job.context
     # Get list of all sales for the shop_id between start_date and end_date (paging included)
-    context['sales'] = @lsh.get_sales(job, context['shop_id'], context['start_date'], context['end_date'])
+    context["sales"] = @lsh.get_sales(job, context["shop_id"], context["start_date"], context["end_date"])
     # Optimize sales data to remove extreneous data from the Object
-    context['sales'] = context['sales'].map { |sale| @lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep) }
+    context["sales"] = context["sales"].map { |sale| @lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep) }
     # delete the sales variable to free up memory
     # Save the sales data to the context object
     job.context = context
     job.save!
     log job, "Sales retrieved from Lightspeed"
     # Generate the report
-    context['report'] = generate_report(job,context['sales'])
+    context["report"] = generate_report(job, context["sales"])
     job.context = context
     job.save!
     log job, "Report generated and saved locally"
@@ -100,13 +98,13 @@ class LSExtract
 
   def is_bundle?(sku, products)
     products.each do |product|
-      if product['sku'] == sku
-        return product['type'] == 'bundle'
+      if product["sku"] == sku
+        return product["type"] == "bundle"
       end
     end
   end
 
-  def generate_report(job,sales)
+  def generate_report(job, sales)
     products = get_products
     shipping_customers = @lsh.get_shipping_customers(job, sales)
     lines = []
@@ -116,72 +114,72 @@ class LSExtract
     lines
   end
 
-  def get_report_line(job,sale,products,customers)
+  def get_report_line(job, sale, products, customers)
     {
       EventCode: job.event_code,
-      SaleID: sale['saleID'],
-      OrderDate: sale['timeStamp'].to_date.strftime('%Y-%m-%d'),
-      Customer: "#{sale['Customer']['firstName']} #{sale['Customer']['lastName']}",
-      FirstName: sale['Customer']['firstName'],
-      LastName: sale['Customer']['lastName'],
-      OrderTotal: sale['calcTotal'],
-      ItemSubtotal: sale['calcSubtotal'],
-      SalesTax: (sale['calcTax1'].to_f + sale['calcTax2'].to_f).round(2),
+      SaleID: sale["saleID"],
+      OrderDate: sale["timeStamp"].to_date.strftime("%Y-%m-%d"),
+      Customer: "#{sale["Customer"]["firstName"]} #{sale["Customer"]["lastName"]}",
+      FirstName: sale["Customer"]["firstName"],
+      LastName: sale["Customer"]["lastName"],
+      OrderTotal: sale["calcTotal"],
+      ItemSubtotal: sale["calcSubtotal"],
+      SalesTax: (sale["calcTax1"].to_f + sale["calcTax2"].to_f).round(2),
       SpecialOrderFlag: @lsh.get_special_order_flag(sale),
       TaxableOrderFlag: @lsh.get_taxable_order_flag(sale),
-      ProductCode: @lsh.get_all_product_codes(sale).join('|'),
-      Quantity: @lsh.get_all_quantities(sale).join('|'),
-      UnitPrice: @lsh.get_all_unit_prices(sale).join('|'),
-      ItemSalesTax: @lsh.get_all_unit_taxes(sale).join('|'),
-      AddressLine1: @lsh.get_address(sale,'address1'),
-      AddressLine2: '',
-      City: @lsh.get_address(sale,'city'),
-      State: @lsh.get_address(sale,'state'),
-      ZipPostal: @lsh.get_address(sale,'zip'),
-      Country: 'US',
-      ShipAddressLine1: @lsh.get_shipping_address(sale, customers,'address1'),
-      ShipAddressLine2: '',
-      ShipCity: @lsh.get_shipping_address(sale, customers,'city'),
-      ShipState: @lsh.get_shipping_address(sale, customers,'state'),
-      ShipZipPostal: @lsh.get_shipping_address(sale, customers,'zip'),
-      ShipCountry: 'US',
-      EmailAddress: @lsh.get_email_addresses(sale).join('|'),
-      POSImportID: sale['saleID']
+      ProductCode: @lsh.get_all_product_codes(sale).join("|"),
+      Quantity: @lsh.get_all_quantities(sale).join("|"),
+      UnitPrice: @lsh.get_all_unit_prices(sale).join("|"),
+      ItemSalesTax: @lsh.get_all_unit_taxes(sale).join("|"),
+      AddressLine1: @lsh.get_address(sale, "address1"),
+      AddressLine2: "",
+      City: @lsh.get_address(sale, "city"),
+      State: @lsh.get_address(sale, "state"),
+      ZipPostal: @lsh.get_address(sale, "zip"),
+      Country: "US",
+      ShipAddressLine1: @lsh.get_shipping_address(sale, customers, "address1"),
+      ShipAddressLine2: "",
+      ShipCity: @lsh.get_shipping_address(sale, customers, "city"),
+      ShipState: @lsh.get_shipping_address(sale, customers, "state"),
+      ShipZipPostal: @lsh.get_shipping_address(sale, customers, "zip"),
+      ShipCountry: "US",
+      EmailAddress: @lsh.get_email_addresses(sale).join("|"),
+      POSImportID: sale["saleID"]
     }
   end
 
   def put_sheet(job)
-    report = job.context['report']
+    report = job.context["report"]
     headers = [
-      'EventCode',
-      'SaleID',
-      'OrderDate',
-      'Customer',
-      'FirstName',
-      'LastName',
-      'OrderTotal',
-      'ItemSubtotal',
-      'SalesTax',
-      'SpecialOrderFlag',
-      'TaxableOrderFlag',
-      'ProductCode',
-      'Quantity',
-      'UnitPrice',
-      'ItemSalesTax',
-      'AddressLine1',
-      'AddressLine2',
-      'City',
-      'State',
-      'ZipPostal',
-      'Country',
-      'ShipAddressLine1',
-      'ShipAddressLine2',
-      'ShipCity',
-      'ShipState',
-      'ShipZipPostal',
-      'ShipCountry',
-      'EmailAddress',
-      'POSImportID'
+      "EventCode",
+      "SaleID",
+      "OrderDate",
+      "Customer",
+      "FirstName",
+      "LastName",
+      "OrderTotal",
+      "ItemSubtotal",
+      "SalesTax",
+      "SpecialOrderFlag",
+      "TaxableOrderFlag",
+      "ProductCode",
+      "Quantity",
+      "UnitPrice",
+      "ItemSalesTax",
+      "AddressLine1",
+      "AddressLine2",
+      "City",
+      "State",
+      "ZipPostal",
+      "Country",
+      "ShipAddressLine1",
+      "ShipAddressLine2",
+      "ShipCity",
+      "ShipState",
+      "ShipZipPostal",
+      "ShipCountry",
+      "EmailAddress",
+      "POSImportID"
     ]
 
     rows = [headers]
@@ -195,10 +193,9 @@ class LSExtract
     write_range = "#{job.event_code}!A1:AC#{rows.count}"
     clear_range = "#{job.event_code}!A1:AC9999"
     value_range_object = {
-      "major_dimension": "ROWS",
-      "values": rows
+      major_dimension: "ROWS",
+      values: rows
     }
-
 
     # make sure tab exists first
     response = @sheets.get_spreadsheet(SHEET_ID)
@@ -214,7 +211,7 @@ class LSExtract
                 grid_properties: {
                   frozen_row_count: 1
                 },
-                fields: 'gridProperties.frozenRowCount'
+                fields: "gridProperties.frozenRowCount"
               }
             }
           }
@@ -228,7 +225,7 @@ class LSExtract
         throw e
       rescue Google::Apis::AuthorizationError => e
         puts "Authorization error: #{e.message}"
-      rescue StandardError => e
+      rescue => e
         puts "An error occurred: #{e.message}"
       end
     end
@@ -238,7 +235,7 @@ class LSExtract
     end
     begin
       puts "Writing tab '#{job.event_code}'"
-      @sheets.update_spreadsheet_value(SHEET_ID, write_range, value_range_object, value_input_option: 'RAW')
+      @sheets.update_spreadsheet_value(SHEET_ID, write_range, value_range_object, value_input_option: "RAW")
       request = Google::Apis::SheetsV4::BatchUpdateSpreadsheetRequest.new(
         requests: [
           {
@@ -249,7 +246,7 @@ class LSExtract
                   frozen_row_count: 1
                 }
               },
-              fields: 'gridProperties.frozenRowCount'
+              fields: "gridProperties.frozenRowCount"
             }
           },
           {
@@ -263,11 +260,11 @@ class LSExtract
               },
               cell: {
                 user_entered_format: {
-                  background_color: { red: 0.9, green: 0.9, blue: 0.9 },
-                  text_format: { bold: true }
+                  background_color: {red: 0.9, green: 0.9, blue: 0.9},
+                  text_format: {bold: true}
                 }
               },
-              fields: 'userEnteredFormat(backgroundColor,textFormat)'
+              fields: "userEnteredFormat(backgroundColor,textFormat)"
             }
           },
           {
@@ -281,13 +278,13 @@ class LSExtract
               },
               rule: {
                 condition: {
-                  type: 'ONE_OF_LIST',
+                  type: "ONE_OF_LIST",
                   values: [
-                    { user_entered_value: 'IN REVIEW' },
-                    { user_entered_value: 'READY FOR WOO IMPORT' },
-                    { user_entered_value: 'PROCESSING' },
-                    { user_entered_value: 'IMPORTED TO WOO' },
-                    { user_entered_value: 'ERROR' }
+                    {user_entered_value: "IN REVIEW"},
+                    {user_entered_value: "READY FOR WOO IMPORT"},
+                    {user_entered_value: "PROCESSING"},
+                    {user_entered_value: "IMPORTED TO WOO"},
+                    {user_entered_value: "ERROR"}
                   ]
                 },
                 show_custom_ui: true,
@@ -300,17 +297,17 @@ class LSExtract
               rows: [
                 {
                   values: [
-                    { user_entered_value: { string_value: 'Status' } },
-                    { user_entered_value: { string_value: 'IN REVIEW' } }
+                    {user_entered_value: {string_value: "Status"}},
+                    {user_entered_value: {string_value: "IN REVIEW"}}
                   ]
                 }
               ],
-              start: { 
+              start: {
                 sheet_id: tab.properties.sheet_id,
                 row_index: rows.count + 1,
                 column_index: 0
               },
-              fields: 'userEnteredValue'
+              fields: "userEnteredValue"
             }
           },
           {
@@ -327,13 +324,13 @@ class LSExtract
                 ],
                 boolean_rule: {
                   condition: {
-                    type: 'TEXT_EQ',
+                    type: "TEXT_EQ",
                     values: [
-                      { user_entered_value: 'IN REVIEW' }
+                      {user_entered_value: "IN REVIEW"}
                     ]
                   },
                   format: {
-                    background_color: { red: 0.9, green: 0.9, blue: 0.9 } # Red for YES
+                    background_color: {red: 0.9, green: 0.9, blue: 0.9} # Red for YES
                   }
                 }
               }
@@ -353,13 +350,13 @@ class LSExtract
                 ],
                 boolean_rule: {
                   condition: {
-                    type: 'TEXT_EQ',
+                    type: "TEXT_EQ",
                     values: [
-                      { user_entered_value: 'READY FOR WOO IMPORT' }
+                      {user_entered_value: "READY FOR WOO IMPORT"}
                     ]
                   },
                   format: {
-                    background_color: { red: 0.5, green: 1.0, blue: 0.5 } # Green for NO
+                    background_color: {red: 0.5, green: 1.0, blue: 0.5} # Green for NO
                   }
                 }
               }
@@ -379,13 +376,13 @@ class LSExtract
                 ],
                 boolean_rule: {
                   condition: {
-                    type: 'TEXT_EQ',
+                    type: "TEXT_EQ",
                     values: [
-                      { user_entered_value: 'ERROR' }
+                      {user_entered_value: "ERROR"}
                     ]
                   },
                   format: {
-                    background_color: { red: 1.0, green: 0.5, blue: 0.5 } # Green for NO
+                    background_color: {red: 1.0, green: 0.5, blue: 0.5} # Green for NO
                   }
                 }
               }
@@ -405,13 +402,13 @@ class LSExtract
                 ],
                 boolean_rule: {
                   condition: {
-                    type: 'TEXT_EQ',
+                    type: "TEXT_EQ",
                     values: [
-                      { user_entered_value: 'IMPORTED TO WOO' }
+                      {user_entered_value: "IMPORTED TO WOO"}
                     ]
                   },
                   format: {
-                    background_color: { red: 0.8, green: 0.8, blue: 1.0 } # Green for NO
+                    background_color: {red: 0.8, green: 0.8, blue: 1.0} # Green for NO
                   }
                 }
               }
@@ -428,11 +425,11 @@ class LSExtract
               },
               cell: {
                 user_entered_format: {
-                  background_color: { red: 0.9, green: 0.9, blue: 0.9 },
-                  text_format: { bold: true }
+                  background_color: {red: 0.9, green: 0.9, blue: 0.9},
+                  text_format: {bold: true}
                 }
               },
-              fields: 'userEnteredFormat(backgroundColor,textFormat)'
+              fields: "userEnteredFormat(backgroundColor,textFormat)"
             }
           }
         ]
@@ -443,10 +440,9 @@ class LSExtract
       throw e
     rescue Google::Apis::AuthorizationError => e
       puts "Authorization error: #{e.message}"
-    rescue StandardError => e
+    rescue => e
       puts "An error occurred: #{e.message}"
     end
-
   end
 
   def complete_job(job)
@@ -454,5 +450,4 @@ class LSExtract
     # Get job record from the jobs table
     # Update the job status to COMPLETED
   end
-
 end

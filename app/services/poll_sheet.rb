@@ -1,13 +1,10 @@
-
 class PollSheet
   @sheets = nil
 
-  SHEET_ID = ENV['GOOGLE_SHEET_ID']
+  SHEET_ID = ENV["GOOGLE_SHEET_ID"]
   SHEETS_SCOPE = Google::Apis::SheetsV4::AUTH_SPREADSHEETS
 
-  def sheets
-    @sheets
-  end
+  attr_reader :sheets
 
   def initialize
     @sheets = Google::Apis::SheetsV4::SheetsService.new
@@ -16,7 +13,7 @@ class PollSheet
 
   def create_job
     job = Job.create
-    job.type = 'POLL_SHEET'
+    job.type = "POLL_SHEET"
     job.save!
     job
   end
@@ -28,7 +25,7 @@ class PollSheet
   end
 
   def poll_jobs
-    jobs = Job.where('type': 'POLL_SHEET', status: :status_created).all
+    jobs = Job.where(type: "POLL_SHEET", status: :status_created).all
     if jobs.count == 0
       puts "POLLING: No POLL_SHEET jobs found."
       return
@@ -59,13 +56,13 @@ class PollSheet
       index = row[1]
       # Create a new WOO_IMPORT job for each tab only if a job by the same
       # event_code does not already exist
-      job = Job.where('type': 'WOO_IMPORT', event_code: tab_event_code).first
+      job = Job.where(type: "WOO_IMPORT", event_code: tab_event_code).first
       if job.nil?
         job = Job.create
-        job.type = 'WOO_IMPORT'
+        job.type = "WOO_IMPORT"
         job.event_code = tab_event_code
         job.save!
-        set_ready_status tab_event_code, index, 'PROCESSING'
+        set_ready_status tab_event_code, index, "PROCESSING"
       end
     end
     WoocommerceImportJob.perform_later
@@ -74,20 +71,20 @@ class PollSheet
   end
 
   def get_ready_sheets
-    ready_sheets = [];
+    ready_sheets = []
     # make sure tab exists first
     response = @sheets.get_spreadsheet(SHEET_ID)
     response.sheets.each do |s|
       tab_event_code = s.properties.title
       # Find the first row with an empty first cell in the row
       range = "#{tab_event_code}!A1:B"
-      response = @sheets.get_spreadsheet_values(SHEET_ID, range, value_render_option: 'UNFORMATTED_VALUE')
+      response = @sheets.get_spreadsheet_values(SHEET_ID, range, value_render_option: "UNFORMATTED_VALUE")
       values = response.values
       index = 0
       values.each do |row|
         index += 1
         next if row[0].nil? || row[0].empty?
-        if row[0] == 'Status' && row[1] == 'READY FOR WOO IMPORT'
+        if row[0] == "Status" && row[1] == "READY FOR WOO IMPORT"
           ready_sheets << [tab_event_code, index]
         end
       end
@@ -98,9 +95,9 @@ class PollSheet
   def set_ready_status event_code, index, status
     range = "#{event_code}!A#{index}:B"
     values = [
-      ['Status', status]
+      ["Status", status]
     ]
     value_range = Google::Apis::SheetsV4::ValueRange.new(values: values)
-    @sheets.update_spreadsheet_value(SHEET_ID, range, value_range, value_input_option: 'RAW')
+    @sheets.update_spreadsheet_value(SHEET_ID, range, value_range, value_input_option: "RAW")
   end
 end
