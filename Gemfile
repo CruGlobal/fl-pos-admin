@@ -55,6 +55,7 @@ group :development do
 end
 
 gem "amazing_print"
+gem "cssbundling-rails"
 gem "ddtrace"
 gem "dogstatsd-ruby"
 gem "google-apis-sheets_v4"
@@ -74,9 +75,6 @@ gem "sidekiq-cron"
 gem "sidekiq-unique-jobs"
 gem "will_paginate"
 gem "woocommerce_api"
-gem "bootstrap"
-gem "popper_js"
-gem "dartsass-sprockets"
 
 group :development, :test do
   gem "bundler-audit"
