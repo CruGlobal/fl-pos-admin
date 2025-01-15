@@ -18,8 +18,8 @@ class JobsController < ApplicationController
 
   # POST /jobs
   def create
-    sf_job = SFImport.create_job(job_params[:shop_id], job_params[:start_date], job_params[:end_date])
-    ls_job = LSExtract.create_job(job_params[:shop_id], job_params[:start_date], job_params[:end_date])
+    sf_job = SFImport.new.create_job(job_params[:shop_id], job_params[:start_date], job_params[:end_date])
+    ls_job = LSExtract.new.create_job(job_params[:shop_id], job_params[:start_date], job_params[:end_date])
 
     SalesforceImportJob.perform_later
     LightspeedExtractJob.perform_later
@@ -49,7 +49,7 @@ class JobsController < ApplicationController
 
   # Only allow a list of trusted parameters through.
   def job_params
-    params.fetch(job: [:shop_id, :start_date, :end_date])
+    params.expect(job: [:shop_id, :start_date, :end_date])
   end
 
   def set_form_defaults

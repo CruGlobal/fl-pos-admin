@@ -35,7 +35,8 @@ class LSExtract
       start_date: start_date,
       end_date: end_date,
       event_code: shop.Contact["custom"],
-      context: context
+      context: context,
+      status: :created
     )
     job.save!
     job
@@ -49,11 +50,11 @@ class LSExtract
 
   def poll_jobs
     # if there are any current WOO_REFRESH jobs running, don't start another one
-    if Job.where(type: "WOO_REFRESH", status: :status_processing).count > 0
+    if Job.where(type: "WOO_REFRESH", status: :processing).count > 0
       Rails.logger.info "POLLING: A WOO_REFRESH job is currently running."
       return
     end
-    jobs = Job.where(type: "LS_EXTRACT", status: :status_created).all
+    jobs = Job.where(type: "LS_EXTRACT", status: :created).all
     if jobs.count == 0
       Rails.logger.info "POLLING: No LS_EXTRACT jobs found."
       return

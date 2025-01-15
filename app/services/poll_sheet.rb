@@ -15,6 +15,7 @@ class PollSheet
     job = Job.create
     job.type = "POLL_SHEET"
     job.save!
+    job.status_created!
     job
   end
 
@@ -25,7 +26,7 @@ class PollSheet
   end
 
   def poll_jobs
-    jobs = Job.where(type: "POLL_SHEET", status: :status_created).all
+    jobs = Job.where(type: "POLL_SHEET", status: :created).all
     if jobs.count == 0
       Rails.logger.info "POLLING: No POLL_SHEET jobs found."
       return
@@ -56,14 +57,15 @@ class PollSheet
       index = row[1]
       # Create a new WOO_IMPORT job for each tab only if a job by the same
       # event_code does not already exist
-      job = Job.where(type: "WOO_IMPORT", event_code: tab_event_code).first
-      if job.nil?
-        job = Job.create
-        job.type = "WOO_IMPORT"
-        job.event_code = tab_event_code
-        job.save!
-        set_ready_status tab_event_code, index, "PROCESSING"
-      end
+      woo_job = Job.where(type: "WOO_IMPORT", event_code: tab_event_code).first
+      next if woo_job
+
+      woo_job = Job.create
+      woo_job.type = "WOO_IMPORT"
+      woo_job.event_code = tab_event_code
+      woo_job.save!
+      woo_job.status_created!
+      set_ready_status tab_event_code, index, "PROCESSING"
     end
     WoocommerceImportJob.perform_later
     job.status_complete!

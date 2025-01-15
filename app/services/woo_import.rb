@@ -15,8 +15,9 @@ class WooImport
     @products ||= WooProduct.all
   end
 
-  def sheet
-    @sheet ||= sheets.get_spreadsheet
+  def sheet(event_code)
+    @sheet ||= sheets.get_spreadsheet(SHEET_ID)
+    @sheet.sheets.find {|s| s.properties.title == event_code}
   end
 
   def initialize
@@ -41,18 +42,18 @@ class WooImport
   end
 
   def log job, message
-    log = job.logs.create(content: "[LS_EXTRACT] #{message}")
+    log = job.logs.create(content: "[WOO_IMPORT] #{message}")
     log.save!
     Rails.logger.info log.content
   end
 
   def poll_jobs
     # if there are any current WOO_REFRESH jobs running, don't start another one
-    if Job.where(type: "WOO_REFRESH", status: :status_processing).count > 0
+    if Job.where(type: "WOO_REFRESH", status: :processing).count > 0
       Rails.logger.info "POLLING: A WOO_REFRESH job is currently running."
       return
     end
-    jobs = Job.where(type: "WOO_IMPORT", status: [:status_created, :status_paused]).all
+    jobs = Job.where(type: "WOO_IMPORT", status: [:created, :paused]).all
     if jobs.count == 0
       Rails.logger.info "POLLING: No WOO_IMPORT jobs found."
       return
@@ -79,15 +80,16 @@ class WooImport
     # Get values from spreadsheet as objects
     if context["sheet"].nil?
       log job, "Getting rows from sheet"
-      context["sheet"] = sheet
+      context["sheet"] = sheet(job.event_code)
+      context["rows"] = @sheets.get_spreadsheet_values(SHEET_ID, "#{job.event_code}!A:AC").values
       job.context = context.to_json
       job.save!
-      log job, "Got #{context["sheet"].count} rows from sheet"
+      log job, "Got #{context["rows"].count} rows from sheet"
     end
 
     if context["woo_list"].nil?
       log job, "Building list of sales to send to woo"
-      context["woo_list"] = build_woo_list(context["sheet"])
+      context["woo_list"] = build_woo_list(context["rows"], job.event_code)
       job.context = context.to_json
       job.save!
       log job, "Built list of #{context["woo_list"].count} sales to send to woo"
@@ -147,31 +149,46 @@ class WooImport
     woo_list
   end
 
-  def build_woo_list(sheet)
+  def build_woo_list(rows, event_code)
+    build_column_hash(rows[0])
+
     objects = []
-    sheet.each do |row|
-      objects << get_create_object(row)
+    rows.each do |row|
+      object = get_create_object(row, event_code)
+      objects << object if object.present?
     end
     objects
   end
 
-  def get_create_object(row)
-    email_address = row["EmailAddress"].present? ? row["EmailAddress"] : "fleventanonymoussales@familylife.com"
-    status = (row["SpecialOrderFlag"] == "Y") ? "processing" : "completed"
+  def build_column_hash(row)
+    return @columns if @columns.present?
+
+    @columns = {}
+    row.each_with_index do |cell, index|
+      @columns[cell] = index
+    end
+    @columns
+  end
+
+  def get_create_object(row, event_code)
+    return unless row.first == event_code
+
+    email_address = row[@columns["EmailAddress"]].present? ? row[@columns["EmailAddress"]] : "fleventanonymoussales@familylife.com"
+    status = (row[@columns["SpecialOrderFlag"]] == "Y") ? "processing" : "completed"
     line_items = get_row_items(row)
     # LastName needs to be stripped of everything after the asterisk and trimmed to remove trailing whitespace
-    last_name = row["LastName"].split("*")[0].strip
+    last_name = row[@columns["LastName"]].split("*")[0].strip
     create_object = {
       status: status,
       billing: {
-        first_name: row["FirstName"],
+        first_name: row[@columns["FirstName"]],
         last_name: last_name,
-        address_1: row["AddressLine1"],
-        address_2: row["AddressLine2"],
-        city: row["City"],
-        state: row["State"],
-        postcode: row["ZipPostal"],
-        country: row["Country"],
+        address_1: row[@columns["AddressLine1"]],
+        address_2: row[@columns["AddressLine2"]],
+        city: row[@columns["City"]],
+        state: row[@columns["State"]],
+        postcode: row[@columns["ZipPostal"]],
+        country: row[@columns["Country"]],
         email: email_address
       },
       line_items: line_items,
@@ -182,29 +199,29 @@ class WooImport
         },
         {
           key: "event_transaction",
-          value: "#{row["EventCode"]} - #{row["SaleID"]}"
+          value: "#{row[@columns["EventCode"]]} - #{row[@columns["SaleID"]]}"
         },
         {
           key: "event_code",
-          value: row["EventCode"]
+          value: row[@columns["EventCode"]]
         },
         {
           key: "transaction_notes",
-          value: row["SaleID"]
+          value: row[@columns["SaleID"]]
         }
       ]
     }
     # If there is a shipping address, add it to the object
-    if row["ShipAddressLine1"].present?
-      create_object["shipping"] = {
-        first_name: row["FirstName"],
-        last_name: row["LastName"],
-        address_1: row["ShipAddressLine1"],
-        address_2: row["ShipAddressLine2"],
-        city: row["ShipCity"],
-        state: row["ShipState"],
-        postcode: row["ShipZipPostal"],
-        country: row["ShipCountry"],
+    if row[@columns["ShipAddressLine1"]].present?
+      create_object[@columns["shipping"]] = {
+        first_name: row[@columns["FirstName"]],
+        last_name: row[@columns["LastName"]],
+        address_1: row[@columns["ShipAddressLine1"]],
+        address_2: row[@columns["ShipAddressLine2"]],
+        city: row[@columns["ShipCity"]],
+        state: row[@columns["ShipState"]],
+        postcode: row[@columns["ShipZipPostal"]],
+        country: row[@columns["ShipCountry"]],
         email: email_address
       }
     end
@@ -212,14 +229,14 @@ class WooImport
   end
 
   def get_row_items(row)
-    count = row["ProductCode"].split("|").count
+    count = row[@columns["ProductCode"]].split("|").count
     items = []
     count.times do |i|
       items << {
-        sku: row["ProductCode"].split("|")[i],
-        quantity: row["Quantity"].split("|")[i].to_i,
-        subtotal_tax: row["ItemSalesTax"].split("|")[i],
-        subtotal: row["UnitPrice"].split("|")[i]
+        sku: row[@columns["ProductCode"]].split("|")[i],
+        quantity: row[@columns["Quantity"]].split("|")[i].to_i,
+        subtotal_tax: row[@columns["ItemSalesTax"]].split("|")[i],
+        subtotal: row[@columns["UnitPrice"]].split("|")[i]
       }
     end
     items

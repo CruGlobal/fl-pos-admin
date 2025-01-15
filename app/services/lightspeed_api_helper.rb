@@ -57,7 +57,7 @@ class LightspeedApiHelper
   end
 
   def log job, message
-    log = job.logs.create(content: "[LS_EXTRACT] #{message}")
+    log = job.logs.create(content: "[LS_HELPER] #{message}")
     log.save!
     Rails.logger.info log.content
   end

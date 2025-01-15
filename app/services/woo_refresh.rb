@@ -75,11 +75,11 @@ class WooRefresh
 
   def poll_jobs
     # if there are any current WOO_REFRESH jobs running, don't start another one
-    if Job.where(type: "WOO_REFRESH", status: :status_processing).count > 0
+    if Job.where(type: "WOO_REFRESH", status: :processing).count > 0
       Rails.logger.info "POLLING: A WOO_REFRESH job is currently running."
       return
     end
-    job = Job.where(type: "WOO_REFRESH", status: :status_created).first
+    job = Job.where(type: "WOO_REFRESH", status: :created).first
     if job.nil?
       Rails.logger.info "POLLING: No WOO_REFRESH jobs found."
       return
