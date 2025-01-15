@@ -44,18 +44,18 @@ class LSExtract
   def log job, message
     log = job.logs.create(content: "[LS_EXTRACT] #{message}")
     log.save!
-    puts log.content
+    Rails.logger.info log.content
   end
 
   def poll_jobs
     # if there are any current WOO_REFRESH jobs running, don't start another one
     if Job.where(type: "WOO_REFRESH", status: :status_processing).count > 0
-      puts "POLLING: A WOO_REFRESH job is currently running."
+      Rails.logger.info "POLLING: A WOO_REFRESH job is currently running."
       return
     end
     jobs = Job.where(type: "LS_EXTRACT", status: :status_created).all
     if jobs.count == 0
-      puts "POLLING: No LS_EXTRACT jobs found."
+      Rails.logger.info "POLLING: No LS_EXTRACT jobs found."
       return
     end
     # Mark all found jobs as paused
@@ -64,7 +64,7 @@ class LSExtract
       job.save!
     end
     jobs.each do |job|
-      puts "POLLING: Found job #{job.id}. Starting job."
+      Rails.logger.info "POLLING: Found job #{job.id}. Starting job."
       handle_job job
     end
   end
@@ -224,17 +224,17 @@ class LSExtract
       rescue Google::Apis::ClientError => e
         throw e
       rescue Google::Apis::AuthorizationError => e
-        puts "Authorization error: #{e.message}"
+        Rails.logger.info "Authorization error: #{e.message}"
       rescue => e
-        puts "An error occurred: #{e.message}"
+        puRails.logger.infots "An error occurred: #{e.message}"
       end
     end
     if tab
-      puts "Tab '#{job.event_code}' exists."
+      Rails.logger.info "Tab '#{job.event_code}' exists."
       @sheets.clear_values(SHEET_ID, clear_range)
     end
     begin
-      puts "Writing tab '#{job.event_code}'"
+      Rails.logger.info "Writing tab '#{job.event_code}'"
       @sheets.update_spreadsheet_value(SHEET_ID, write_range, value_range_object, value_input_option: "RAW")
       request = Google::Apis::SheetsV4::BatchUpdateSpreadsheetRequest.new(
         requests: [
@@ -435,13 +435,13 @@ class LSExtract
         ]
       )
       @sheets.batch_update_spreadsheet(SHEET_ID, request)
-      puts "Tab '#{job.event_code}' created successfully."
+      Rails.logger.info "Tab '#{job.event_code}' created successfully."
     rescue Google::Apis::ClientError => e
       throw e
     rescue Google::Apis::AuthorizationError => e
-      puts "Authorization error: #{e.message}"
+      Rails.logger.info "Authorization error: #{e.message}"
     rescue => e
-      puts "An error occurred: #{e.message}"
+      Rails.logger.info "An error occurred: #{e.message}"
     end
   end
 

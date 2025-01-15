@@ -21,13 +21,13 @@ class PollSheet
   def log job, message
     log = job.logs.create(content: "[POLL_SHEET] #{message}")
     log.save!
-    puts log.content
+    Rails.logger.info log.content
   end
 
   def poll_jobs
     jobs = Job.where(type: "POLL_SHEET", status: :status_created).all
     if jobs.count == 0
-      puts "POLLING: No POLL_SHEET jobs found."
+      Rails.logger.info "POLLING: No POLL_SHEET jobs found."
       return
     end
     # Mark all found jobs as paused
@@ -36,7 +36,7 @@ class PollSheet
       job.save!
     end
     jobs.each do |job|
-      puts "POLLING: Found job #{job.id}. Starting job."
+      Rails.logger.info "POLLING: Found job #{job.id}. Starting job."
       handle_job job
     end
   end

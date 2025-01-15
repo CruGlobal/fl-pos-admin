@@ -34,7 +34,7 @@ class LightspeedTokenHolder
   end
 
   def trade_access_token(code)
-    puts "Getting Lightspeed API token..."
+    Rails.logger.info "Getting Lightspeed API token..."
     url = LIGHTSPEED_API_AUTH_ROOT.dup
     # use httparty to make a post request to the lightspeed auth endpoint
     response = HTTParty.post(url, body: {
@@ -57,12 +57,12 @@ class LightspeedTokenHolder
   end
 
   def refresh_oauth_token
-    puts "Refreshing Lightspeed API token..."
+    Rails.logger.info "Refreshing Lightspeed API token..."
     url = LIGHTSPEED_API_AUTH_ROOT.dup
     # use httparty to make a post request to the lightspeed auth endpoint
     response = HTTParty.post(url, body: {client_id: LIGHTSPEED_CLIENT_ID, client_secret: LIGHTSPEED_CLIENT_SECRET, grant_type: "refresh_token", refresh_token: @refresh_token})
     if response.code == 200
-      puts "Token refreshed successfully - #{response.body}"
+      Rails.logger.info "Token refreshed successfully - #{response.body}"
       # write the refreshed response to the file
       File.write(Rails.root.join("lightspeed_auth.json").to_s, response.body)
       # parse the response and return the new access_token

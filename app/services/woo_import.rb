@@ -43,18 +43,18 @@ class WooImport
   def log job, message
     log = job.logs.create(content: "[LS_EXTRACT] #{message}")
     log.save!
-    puts log.content
+    Rails.logger.info log.content
   end
 
   def poll_jobs
     # if there are any current WOO_REFRESH jobs running, don't start another one
     if Job.where(type: "WOO_REFRESH", status: :status_processing).count > 0
-      puts "POLLING: A WOO_REFRESH job is currently running."
+      Rails.logger.info "POLLING: A WOO_REFRESH job is currently running."
       return
     end
     jobs = Job.where(type: "WOO_IMPORT", status: [:status_created, :status_paused]).all
     if jobs.count == 0
-      puts "POLLING: No WOO_IMPORT jobs found."
+      Rails.logger.info "POLLING: No WOO_IMPORT jobs found."
       return
     end
     # Mark all found jobs as paused
@@ -63,7 +63,7 @@ class WooImport
       job.save!
     end
     jobs.each do |job|
-      puts "POLLING: Found job #{job.id}. Starting job."
+      Rails.logger.info "POLLING: Found job #{job.id}. Starting job."
       handle_job job
     end
   end

@@ -59,7 +59,7 @@ class LightspeedApiHelper
   def log job, message
     log = job.logs.create(content: "[LS_EXTRACT] #{message}")
     log.save!
-    puts log.content
+    Rails.logger.info log.content
   end
 
   def get_sales(job, shop_id, start_date, end_date)

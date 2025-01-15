@@ -70,21 +70,21 @@ class WooRefresh
   def log job, message
     log = job.logs.create(content: "[WOO_REFRESH] #{message}")
     log.save!
-    puts log.content
+    Rails.logger.info log.content
   end
 
   def poll_jobs
     # if there are any current WOO_REFRESH jobs running, don't start another one
     if Job.where(type: "WOO_REFRESH", status: :status_processing).count > 0
-      puts "POLLING: A WOO_REFRESH job is currently running."
+      Rails.logger.info "POLLING: A WOO_REFRESH job is currently running."
       return
     end
     job = Job.where(type: "WOO_REFRESH", status: :status_created).first
     if job.nil?
-      puts "POLLING: No WOO_REFRESH jobs found."
+      Rails.logger.info "POLLING: No WOO_REFRESH jobs found."
       return
     end
-    puts "POLLING: Found job #{job.id}. Starting job."
+    Rails.logger.info "POLLING: Found job #{job.id}. Starting job."
     handle_job job
   end
 

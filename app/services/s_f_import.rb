@@ -42,12 +42,12 @@ class SFImport
   def poll_jobs
     # if there are any current WOO_REFRESH jobs running, don't start another one
     if Job.where(type: "WOO_REFRESH", status: :status_processing).count > 0
-      puts "POLLING: A WOO_REFRESH job is currently running."
+      Rails.logger.info "POLLING: A WOO_REFRESH job is currently running."
       return
     end
     jobs = Job.where(type: "SF_IMPORT", status: :status_created).all
     if jobs.count == 0
-      puts "POLLING: No SF_IMPORT jobs found."
+      Rails.logger.info "POLLING: No SF_IMPORT jobs found."
       return
     end
     # Mark all found jobs as paused
@@ -56,7 +56,7 @@ class SFImport
       job.save!
     end
     jobs.each do |job|
-      puts "POLLING: Found job #{job.id}. Starting job."
+      Rails.logger.info "POLLING: Found job #{job.id}. Starting job."
       handle_job job
     end
   end
