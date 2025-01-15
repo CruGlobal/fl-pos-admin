@@ -22,7 +22,7 @@ describe WooRefresh do
     job = Job.create
     job.type = "WOO_REFRESH"
     job.save!
-    response = woo.get_page job.id, 1, 1, {status: "publish", per_page: 1, page: 1}
+    response = woo.get_page job.id, 1, {status: "publish", per_page: 1, page: 1}
     expect(response.code).to be == 200
     expect(response.parsed_response.count).to be == 1
   end
@@ -43,7 +43,7 @@ describe WooRefresh do
 
   xit("it should save products to the db") do
     job = woo.create_job
-    products = woo.get_page job, 1, 1, {status: "publish", per_page: 1, page: 1}
+    products = woo.get_page job, 1, {status: "publish", per_page: 1, page: 1}
     puts "PRODUCTS: #{products}"
     woo.save_products_to_db job, products
     expect(WooProduct.count).to be > 0

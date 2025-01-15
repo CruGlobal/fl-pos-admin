@@ -199,7 +199,7 @@ class LSExtract
 
     # make sure tab exists first
     response = @sheets.get_spreadsheet(SHEET_ID)
-    tab = response.sheets.select { |s| s.properties.title == job.event_code }.first
+    tab = response.sheets.find { |s| s.properties.title == job.event_code }
 
     unless tab
       request = Google::Apis::SheetsV4::BatchUpdateSpreadsheetRequest.new(
@@ -220,7 +220,7 @@ class LSExtract
       begin
         @sheets.batch_update_spreadsheet(SHEET_ID, request)
         response = @sheets.get_spreadsheet(SHEET_ID)
-        tab = response.sheets.select { |s| s.properties.title == job.event_code }.first
+        tab = response.sheets.find { |s| s.properties.title == job.event_code }
       rescue Google::Apis::ClientError => e
         throw e
       rescue Google::Apis::AuthorizationError => e

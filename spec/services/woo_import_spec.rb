@@ -59,9 +59,8 @@ describe WooImport do
   end
 
   it("should be able to set the ready status of a sheet") do
-    SHEET_ID = ENV["GOOGLE_SHEET_ID"]
     wi.set_ready_status("WTR25CHS1", 21, "ERROR")
-    response = wi.sheets.get_spreadsheet(SHEET_ID)
+    response = wi.sheets.get_spreadsheet(ENV["GOOGLE_SHEET_ID"])
     response.sheets.select do |s|
       if s.properties.title == "WTR25CHS1"
         range = "WTR25CHS1!A21:B"

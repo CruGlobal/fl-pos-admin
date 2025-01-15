@@ -23,7 +23,7 @@ class WooRefresh
     job
   end
 
-  def get_page job, current_page, pages, query
+  def get_page job, current_page, query
     log job, "Getting page #{current_page}"
     response = @woo.get("products", query)
     response.headers["x-wp-total"]
@@ -53,7 +53,7 @@ class WooRefresh
       query["per_page"] = 100
       query["page"] = current_page
       while current_page <= pages.to_i
-        response = get_page job, current_page, pages, query
+        response = get_page job, current_page, query
         pages = response.headers["x-wp-totalpages"]
         results += response.parsed_response
         current_page += 1

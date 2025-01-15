@@ -114,13 +114,12 @@ class WooImport
       context["retry_count"] = context["retry_count"].nil? ? 1 : context["retry_count"] + 1
       job.context = context.to_json
       job.status_paused!
-      job.save!
     else
       set_ready_status job.event_code, 1, "ERROR"
       log job, "Job failed after 3 retries"
       job.status_error!
-      job.save!
     end
+    job.save!
   end
 
   def set_ready_status event_code, index, status
@@ -183,7 +182,7 @@ class WooImport
         },
         {
           key: "event_transaction",
-          value: "#{row["EventCode"] = row["SaleID"]}"
+          value: "#{row["EventCode"]} - #{row["SaleID"]}"
         },
         {
           key: "event_code",
