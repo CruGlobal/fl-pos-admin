@@ -50,6 +50,7 @@ class SFImport
     # if there are any current WOO_REFRESH jobs running, don't start another one
     if Job.where(type: "WOO_REFRESH", status: :processing).count > 0
       Rails.logger.info "POLLING: A WOO_REFRESH job is currently running."
+      SalesforceImportJob.set(wait: 5.minutes).perform_later
       return
     end
     jobs = Job.where(type: "SF_IMPORT", status: :created).all

@@ -77,6 +77,7 @@ class WooRefresh
     # if there are any current WOO_REFRESH jobs running, don't start another one
     if Job.where(type: "WOO_REFRESH", status: :processing).count > 0
       Rails.logger.info "POLLING: A WOO_REFRESH job is currently running."
+      WoocommerceRefreshJob.set(wait: 5.minutes).perform_later
       return
     end
     job = Job.where(type: "WOO_REFRESH", status: :created).first

@@ -5,7 +5,7 @@ describe LightspeedApiHelper do
   # set global lightspeed import service
   lsapi = LightspeedApiHelper.new
   lsi = LSExtract.new
-  file = File.read("#{Rails.root}/spec/services/fixtures/sales_formatted.json")
+  file = File.read("#{Rails.root}/spec/fixtures/sales_formatted.json")
   JSON.parse(file)
 
   it("should initialize with a token holder") do

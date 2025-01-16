@@ -51,6 +51,7 @@ class WooImport
     # if there are any current WOO_REFRESH jobs running, don't start another one
     if Job.where(type: "WOO_REFRESH", status: :processing).count > 0
       Rails.logger.info "POLLING: A WOO_REFRESH job is currently running."
+      WoocommerceImportJob.set(wait: 5.minutes).perform_later
       return
     end
     jobs = Job.where(type: "WOO_IMPORT", status: [:created, :paused]).all
@@ -107,21 +108,19 @@ class WooImport
     end
 
     if success
-      set_ready_status job.event_code, 1, "IMPORTED TO WOO"
+      set_ready_status job.event_code, sheet_status_index(job), "IMPORTED TO WOO"
       job.status_complete!
-      job.save!
-      elseif context["retry_count"].nil? || context["retry_count"] < 4 # If any orders failed to create, mark the job as failed
-      set_ready_status job.event_code, 1, "PROCESSING"
+    elsif context["retry_count"].nil? || context["retry_count"] < 4 # If any orders failed to create, mark the job as failed
+      set_ready_status job.event_code, sheet_status_index(job), "PROCESSING"
       log job, "Not all orders were created successfully. Pausing to try again later."
       context["retry_count"] = context["retry_count"].nil? ? 1 : context["retry_count"] + 1
       job.context = context.to_json
       job.status_paused!
     else
-      set_ready_status job.event_code, 1, "ERROR"
+      set_ready_status job.event_code, sheet_status_index(job), "ERROR"
       log job, "Job failed after 3 retries"
       job.status_error!
     end
-    job.save!
   end
 
   def set_ready_status event_code, index, status
@@ -274,5 +273,18 @@ class WooImport
       count += 1
     end
     rows
+  end
+
+  def sheet_status_index(job)
+    return @index if @index.present?
+
+    @sheets.get_spreadsheet_values(SHEET_ID, "#{job.event_code}!A:AC").values.each_with_index do |row, index|
+      if row[0] == "Status"
+        @index = index + 1 # Add 1 to the array index to get the row number
+        break
+      end
+    end
+
+    @index
   end
 end
