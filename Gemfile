@@ -1,6 +1,6 @@
 source "https://rubygems.org"
-source 'https://gems.contribsys.com/' do
-  gem 'sidekiq-pro'
+source "https://gems.contribsys.com/" do
+  gem "sidekiq-pro"
 end
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
@@ -22,7 +22,7 @@ gem "turbo-rails"
 # gem "bcrypt", "~> 3.1.7"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-gem "tzinfo-data", platforms: %i[ windows jruby ]
+gem "tzinfo-data", platforms: %i[windows jruby]
 
 # Use the database-backed adapters for Rails.cache, Active Job, and Action Cable
 gem "solid_cache"
@@ -40,7 +40,7 @@ gem "thruster", require: false
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
+  gem "debug", platforms: %i[mri windows], require: "debug/prelude"
 
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
   gem "brakeman", require: false
@@ -55,9 +55,11 @@ group :development do
 end
 
 gem "amazing_print"
+gem "cssbundling-rails"
 gem "ddtrace"
 gem "dogstatsd-ruby"
 gem "google-apis-sheets_v4"
+gem "httparty"
 gem "lograge"
 gem "lightspeed_pos", github: "marketplacer/lightspeed_pos"
 gem "marco-polo"
@@ -66,17 +68,19 @@ gem "redis"
 gem "rollbar"
 gem "omniauth-oktaoauth", github: "CruGlobal/omniauth-oktaoauth"
 gem "omniauth-rails_csrf_protection", "~> 1.0"
+gem "restforce"
 gem "salesforce_bulk_api"
 gem "sidekiq"
 gem "sidekiq-cron"
 gem "sidekiq-unique-jobs"
+gem "will_paginate"
 gem "woocommerce_api"
-gem "httparty"
 
 group :development, :test do
   gem "bundler-audit"
   gem "dotenv-rails"
   gem "factory_bot_rails"
+  gem "faker"
   gem "pry-rails"
   gem "rspec-rails"
   gem "standard"

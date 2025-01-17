@@ -2,6 +2,6 @@ class WoocommerceImportJob < ApplicationJob
   queue_as :default
 
   def perform(*args)
-    # Do something later
+    WooImport.new.poll_jobs
   end
 end

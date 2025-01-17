@@ -1,0 +1,35 @@
+<%= form_with(model: job) do |form| %>
+  <% if job.errors.any? %>
+    <div style="color: red">
+      <h2><%= pluralize(job.errors.count, "error") %> prohibited this job from being saved:</h2>
+
+      <ul>
+        <% job.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="form-group mb-3">
+    <%= form.label :shop_id, "Event", class: "form-label", for: 'shop_id' %>
+    <div class="d-flex gap-2">
+      <%= form.select :shop_id, @event_options, {required: true}, {class: "form-select"} %>
+    </div>
+  </div>
+  <div class="form-group mb-3">
+    <%= form.label :start_date, "Start Date", class: "form-label", for: 'StartDate' %>
+    <div class="d-flex gap-2">
+      <%= form.date_select :start_date, {required: true, default: @start_date_default}, {class: "form-select"} %>
+    </div>
+  </div>
+  <div class="form-group mb-3">
+    <%= form.label :end_date, "End Date", class: "form-label", for: 'EndDate' %>
+    <div class="d-flex gap-2">
+      <%= form.date_select :end_date, {required: true, default: @end_date_default}, {class: "form-select"} %>
+    </div>
+  </div>
+  <div class="form-group mb-3">
+    <%= form.submit "Create", class: "btn btn-primary" %>
+  </div>
+<% end %>

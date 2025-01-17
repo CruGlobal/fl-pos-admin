@@ -1,6 +1,11 @@
-#sample_job:
-#  cron: "*/30 * * * *" # execute at every 30 minutes
-#  class: "HardWorker"
-#  queue: hard_worker_long
-#  args:
-#    hard: "stuff"
+WoocommerceRefreshJob:
+  cron: "*/50 * * * *"
+  class: "WoocommerceRefreshJob"
+  queue: default
+  description: "Refresh WooCommerce data every 30 minutes"
+
+PollingJob:
+  cron: "*/30 * * * *"
+  class: "PollSheetJob"
+  queue: default
+  description: "Poll external API every 30 minutes"

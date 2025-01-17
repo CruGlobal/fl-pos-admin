@@ -1,0 +1,24 @@
+<p style="color: green"><%= notice %></p>
+
+<% content_for :title, "Jobs" %>
+
+<h1>Jobs</h1>
+
+<table class="table-dark table-striped">
+  <thead>
+  <tr>
+    <th scope="col"> Job ID </th>
+    <th scope="col"> Type </th>
+    <th scope="col"> Status </th>
+    <th scope="col"> Updated At </th>
+    <th scope="col"> Log Message </th>
+    <th scope="col"> Log Timestamp </th>
+    <th scope="col"> Actions </th>
+  </tr>
+  </thead>
+  <tbody>
+  <%= render @jobs %>
+  </tbody>
+</table>
+
+<%= will_paginate @jobs %>

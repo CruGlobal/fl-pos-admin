@@ -1,0 +1,208 @@
+{
+  "saleID": 249582,
+  "timeStamp": "2024-12-06T15:23:49.000+00:00",
+  "discountPercent": "0.0",
+  "completed": true,
+  "archived": false,
+  "voided": false,
+  "enablePromotions": true,
+  "referenceNumber": "",
+  "referenceNumberSource": "",
+  "tax1Rate": "0.0",
+  "tax2Rate": "0.0",
+  "change": "0.0",
+  "calcDiscount": "10.0",
+  "calcTotal": "14.99",
+  "calcSubtotal": "24.99",
+  "calcTaxable": "0.0",
+  "calcNonTaxable": "14.99",
+  "calcAvgCost": "0.0",
+  "calcFIFOCost": "0.0",
+  "calcTax1": "0.0",
+  "calcTax2": "0.0",
+  "calcPayments": "14.99",
+  "total": "14.99",
+  "totalDue": "14.99",
+  "displayableTotal": "14.99",
+  "balance": "0.0",
+  "customerID": 1064752,
+  "discountID": 0,
+  "employeeID": 378,
+  "quoteID": 0,
+  "registerID": 28,
+  "shipToID": 0,
+  "shopID": 16,
+  "taxCategoryID": 0,
+  "Customer": {
+    "customerID": "1064752",
+    "firstName": "Teena",
+    "lastName": "Hoover *10006483*",
+    "archived": "false",
+    "title": "",
+    "company": "",
+    "companyRegistrationNumber": "",
+    "vatNumber": "",
+    "createTime": "2024-08-31T00:06:41+00:00",
+    "timeStamp": "2024-12-07T19:28:12+00:00",
+    "contactID": "1120867",
+    "creditAccountID": "641",
+    "customerTypeID": "48",
+    "discountID": "0",
+    "employeeID": "0",
+    "noteID": "29593",
+    "taxCategoryID": "0",
+    "measurementID": "0",
+    "Contact": {
+      "contactID": "1120867",
+      "custom": "Staff",
+      "noEmail": "true",
+      "noPhone": "true",
+      "noMail": "true",
+      "timeStamp": "2024-12-07T19:28:12+00:00",
+      "Addresses": {
+        "ContactAddress": {
+          "address1": "119 Vista Lane",
+          "city": "Fairfield Bay",
+          "state": "Arkansas",
+          "zip": "72088"
+        }
+      },
+      "Phones": {
+        "ContactPhone": {
+          "number": "501-658-9928",
+          "useType": "Mobile"
+        }
+      },
+      "Emails": {
+        "ContactEmail": {
+          "address": "trhoover@familylife.com",
+          "useType": "Primary"
+        }
+      },
+      "Websites": ""
+    }
+  },
+  "SalePayments": {
+    "SalePayment": {
+      "salePaymentID": "92215",
+      "amount": "14.99",
+      "tipAmount": "0",
+      "createTime": "2024-12-06T15:23:34+00:00",
+      "archived": "false",
+      "remoteReference": "",
+      "paymentID": "f94edd55-bcbc-485a-9c4a-5640eb05543c",
+      "saleID": "249582",
+      "paymentTypeID": "3",
+      "ccChargeID": "0",
+      "refPaymentID": "0",
+      "registerID": "28",
+      "employeeID": "378",
+      "creditAccountID": "0",
+      "PaymentType": {
+        "paymentTypeID": "3",
+        "code": "Credit Card",
+        "name": "Credit Card",
+        "requireCustomer": "false",
+        "archived": "false",
+        "internalReserved": "false",
+        "type": "credit card",
+        "channel": "",
+        "refundAsPaymentTypeID": "3"
+      }
+    }
+  },
+  "SaleLines": {
+    "SaleLine": [
+      {
+        "saleLineID": 251030,
+        "createTime": "2024-12-06T15:23:10.000+00:00",
+        "timeStamp": "2024-12-06T15:23:49.000+00:00",
+        "unitQuantity": 1,
+        "unitPrice": "24.99",
+        "normalUnitPrice": "0.0",
+        "discountAmount": "0.0",
+        "discountPercent": "0.4",
+        "avgCost": "0.0",
+        "fifoCost": "0.0",
+        "tax": true,
+        "tax1Rate": "0.0",
+        "tax2Rate": "0.0",
+        "isLayaway": false,
+        "isWorkorder": false,
+        "isSpecialOrder": false,
+        "displayableSubtotal": "14.99",
+        "displayableUnitPrice": "24.99",
+        "calcLineDiscount": "10.0",
+        "calcTransactionDiscount": "0.0",
+        "calcTotal": "14.99",
+        "calcSubtotal": "24.99",
+        "calcTax1": "0.0",
+        "calcTax2": "0.0",
+        "taxClassID": 6,
+        "customerID": 0,
+        "discountID": 34,
+        "employeeID": 378,
+        "itemID": 7363,
+        "noteID": 0,
+        "parentSaleLineID": 0,
+        "shopID": 16,
+        "saleID": 249582,
+        "TaxClass": {
+          "taxClassID": "6",
+          "name": "Clothing",
+          "classType": "item"
+        },
+        "Discount": {
+          "discountID": "34",
+          "name": "CRU Staff - 40%",
+          "discountAmount": "0",
+          "discountPercent": "0.4",
+          "requireCustomer": "true",
+          "archived": "false",
+          "sourceID": "0",
+          "createTime": "2020-03-04T12:39:31+00:00",
+          "timeStamp": "2014-04-03T20:15:31+00:00"
+        },
+        "Item": {
+          "itemID": 7363,
+          "systemSku": "210000007375",
+          "defaultCost": "0.0",
+          "avgCost": "0.0",
+          "discountable": true,
+          "tax": true,
+          "archived": false,
+          "itemType": "default",
+          "description": "WTR Worth It Hoodie - LARGE *APP21574*",
+          "modelYear": 0,
+          "upc": "",
+          "ean": "9785001028673",
+          "customSku": "APP21574",
+          "manufacturerSku": "",
+          "createTime": "2022-12-12T22:29:20.000+00:00",
+          "timeStamp": "2024-10-24T20:19:19.000+00:00",
+          "categoryID": 0,
+          "taxClassID": 6,
+          "departmentID": 0,
+          "itemMatrixID": 0,
+          "manufacturerID": 0,
+          "seasonID": 0,
+          "defaultVendorID": 0,
+          "Prices": {
+            "ItemPrice": [
+              {
+                "amount": "24.99",
+                "useTypeID": "1",
+                "useType": "Default"
+              },
+              {
+                "amount": "24.99",
+                "useTypeID": "2",
+                "useType": "MSRP"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

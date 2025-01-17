@@ -1,10 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" class="h-100">
   <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="FamilyLife POS Admin Tool">
+    <meta name="author" content="Cru Server Application Engineering Team">
     <title><%= content_for(:title) || "Family Life POS Admin" %></title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#7952b3">
+    <style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+    </style>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -17,22 +36,39 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
-    <%= javascript_importmap_tags %>
+    <!-- Include the stylesheet from the asset pipeline -->
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
   </head>
 
-  <body>
-    <div class="beside big"><%= "Welcome to the Family Life POS Admin Tool (#{Rails.env.upcase})"%></div>
-    <div class="beside"><%= link_to 'Logout', logout_path, class: "btn btn-help" %></div>
-    <br/>
-    <% flash.each do |type, msg| %>
-      <% msg.split("\n\n").compact_blank.each do |m| %>
-        <div class="alert alert-danger">
-          <%= m %>
+  <body class="text-white bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">POS Admin</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+          <div class="navbar-nav">
+            <a class="nav-link"><%= link_to 'Dashboard', root_path, class: "" %></a>
+            <a class="nav-link"><%= link_to 'New Job', new_job_path, class: "" %></a>
+            <a class="nav-link"><%= link_to 'Lightspeed Auth', lightspeedinit_path, class: "" %></a>
+            <a class="nav-link"><%= link_to 'Logout', logout_path, class: "" %></a>
+          </div>
         </div>
-      <% end %>
-    <% end %>
-    <%= yield %>
+      </div>
+    </nav>
+    <div class="container mb-3">
+      <div class="row justify-content-start">
+        <div class="col-12">
+          <div class="card text-white bg-dark">
+            <%= yield %>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer class="text-white-50 position-absolute bottom-0 start-50 translate-middle">
+      <p>Developed for <a href="https://familylife.com/" class="text-white">FamilyLife</a>, a ministry of <a href="https://cru.org/" class="text-white">Cru</a></p>
+    </footer>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload" %>
   </body>
 </html>

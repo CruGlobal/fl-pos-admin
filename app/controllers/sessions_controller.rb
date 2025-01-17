@@ -1,5 +1,6 @@
 class SessionsController < ApplicationController
   skip_before_action :authenticate_user
+
   def new
     redirect_to root_path if signed_in?
   end
@@ -7,7 +8,7 @@ class SessionsController < ApplicationController
   def create
     unless okta_signed_in?
       redirect_to new_session_path,
-                  flash: {error: "Sorry, the okta login failed."}
+        flash: {error: "Sorry, the okta login failed."}
       return
     end
 
