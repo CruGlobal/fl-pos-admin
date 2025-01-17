@@ -22,13 +22,10 @@ class LightspeedTokenHolder
   LIGHTSPEED_CLIENT_SECRET = ENV["LIGHTSPEED_CLIENT_SECRET"]
 
   def initialize(token: nil, refresh_token: nil)
-    File.open(Rails.root.join("lightspeed_auth.json").to_s, "r") do |f|
-      auth = JSON.parse(f.read)
-      break if !auth
-
-      @token = auth["access_token"]
-      @refresh_token = auth["refresh_token"]
-    end
+    raw = Rails.cache.read("lightspeed_auth")
+    auth = JSON.parse(raw) if auth
+    @token = auth["access_token"]
+    @refresh_token = auth["refresh_token"]
     @expires_in = 3600
     @token_type = "Bearer"
   end
@@ -63,8 +60,8 @@ class LightspeedTokenHolder
     response = HTTParty.post(url, body: {client_id: LIGHTSPEED_CLIENT_ID, client_secret: LIGHTSPEED_CLIENT_SECRET, grant_type: "refresh_token", refresh_token: @refresh_token})
     if response.code == 200
       Rails.logger.info "Token refreshed successfully - #{response.body}"
-      # write the refreshed response to the file
-      File.write(Rails.root.join("lightspeed_auth.json").to_s, response.body)
+      # write the refreshed response to cache
+      Rails.cache.write("lightspeed_auth", response.body)
       # parse the response and return the new access_token
       auth = JSON.parse(response.body)
       @token = auth["access_token"]

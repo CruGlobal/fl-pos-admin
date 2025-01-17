@@ -5,11 +5,8 @@ class LightspeedauthController < ApplicationController
     code = params[:code]
     # Get the access token
     token = lth.trade_access_token(code)
-    # write the current response to the file system at APP_ROOT/lightspeed_auth.json
-    File.open("#{Rails.root}/lightspeed_auth.json", "w") do |f|
-      Rails.logger.info "Writing token to file... #{token}"
-      f.write(token)
-    end
+    # write the current response to cache
+    Rails.cache.write("lightspeed_auth", token)
     # Redirect to the home page
     redirect_to root_path
   end
