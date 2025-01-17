@@ -4,8 +4,9 @@ class WooImport
   @products = nil
   @sheet = nil
 
-  SHEET_ID = ENV["GOOGLE_SHEET_ID"]
+  SHEET_ID = ENV['GOOGLE_SHEET_ID']
   SHEETS_SCOPE = Google::Apis::SheetsV4::AUTH_SPREADSHEETS
+  WOO_LIMIT = (ENV['WOO_LIMIT'] || '0').to_i
 
   attr_reader :woo
 
@@ -22,11 +23,11 @@ class WooImport
 
   def initialize
     @woo = WooCommerce::API.new(
-      ENV["WOO_API_URL"].to_s,
-      ENV["WOO_API_KEY"].to_s,
-      ENV["WOO_API_SECRET"].to_s,
+      ENV['WOO_API_URL'].to_s,
+      ENV['WOO_API_KEY'].to_s,
+      ENV['WOO_API_SECRET'].to_s,
       {
-        version: "wc/v3",
+        version: 'wc/v3',
         wp_api: true
       }
     )
@@ -36,7 +37,7 @@ class WooImport
 
   def create_job
     job = Job.create
-    job.type = "WOO_IMPORT"
+    job.type = 'WOO_IMPORT'
     job.save!
     job
   end
@@ -49,14 +50,14 @@ class WooImport
 
   def poll_jobs
     # if there are any current WOO_REFRESH jobs running, don't start another one
-    if Job.where(type: "WOO_REFRESH", status: :processing).count > 0
-      Rails.logger.info "POLLING: A WOO_REFRESH job is currently running."
+    if Job.where(type: 'WOO_REFRESH', status: :processing).count > 0
+      Rails.logger.info 'POLLING: A WOO_REFRESH job is currently running.'
       WoocommerceImportJob.set(wait: 5.minutes).perform_later
       return
     end
-    jobs = Job.where(type: "WOO_IMPORT", status: [:created, :paused]).all
+    jobs = Job.where(type: 'WOO_IMPORT', status: [:created, :paused]).all
     if jobs.count == 0
-      Rails.logger.info "POLLING: No WOO_IMPORT jobs found."
+      Rails.logger.info 'POLLING: No WOO_IMPORT jobs found.'
       return
     end
     # Mark all found jobs as paused
@@ -79,46 +80,46 @@ class WooImport
     context = job.context
 
     # Get values from spreadsheet as objects
-    if context["sheet"].nil?
-      log job, "Getting rows from sheet"
-      context["sheet"] = sheet(job.event_code)
-      context["rows"] = @sheets.get_spreadsheet_values(SHEET_ID, "#{job.event_code}!A:AC").values
+    if context['sheet'].nil?
+      log job, 'Getting rows from sheet'
+      context['sheet'] = sheet(job.event_code)
+      context['rows'] = @sheets.get_spreadsheet_values(SHEET_ID, "#{job.event_code}!A:AC").values
       job.context = context.to_json
       job.save!
-      log job, "Got #{context["rows"].count} rows from sheet"
+      log job, "Got #{context['rows'].count} rows from sheet"
     end
 
-    if context["woo_list"].nil?
-      log job, "Building list of sales to send to woo"
-      context["woo_list"] = build_woo_list(context["rows"], job.event_code)
+    if context['woo_list'].nil?
+      log job, 'Building list of sales to send to woo'
+      context['woo_list'] = build_woo_list(context['rows'], job.event_code)
       job.context = context.to_json
       job.save!
-      log job, "Built list of #{context["woo_list"].count} sales to send to woo"
+      log job, "Built list of #{context['woo_list'].count} sales to send to woo"
     end
 
-    context["woo_list"] = send_to_woo(context["woo_list"], job)
+    context['woo_list'] = send_to_woo(context['woo_list'], job)
     job.context = context.to_json
     job.save!
 
     # Check all orders to make sure they were created successfully
     success = true
-    context["woo_list"].each do |order|
-      next if order["id"].is_a? Integer
+    context['woo_list'].each do |order|
+      next if order['id'].is_a? Integer
       success = false
     end
 
     if success
-      set_ready_status job.event_code, sheet_status_index(job), "IMPORTED TO WOO"
+      set_ready_status job.event_code, sheet_status_index(job), 'IMPORTED TO WOO'
       job.status_complete!
-    elsif context["retry_count"].nil? || context["retry_count"] < 4 # If any orders failed to create, mark the job as failed
+    elsif context['retry_count'].nil? || context['retry_count'] < 4 # If any orders failed to create, mark the job as failed
       set_ready_status job.event_code, sheet_status_index(job), "PROCESSING"
-      log job, "Not all orders were created successfully. Pausing to try again later."
-      context["retry_count"] = context["retry_count"].nil? ? 1 : context["retry_count"] + 1
+      log job, 'Not all orders were created successfully. Pausing to try again later.'
+      context['retry_count'] = context['retry_count'].nil? ? 1 : context['retry_count'] + 1
       job.context = context.to_json
       job.status_paused!
     else
       set_ready_status job.event_code, sheet_status_index(job), "ERROR"
-      log job, "Job failed after 3 retries"
+      log job, 'Job failed after 3 retries'
       job.status_error!
     end
   end
@@ -126,23 +127,23 @@ class WooImport
   def set_ready_status event_code, index, status
     range = "#{event_code}!A#{index}:B"
     values = [
-      ["Status", status]
+      ['Status', status]
     ]
     value_range = Google::Apis::SheetsV4::ValueRange.new(values: values)
-    @sheets.update_spreadsheet_value(SHEET_ID, range, value_range, value_input_option: "RAW")
+    @sheets.update_spreadsheet_value(SHEET_ID, range, value_range, value_input_option: 'RAW')
   end
 
   def send_to_woo(woo_list, job)
     woo_list.each do |order|
-      next if order["id"].is_a? Integer
+      next if order['id'].is_a? Integer
 
-      response = woo.post("orders", order)
-      if response["id"].is_a? Integer
-        log job, "Order #{response["id"]} created"
-        order["id"] = response["id"]
+      response = woo.post('orders', order)
+      if response['id'].is_a? Integer
+        log job, "Order #{response['id']} created"
+        order['id'] = response['id']
       else
         log job, "Order creation failed: #{response}"
-        order["error"] = response.body
+        order['error'] = response.body
       end
     end
     woo_list
@@ -152,9 +153,12 @@ class WooImport
     build_column_hash(rows[0])
 
     objects = []
+    count = 0
     rows.each do |row|
       object = get_create_object(row, event_code)
       objects << object if object.present?
+      count += 1
+      break if WOO_LIMIT.positive? && count >= WOO_LIMIT
     end
     objects
   end
@@ -172,55 +176,55 @@ class WooImport
   def get_create_object(row, event_code)
     return unless row.first == event_code
 
-    email_address = row[@columns["EmailAddress"]].present? ? row[@columns["EmailAddress"]] : "fleventanonymoussales@familylife.com"
-    status = (row[@columns["SpecialOrderFlag"]] == "Y") ? "processing" : "completed"
+    email_address = row[@columns['EmailAddress']].present? ? row[@columns["EmailAddress"]] : "fleventanonymoussales@familylife.com"
+    status = (row[@columns['SpecialOrderFlag']] == "Y") ? "processing" : "completed"
     line_items = get_row_items(row)
     # LastName needs to be stripped of everything after the asterisk and trimmed to remove trailing whitespace
-    last_name = row[@columns["LastName"]].split("*")[0].strip
+    last_name = row[@columns['LastName']].split('*')[0].strip
     create_object = {
       status: status,
       billing: {
-        first_name: row[@columns["FirstName"]],
+        first_name: row[@columns['FirstName']],
         last_name: last_name,
-        address_1: row[@columns["AddressLine1"]],
-        address_2: row[@columns["AddressLine2"]],
-        city: row[@columns["City"]],
-        state: row[@columns["State"]],
-        postcode: row[@columns["ZipPostal"]],
-        country: row[@columns["Country"]],
+        address_1: row[@columns['AddressLine1']],
+        address_2: row[@columns['AddressLine2']],
+        city: row[@columns['City']],
+        state: row[@columns['State']],
+        postcode: row[@columns['ZipPostal']],
+        country: row[@columns['Country']],
         email: email_address
       },
       line_items: line_items,
       meta_data: [
         {
-          key: "cru_order_origin",
-          value: "POS import"
+          key: 'cru_order_origin',
+          value: 'POS import'
         },
         {
-          key: "event_transaction",
-          value: "#{row[@columns["EventCode"]]} - #{row[@columns["SaleID"]]}"
+          key: 'event_transaction',
+          value: "#{row[@columns['EventCode']]} - #{row[@columns['SaleID']]}"
         },
         {
-          key: "event_code",
-          value: row[@columns["EventCode"]]
+          key: 'event_code',
+          value: row[@columns['EventCode']]
         },
         {
-          key: "transaction_notes",
-          value: row[@columns["SaleID"]]
+          key: 'transaction_notes',
+          value: row[@columns['SaleID']]
         }
       ]
     }
     # If there is a shipping address, add it to the object
-    if row[@columns["ShipAddressLine1"]].present?
-      create_object[@columns["shipping"]] = {
-        first_name: row[@columns["FirstName"]],
-        last_name: row[@columns["LastName"]],
-        address_1: row[@columns["ShipAddressLine1"]],
-        address_2: row[@columns["ShipAddressLine2"]],
-        city: row[@columns["ShipCity"]],
-        state: row[@columns["ShipState"]],
-        postcode: row[@columns["ShipZipPostal"]],
-        country: row[@columns["ShipCountry"]],
+    if row[@columns['ShipAddressLine1']].present?
+      create_object[@columns['shipping']] = {
+        first_name: row[@columns['FirstName']],
+        last_name: row[@columns['LastName']],
+        address_1: row[@columns['ShipAddressLine1']],
+        address_2: row[@columns['ShipAddressLine2']],
+        city: row[@columns['ShipCity']],
+        state: row[@columns['ShipState']],
+        postcode: row[@columns['ShipZipPostal']],
+        country: row[@columns['ShipCountry']],
         email: email_address
       }
     end
@@ -228,14 +232,14 @@ class WooImport
   end
 
   def get_row_items(row)
-    count = row[@columns["ProductCode"]].split("|").count
+    count = row[@columns['ProductCode']].split('|').count
     items = []
     count.times do |i|
       items << {
-        sku: row[@columns["ProductCode"]].split("|")[i],
-        quantity: row[@columns["Quantity"]].split("|")[i].to_i,
-        subtotal_tax: row[@columns["ItemSalesTax"]].split("|")[i],
-        subtotal: row[@columns["UnitPrice"]].split("|")[i]
+        sku: row[@columns['ProductCode']].split('|')[i],
+        quantity: row[@columns['Quantity']].split('|')[i].to_i,
+        subtotal_tax: row[@columns['ItemSalesTax']].split('|')[i],
+        subtotal: row[@columns['UnitPrice']].split('|')[i]
       }
     end
     items
@@ -279,7 +283,7 @@ class WooImport
     return @index if @index.present?
 
     @sheets.get_spreadsheet_values(SHEET_ID, "#{job.event_code}!A:AC").values.each_with_index do |row, index|
-      if row[0] == "Status"
+      if row[0] == 'Status'
         @index = index + 1 # Add 1 to the array index to get the row number
         break
       end
