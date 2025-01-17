@@ -138,7 +138,7 @@ GEM
       reline (>= 0.3.8)
     declarative (0.0.20)
     diff-lcs (1.5.1)
-    dogstatsd-ruby (5.6.3)
+    dogstatsd-ruby (5.6.4)
     dotenv (3.1.6)
     dotenv-rails (3.1.6)
       dotenv (= 3.1.6)
@@ -606,7 +606,7 @@ CHECKSUMS
   debug (1.9.2) sha256=48e026c0852c7a10c60263e2e527968308958e266231e36d64e3efcabec7e7fc
   declarative (0.0.20) sha256=8021dd6cb17ab2b61233c56903d3f5a259c5cf43c80ff332d447d395b17d9ff9
   diff-lcs (1.5.1) sha256=273223dfb40685548436d32b4733aa67351769c7dea621da7d9dd4813e63ddfe
-  dogstatsd-ruby (5.6.3) sha256=9702f3ddd4dbdbf0073edc4c70ed81dd00aa53677705eaebadcde6717c003b1c
+  dogstatsd-ruby (5.6.4) sha256=d8e383e9ddee2589a9cd2ac787bb335abb940323bce81edebf8ef27635c2e96e
   dotenv (3.1.6) sha256=7d9b2d408d2cf5e309854d54743aa381143be3f4e0c8d02e9f984d0e0e56cec1
   dotenv-rails (3.1.6) sha256=e731e9f9cc3087e3ebc9e1a54421618560015c1d20c148b61089eff4b0ed3a2a
   drb (2.2.1) sha256=e9d472bf785f558b96b25358bae115646da0dbfd45107ad858b0bc0d935cb340
