@@ -23,9 +23,11 @@ class LightspeedTokenHolder
 
   def initialize(token: nil, refresh_token: nil)
     raw = Rails.cache.read("lightspeed_auth")
-    auth = JSON.parse(raw) if raw
-    @token = auth["access_token"]
-    @refresh_token = auth["refresh_token"]
+    if raw
+      auth = JSON.parse(raw)
+      @token = auth["access_token"]
+      @refresh_token = auth["refresh_token"]
+    end
     @expires_in = 3600
     @token_type = "Bearer"
   end
