@@ -48,6 +48,7 @@ class PollSheet
     log job, "Processing job #{job.id}"
     ready_sheets = get_ready_sheets
     if ready_sheets.empty?
+      log job, "No ready sheets found."
       job.status_complete!
       job.save!
       return
@@ -58,7 +59,10 @@ class PollSheet
       # Create a new WOO_IMPORT job for each tab only if a job by the same
       # event_code does not already exist
       woo_job = Job.where(type: "WOO_IMPORT", event_code: tab_event_code).first
-      next if woo_job
+      if woo_job
+        log job, "Job for event code #{tab_event_code} already exists. Skipping."
+        next
+      end
 
       woo_job = Job.create
       woo_job.type = "WOO_IMPORT"
@@ -66,6 +70,7 @@ class PollSheet
       woo_job.save!
       woo_job.status_created!
       set_ready_status tab_event_code, index, "PROCESSING"
+      log job, "Created WOO_IMPORT job #{woo_job.id} for event code #{tab_event_code}"
     end
     WoocommerceImportJob.perform_later
     job.status_complete!
