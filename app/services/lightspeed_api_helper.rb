@@ -121,7 +121,11 @@ class LightspeedApiHelper
     ca = address["ContactAddress"]
     return unless ca
 
-    ca
+    unless ca.is_a?(Array)
+      ca = [ca]
+    end
+
+    ca.first
   end
 
   def get_address(sale, field)
