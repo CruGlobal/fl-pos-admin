@@ -27,6 +27,7 @@ class LightspeedApiHelper
     output = {}
 
     fields_to_keep["root"].each do |field|
+      Rails.logger.info "Field: #{field}"
       unless fields_to_keep[field] # Scalar value if no child fields are defined
         value = rec[field.to_sym] || rec[field]
         output[field] = value
