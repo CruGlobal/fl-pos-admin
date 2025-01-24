@@ -129,7 +129,7 @@ class LightspeedApiHelper
     return unless customer
 
     address = get_address_object(customer)
-    return unless address[field]
+    return unless address
 
     address[field]
   end
