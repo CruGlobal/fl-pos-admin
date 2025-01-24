@@ -34,7 +34,7 @@ class LightspeedApiHelper
       end
 
       child = rec[field.to_sym] || rec[field]
-      unless child
+      unless child.present?
         next
       end
       unless fields_to_keep[field]
@@ -121,7 +121,11 @@ class LightspeedApiHelper
     ca = address["ContactAddress"]
     return unless ca
 
-    ca
+    unless ca.is_a?(Array)
+      ca = [ca]
+    end
+
+    ca.first
   end
 
   def get_address(sale, field)
@@ -129,7 +133,7 @@ class LightspeedApiHelper
     return unless customer
 
     address = get_address_object(customer)
-    return unless address[field]
+    return unless address
 
     address[field]
   end
@@ -176,10 +180,18 @@ class LightspeedApiHelper
 
     addys = []
     emails.each do |email|
-      ce = email["ContactEmail"]
-      next unless ce
+      ces = email["ContactEmail"]
+      next unless ces
 
-      addys << ce["address"]
+      unless ces.is_a?(Array)
+        ces = [ces]
+      end
+
+      ces.each do |ce|
+        next unless ce["address"]
+
+        addys << ce["address"]
+      end
     end
     addys
   end

@@ -18,8 +18,11 @@ class JobsController < ApplicationController
 
   # POST /jobs
   def create
-    sf_job = SFImport.new.create_job(job_params[:shop_id], job_params[:start_date], job_params[:end_date])
-    ls_job = LSExtract.new.create_job(job_params[:shop_id], job_params[:start_date], job_params[:end_date])
+    start_date = "#{job_params["start_date(1i)"]}-#{job_params["start_date(2i)"]}-#{job_params["start_date(3i)"]}"
+    end_date = "#{job_params["end_date(1i)"]}-#{job_params["end_date(2i)"]}-#{job_params["end_date(3i)"]}"
+
+    sf_job = SFImport.new.create_job(job_params[:shop_id], start_date, end_date)
+    ls_job = LSExtract.new.create_job(job_params[:shop_id], start_date, end_date)
 
     SalesforceImportJob.perform_later
     LightspeedExtractJob.perform_later

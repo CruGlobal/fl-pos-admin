@@ -15,7 +15,7 @@ WORKDIR /home/webapp/app
 RUN apk upgrade --no-cache
 
 # Install rails/app dependencies
-RUN apk --no-cache add libc6-compat git postgresql-libs tzdata mariadb-connector-c
+RUN apk --no-cache add libc6-compat git postgresql-libs tzdata mariadb-connector-c yarn
 
 # Copy dependency definitions and lock files
 COPY Gemfile Gemfile.lock .ruby-version ./

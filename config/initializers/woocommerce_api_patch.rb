@@ -16,11 +16,11 @@ module WooCommerce
       url = @url
 
       if url.include?("?")
-        parsed_url = URI::parse(url)
-        CGI::parse(parsed_url.query).each do |key, value|
+        parsed_url = URI.parse(url)
+        CGI.parse(parsed_url.query).each do |key, value|
           params[key] = value[0]
         end
-        params = Hash[params.sort]
+        params = Hash[params.sort] # rubocop:disable Style/HashConversion
 
         url = parsed_url.to_s.gsub(/\?.*/, "")
       end
@@ -31,9 +31,9 @@ module WooCommerce
       params["oauth_nonce"] = Digest::SHA1.hexdigest((Time.new.to_f % nonce_lifetime + (Process.pid * nonce_lifetime)).to_s)
       params["oauth_signature_method"] = @signature_method
       params["oauth_timestamp"] = Time.new.to_i
-      params["oauth_signature"] = CGI::escape(generate_oauth_signature(params, url))
+      params["oauth_signature"] = CGI.escape(generate_oauth_signature(params, url))
 
-      query_string = URI::DEFAULT_PARSER.escape(params.map{|key, value| "#{key}=#{value}"}.join("&"))
+      query_string = URI::DEFAULT_PARSER.escape(params.map { |key, value| "#{key}=#{value}" }.join("&"))
 
       "#{url}?#{query_string}"
     end

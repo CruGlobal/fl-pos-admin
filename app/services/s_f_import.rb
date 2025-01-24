@@ -170,7 +170,7 @@ class SFImport
               skus[bundled_sku] = 1
             end
           end
-          elseif skus[sku]
+        elsif skus[sku]
           skus[sku] += 1
         else
           skus[sku] = 1

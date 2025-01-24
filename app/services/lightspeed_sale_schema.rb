@@ -67,12 +67,12 @@ class LightspeedSaleSchema
           "Emails"
         ],
         "Addresses" => {
-          "arrayable" => true,
+          "arrayable" => false,
           "root" => [
             "ContactAddress"
           ],
           "ContactAddress" => {
-            "arrayable" => false,
+            "arrayable" => true,
             "root" => [
               "address1",
               "city",
@@ -82,19 +82,25 @@ class LightspeedSaleSchema
           }
         },
         "Phones" => {
-          "arrayable" => true,
+          "arrayable" => false,
           "root" => [
-            "number",
-            "useType"
-          ]
+            "ContactPhone"
+          ],
+          "ContactPhone" => {
+            "arrayable" => true,
+            "root" => [
+              "number",
+              "useType"
+            ]
+          }
         },
         "Emails" => {
-          "arrayable" => true,
+          "arrayable" => false,
           "root" => [
             "ContactEmail"
           ],
           "ContactEmail" => {
-            "arrayable" => false,
+            "arrayable" => true,
             "root" => [
               "address",
               "useType"
