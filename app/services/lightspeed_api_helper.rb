@@ -180,20 +180,18 @@ class LightspeedApiHelper
 
     addys = []
     emails.each do |email|
-      ce = email["ContactEmail"]
+      ces = email["ContactEmail"]
       next unless ce
 
-      unless ce.is_a?(Array)
-        ce = [ce]
+      unless ces.is_a?(Array)
+        ces = [ces]
       end
 
-      ce.each do |ce|
+      ces.each do |ce|
         next unless ce["address"]
 
         addys << ce["address"]
       end
-
-      addys << ce["address"]
     end
     addys
   end
