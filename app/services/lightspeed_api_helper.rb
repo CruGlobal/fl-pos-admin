@@ -183,6 +183,16 @@ class LightspeedApiHelper
       ce = email["ContactEmail"]
       next unless ce
 
+      unless ce.is_a?(Array)
+        ce = [ce]
+      end
+
+      ce.each do |ce|
+        next unless ce["address"]
+
+        addys << ce["address"]
+      end
+
       addys << ce["address"]
     end
     addys
