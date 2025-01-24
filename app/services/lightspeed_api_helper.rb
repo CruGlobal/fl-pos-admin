@@ -181,7 +181,7 @@ class LightspeedApiHelper
     addys = []
     emails.each do |email|
       ces = email["ContactEmail"]
-      next unless ce
+      next unless ces
 
       unless ces.is_a?(Array)
         ces = [ces]
