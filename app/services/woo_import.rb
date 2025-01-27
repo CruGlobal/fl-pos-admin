@@ -77,7 +77,7 @@ class WooImport
     job.save!
     log job, "Processing job #{job.id}"
     # Get the job context, which is a jsonb store in the context column
-    context = job.context
+    context = JSON.parse(job.context)
 
     # Get values from spreadsheet as objects
     if context["sheet"].nil?
