@@ -205,7 +205,7 @@ class WooImport
         },
         {
           key: "event_transaction",
-          value: "#{row[@columns["EventCode"]]} - #{row[@columns["SaleID"]]}"
+          value: "#{row[@columns["EventCode"]]}-#{row[@columns["SaleID"]]}"
         },
         {
           key: "event_code",
