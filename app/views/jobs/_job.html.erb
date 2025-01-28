@@ -3,18 +3,20 @@
   <td><%= job.type %></td>
   <td><%= job.status %></td>
   <td><%= job.updated_at %></td>
+  <td></td>
+  <td></td>
+</tr>
   <% job.logs.order(updated_at: :desc).limit(10).each do |log| %>
-    </tr><tr>
+<tr>
     <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td><%= log.content %></td>
+    <td colspan="5"><%= log.content %></td>
     <td><%= log.updated_at %></td>
+</tr>
   <% end %>
   <% if job.logs.empty? %>
-    <td></td>
-    <td></td>
+<tr>
+    <td colspan="6">No logs yet.</td>
+</tr>
   <% end %>
   <td>
     <%= link_to('Edit This Job', edit_job_path(job)) %>
