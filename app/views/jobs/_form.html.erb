@@ -12,24 +12,39 @@
   <% end %>
 
   <div class="form-group mb-3">
-    <%= form.label :shop_id, "Event", class: "form-label", for: 'shop_id' %>
+    <%= form.label :shop_id, "Event", class: "form-label", for: 'shop_id', method: 'post' %>
     <div class="d-flex gap-2">
-      <%= form.select :shop_id, @event_options, {required: true}, {class: "form-select"} %>
+      <% if job.new_record? %>
+        <%= form.select :shop_id, @event_options, {required: true}, {class: "form-select"} %>
+      <% else %>
+        <%= form.text_field :shop_id, class: 'form-control', type: 'hidden', required: true, value: @job.shop_id %>
+        <%= form.text_field :event_code, class: 'form-control', type: 'text', required: true, value: @job.event_code %>
+      <% end %>
+    </div>
+  </div>
+  <div class="form-group mb-3">
+    <%= form.label :status, "Status", class: "form-label", for: 'status' %>
+    <div class="d-flex gap-2">
+      <%= form.select :status, options_for_select(Job::STATUS, @job_status), {required: true}, {class: "form-select"} %>
     </div>
   </div>
   <div class="form-group mb-3">
     <%= form.label :start_date, "Start Date", class: "form-label", for: 'StartDate' %>
     <div class="d-flex gap-2">
-      <%= form.date_select :start_date, {required: true, default: @start_date_default}, {class: "form-select"} %>
+      <%= form.text_field :start_date, class: 'form-control', type: 'date', required: true, value: @start_date_default %>
     </div>
   </div>
   <div class="form-group mb-3">
     <%= form.label :end_date, "End Date", class: "form-label", for: 'EndDate' %>
     <div class="d-flex gap-2">
-      <%= form.date_select :end_date, {required: true, default: @end_date_default}, {class: "form-select"} %>
+      <%= form.text_field :end_date, class: 'form-control', type: 'date', required: true, value: @end_date_default %>
     </div>
   </div>
   <div class="form-group mb-3">
-    <%= form.submit "Create", class: "btn btn-primary" %>
+    <% if job.new_record? %>
+      <%= form.submit "Create", class: "btn btn-primary" %>
+    <% else %>
+      <%= form.submit "Update", class: "btn btn-primary" %>
+    <% end %>
   </div>
 <% end %>

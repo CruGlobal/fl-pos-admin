@@ -13,12 +13,12 @@ require "action_mailer/railtie"
 require "action_view/railtie"
 # require "action_cable/engine"
 # require "rails/test_unit/railtie"
-
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
 require_relative "../lib/log/logger"
+require_relative "../app/helpers/bootstrap_pagination_renderer"
 
 module FlPosAdmin
   class Application < Rails::Application

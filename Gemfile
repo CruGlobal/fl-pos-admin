@@ -74,6 +74,7 @@ gem "sidekiq"
 gem "sidekiq-cron"
 gem "sidekiq-unique-jobs"
 gem "will_paginate"
+gem "will_paginate-bootstrap"
 gem "woocommerce_api"
 
 group :development, :test do
