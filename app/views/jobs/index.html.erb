@@ -4,21 +4,54 @@
 
 <h1>Jobs</h1>
 
-<table class="table-dark table-striped">
+<%= form_tag(jobs_path, class: 'form', method: 'GET') do |form| %>
+<div class="table-responsive">
+<table class="table accordion table-dark">
   <thead>
   <tr>
     <th scope="col"> Job ID </th>
+    <th scope="col"> Shop ID </th>
+    <th scope="col"> Event Code </th>
     <th scope="col"> Type </th>
     <th scope="col"> Status </th>
-    <th scope="col"> Updated At </th>
-    <th scope="col"> Log Message </th>
-    <th scope="col"> Log Timestamp </th>
+    <th scope="col"> Start Date &gt;= </th>
+    <th scope="col"> End Date &lt;= </th>
     <th scope="col"> Actions </th>
   </tr>
   </thead>
+  <tr>
+    <td scope="col">
+      <%= text_field_tag :job_id, params[:job_id], class: 'form-control' %>
+    </td>
+    <td scope="col">
+      <%= text_field_tag :shop_id, params[:shop_id], class: 'form-control' %>
+    </td>
+    <td scope="col">
+      <%= text_field_tag :event_code, params[:event_code], class: 'form-control' %>
+    </td>
+    <td scope="col">
+      <%= select_tag :type, options_for_select(Job::TYPE, params[:type]), {include_blank: true, class: 'form-select'} %>
+    </td>
+    <td scope="col">
+      <%= select_tag :status, options_for_select(Job::STATUS, params[:status]), {include_blank: true, class: 'form-select'} %>
+    </td>
+    <td scope="col">
+      <%= text_field_tag :start_date, params[:start_date], class: 'form-control', type: 'date' %>
+    </td>
+    <td scope="col">
+      <%= text_field_tag :end_date, params[:end_date], class: 'form-control', type: 'date' %>
+    </td>
+    <td scope="col">
+      <%= submit_tag "Filter", class: "btn btn-primary" %>
+    </td>
+  </tr>
   <tbody>
   <%= render @jobs %>
   </tbody>
 </table>
+</div>
+<% end %>
 
-<%= will_paginate @jobs %>
+<nav>
+<%= will_paginate @jobs, renderer: BootstrapPaginationRenderer %>
+</nav>

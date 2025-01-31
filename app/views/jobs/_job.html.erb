@@ -1,22 +1,25 @@
-<tr>
+<tr data-bs-toggle="collapse" data-bs-target="#job-logs-<%= job.id %>">
   <td><%= job.id %></td>
+  <td><%= job.shop_id %></td>
+  <td><%= job.event_code %></td>
   <td><%= job.type %></td>
   <td><%= job.status %></td>
-  <td><%= job.updated_at %></td>
-  <% job.logs.order(updated_at: :desc).limit(10).each do |log| %>
-    </tr><tr>
+  <td><%= (job.start_date) ? job.start_date.strftime("%Y-%m-%d"):'' %></td>
+  <td><%= (job.end_date) ? job.end_date.strftime("%Y-%m-%d"):'' %></td>
+  <td><%= link_to('Edit', edit_job_path(job)) %></td>
+</tr>
+<% if job.logs.empty? %>
+  <tr class="acollapse aaccordion-collapse" id="job-logs-<%= job.id %>" data-bs-parent=".table">
     <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td><%= log.content %></td>
-    <td><%= log.updated_at %></td>
-  <% end %>
-  <% if job.logs.empty? %>
-    <td></td>
-    <td></td>
-  <% end %>
-  <td>
-    <%= link_to('Edit This Job', edit_job_path(job)) %>
+    <td colspan="7" style="background-color:black !important;font-family:monospace;color:white;">No logs yet.</td>
+  </tr>
+<% else %>
+<tr class="acollapse aaccordion-collapse" id="job-logs-<%= job.id %>" data-bs-parent=".table">
+  <td></td>
+  <td colspan="7" style="background-color:black !important;font-family:monospace;color:white;">
+<% job.logs.order(updated_at: :desc).limit(10).each do |log| %>
+  <%= log.content %><br />
+<% end %>
   </td>
 </tr>
+<% end %>

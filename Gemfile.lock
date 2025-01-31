@@ -506,6 +506,8 @@ GEM
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
     will_paginate (4.0.1)
+    will_paginate-bootstrap (1.0.2)
+      will_paginate (>= 3.0.3)
     woocommerce_api (1.4.0)
       httparty (~> 0.14, >= 0.14.0)
       json (~> 2.0, >= 2.0.0)
@@ -566,6 +568,7 @@ DEPENDENCIES
   web-console
   webmock
   will_paginate
+  will_paginate-bootstrap
   woocommerce_api
 
 CHECKSUMS
@@ -766,6 +769,7 @@ CHECKSUMS
   websocket-driver (0.7.6) sha256=f69400be7bc197879726ad8e6f5869a61823147372fd8928836a53c2c741d0db
   websocket-extensions (0.1.5) sha256=1c6ba63092cda343eb53fc657110c71c754c56484aad42578495227d717a8241
   will_paginate (4.0.1) sha256=107b226ebe1d393d274575956a7c472e1eefdd97d8828e01b72d425d15a875b9
+  will_paginate-bootstrap (1.0.2) sha256=17989f10d86e8fff52a02c61595aed38aebdded231f57f8db83c3ff73cfbca6d
   woocommerce_api (1.4.0) sha256=ff198456066ed4400eae3f9d42c54cfabed61a9728df0e633b232cc82569b0ae
   xml-simple (1.1.9) sha256=d21131e519c86f1a5bc2b6d2d57d46e6998e47f18ed249b25cad86433dbd695d
   yajl-ruby (1.4.3) sha256=8c974d9c11ae07b0a3b6d26efea8407269b02e4138118fbe3ef0d2ec9724d1d2
