@@ -90,7 +90,7 @@ class JobsController < ApplicationController
     @job.start_date = @job.start_date || params[:start_date] || Date.today.last_week(:thursday)
     @job.end_date = @job.end_date || params[:start_date] || @job.start_date + 4.days
     @job_status = @job.status || 'created'
-    @event_options = [] # get_event_options
+    @event_options = get_event_options
     @start_date_default = @job.start_date
     @end_date_default = @job.end_date
   end
