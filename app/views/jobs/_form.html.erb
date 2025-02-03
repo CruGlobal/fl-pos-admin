@@ -23,6 +23,12 @@
     </div>
   </div>
   <div class="form-group mb-3">
+    <%= form.label :type, "Type", class: "form-label", for: 'type' %>
+    <div class="d-flex gap-2">
+      <%= form.select :type, options_for_select(Job::TYPE, @job_type), {required: true}, {class: "form-select"} %>
+    </div>
+  </div>
+  <div class="form-group mb-3">
     <%= form.label :status, "Status", class: "form-label", for: 'status' %>
     <div class="d-flex gap-2">
       <%= form.select :status, options_for_select(Job::STATUS, @job_status), {required: true}, {class: "form-select"} %>

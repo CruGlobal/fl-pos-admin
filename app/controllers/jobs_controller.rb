@@ -36,6 +36,7 @@ class JobsController < ApplicationController
     @job = Job.new
     @event_options = get_event_options
     @job_status = 'created'
+    @job_type = 'LS_EXTRACT'
     @start_date_default = Date.today.last_week(:thursday)
     @end_date_default = @start_date_default + 4.days
   end
@@ -44,6 +45,7 @@ class JobsController < ApplicationController
   def edit
     @job = Job.find(params[:id])
     @job_status = @job.status
+    @job_type = @job.type
     @start_date_default = @job.start_date
     @end_date_default = @job.end_date
   end
