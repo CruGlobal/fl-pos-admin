@@ -34,11 +34,18 @@ class JobsController < ApplicationController
   # GET /jobs/new
   def new
     @job = Job.new
+    @event_options = get_event_options
+    @job_status = 'created'
+    @start_date_default = Date.today.last_week(:thursday)
+    @end_date_default = @start_date_default + 4.days
   end
 
   # GET /jobs/1/edit
   def edit
     @job = Job.find(params[:id])
+    @job_status = @job.status
+    @start_date_default = @job.start_date
+    @end_date_default = @job.end_date
   end
 
   # POST /jobs
