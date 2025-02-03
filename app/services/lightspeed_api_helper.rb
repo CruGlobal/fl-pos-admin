@@ -240,7 +240,7 @@ class LightspeedApiHelper
     end
     if total != subtotal
       difference = subtotal - total
-      prices[-1] += difference
+      prices[-1] += difference.to_f.round(2)
     end
     prices
   end
@@ -261,7 +261,7 @@ class LightspeedApiHelper
     end
     if total != tax_total
       difference = tax_total - total
-      taxes[-1] += difference
+      taxes[-1] += difference.to_f.round(2)
     end
     taxes
   end
