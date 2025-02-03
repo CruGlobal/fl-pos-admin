@@ -52,8 +52,9 @@ class JobsController < ApplicationController
 
   # POST /jobs
   def create
-    start_date = "#{job_params["start_date(1i)"]}-#{job_params["start_date(2i)"]}-#{job_params["start_date(3i)"]}"
-    end_date = "#{job_params["end_date(1i)"]}-#{job_params["end_date(2i)"]}-#{job_params["end_date(3i)"]}"
+    # format HTML date field to postgres friendly format
+    start_date = "#{job_params["start_date"]}"
+    end_date = "#{job_params["end_date"]}"
 
     sf_job = SFImport.new.create_job(job_params[:shop_id], start_date, end_date)
     ls_job = LSExtract.new.create_job(job_params[:shop_id], start_date, end_date)

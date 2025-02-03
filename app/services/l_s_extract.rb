@@ -117,13 +117,14 @@ class LSExtract
   end
 
   def get_report_line(job, sale, products, customers)
+    last_name = sale["Customer"]["lastName"].gsub(/\s\*\d+\*$/, "")
     {
       EventCode: job.event_code,
       SaleID: sale["saleID"],
       OrderDate: sale["timeStamp"].to_date.strftime("%Y-%m-%d"),
       Customer: "#{sale["Customer"]["firstName"]} #{sale["Customer"]["lastName"]}",
       FirstName: sale["Customer"]["firstName"],
-      LastName: sale["Customer"]["lastName"],
+      LastName: last_name,
       OrderTotal: sale["calcTotal"],
       ItemSubtotal: sale["calcSubtotal"],
       SalesTax: (sale["calcTax1"].to_f + sale["calcTax2"].to_f).round(2),
