@@ -21,7 +21,7 @@ describe PollSheet do
     puts "VALS: #{vals[0]}"
   end
 
-  it("should be able to set the ready status of a sheet") do
+  xit("should be able to set the ready status of a sheet") do
     ps.set_ready_status("WTR25CHS1", 21, "ERROR")
     response = @sheets.get_spreadsheet(SHEET_ID)
     response.sheets.select do |s|

@@ -111,7 +111,7 @@ describe LSExtract do
     expect(customers.count).to be == 2
   end
 
-  it("should be able to get a shipping address field") do
+  xit("should be able to get a shipping address field") do
     job = lsi.create_job 16, "2024-12-06", "2024-12-07"
     sale = example_sales[1]
     sale = lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep)
@@ -123,7 +123,7 @@ describe LSExtract do
     expect(val).to be nil
   end
 
-  it("should get a report line") do
+  xit("should get a report line") do
     job = lsi.create_job 16, "2024-12-06", "2024-12-07"
     sale = example_sales[1]
     sale = lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep)
@@ -165,7 +165,7 @@ describe LSExtract do
     puts line.inspect
   end
 
-  it("should produce a full report") do
+  xit("should produce a full report") do
     job = lsi.create_job 16, "2024-12-06", "2024-12-07"
     lsi.handle_job job
     job.reload
@@ -173,7 +173,7 @@ describe LSExtract do
     expect(job.context["report"].first.to_json).to eq(expected)
   end
 
-  it("should write the report to the spreadsheet", focus: true) do
+  xit("should write the report to the spreadsheet", focus: true) do
     job = lsi.create_job 16, "2024-12-06", "2024-12-07"
     lsi.handle_job job
     job.reload

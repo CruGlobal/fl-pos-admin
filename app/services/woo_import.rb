@@ -177,10 +177,10 @@ class WooImport
   def get_create_object(row, event_code)
     return unless row.first == event_code
 
-    email_address = row[@columns['EmailAddress']].present? ? row[@columns["EmailAddress"]] : "fleventanonymoussales@familylife.com"
+    email_address = row[@columns["EmailAddress"]].present? ? row[@columns["EmailAddress"]] : "fleventanonymoussales@familylife.com"
     # If email address is pipe or comma separated, split and use the first email address
     email_address = email_address.split(/[,|;]/).first.strip
-    status = (row[@columns['SpecialOrderFlag']] == "Y") ? "processing" : "completed"
+    status = (row[@columns["SpecialOrderFlag"]] == "Y") ? "processing" : "completed"
     line_items = get_row_items(row)
     # LastName needs to be stripped of everything after the asterisk and trimmed to remove trailing whitespace
     last_name = row[@columns["LastName"]].split("*")[0].strip

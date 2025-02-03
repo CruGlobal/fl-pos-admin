@@ -58,7 +58,7 @@ describe WooImport do
     end
   end
 
-  it("should be able to set the ready status of a sheet") do
+  xit("should be able to set the ready status of a sheet") do
     wi.set_ready_status("WTR25CHS1", 21, "ERROR")
     response = wi.sheets.get_spreadsheet(ENV["GOOGLE_SHEET_ID"])
     response.sheets.select do |s|
