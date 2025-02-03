@@ -18,7 +18,7 @@ require "action_view/railtie"
 Bundler.require(*Rails.groups)
 
 require_relative "../lib/log/logger"
-require_relative "../app/helpers/bootstrap_pagination_renderer"
+require_relative "../lib/bootstrap_pagination_renderer"
 
 module FlPosAdmin
   class Application < Rails::Application
