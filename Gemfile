@@ -84,6 +84,7 @@ group :development, :test do
   gem "faker"
   gem "pry-rails"
   gem "rspec-rails"
+  gem "simplecov-cobertura", require: false
   gem "standard"
   gem "webmock"
 end
