@@ -5,7 +5,7 @@ describe PollSheet do
 
   before do
     # set global lightspeed import service
-    ps = PollSheet.new
+    PollSheet.new
   end
 
   xit("it should initializecorrectly") do

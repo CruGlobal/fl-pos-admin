@@ -3,8 +3,10 @@ require "rails_helper"
 describe WooImport do
   self.use_transactional_tests = false
 
-  # set global lightspeed import service
-  wi = WooImport.new
+  before do
+    # set global lightspeed import service
+    WooImport.new
+  end
 
   xit("it should initializecorrectly") do
     expect(wi.woo).not_to be_nil
