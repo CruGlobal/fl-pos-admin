@@ -224,30 +224,44 @@ class LightspeedApiHelper
     quantities
   end
 
-  def get_all_unit_prices(sale)
+  def get_all_unit_prices(sale, subtotal)
     prices = []
+    total = 0
     sale["SaleLines"].each do |line|
       line.each do |salelines|
         if salelines.is_a?(Array)
           salelines.each do |sl|
-            prices << sl["calcTotal"].to_f.round(2)
+            price = sl["calcTotal"].to_f.floor(2)
+            total += price
+            prices << price
           end
         end
       end
     end
+    if total != subtotal
+      difference = subtotal - total
+      prices[-1] += difference
+    end
     prices
   end
 
-  def get_all_unit_taxes(sale)
+  def get_all_unit_taxes(sale, tax_total)
     taxes = []
+    total = 0
     sale["SaleLines"].each do |line|
       line.each do |salelines|
         if salelines.is_a?(Array)
           salelines.each do |sl|
-            taxes << (sl["calcTax1"].to_f + sl["calcTax2"].to_f).round(2)
+            tax = (sl["calcTax1"].to_f.floor(2) + sl["calcTax2"].to_f.floor(2)).floor(2)
+            total += tax
+            taxes << tax
           end
         end
       end
+    end
+    if total != tax_total
+      difference = tax_total - total
+      taxes[-1] += difference
     end
     taxes
   end
