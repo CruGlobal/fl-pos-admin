@@ -230,7 +230,7 @@ class LightspeedApiHelper
       line.each do |salelines|
         if salelines.is_a?(Array)
           salelines.each do |sl|
-            prices << sl["calcTotal"]
+            prices << sl["calcTotal"].to_f.round(2)
           end
         end
       end
@@ -244,7 +244,7 @@ class LightspeedApiHelper
       line.each do |salelines|
         if salelines.is_a?(Array)
           salelines.each do |sl|
-            taxes << sl["calcTax1"].to_f + sl["calcTax2"].to_f
+            taxes << (sl["calcTax1"].to_f + sl["calcTax2"].to_f).round(2)
           end
         end
       end
