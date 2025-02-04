@@ -16,7 +16,7 @@ describe LSExtract do
 
     allow_any_instance_of(WooRefresh).to receive(:latest_refresh_timestamp).and_return(1.hour.ago)
     allow(Google::Auth::ServiceAccountCredentials).to receive(:make_creds).and_return(nil)
-    stub_request(:get, "https://api.merchantos.com/API/Account.json?limit=100&load_relations=all&offset=0").to_return(status: 200, body: "", headers: {})
+    LightspeedStubHelpers.stub_lightspeed_account_request
   end
 
   it("should initialize a new job") do

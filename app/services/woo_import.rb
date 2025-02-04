@@ -1,16 +1,7 @@
 class WooImport
-  @woo = nil
-  @sheets = nil
-  @products = nil
-  @sheet = nil
-
   SHEET_ID = ENV["GOOGLE_SHEET_ID"]
   SHEETS_SCOPE = Google::Apis::SheetsV4::AUTH_SPREADSHEETS
   WOO_LIMIT = (ENV["WOO_LIMIT"] || "0").to_i
-
-  attr_reader :woo
-
-  attr_reader :sheets
 
   def products
     @products ||= WooProduct.all
@@ -22,7 +13,10 @@ class WooImport
   end
 
   def initialize
-    @woo = WooCommerce::API.new(
+  end
+
+  def woo
+    @woo ||= WooCommerce::API.new(
       ENV["WOO_API_URL"].to_s,
       ENV["WOO_API_KEY"].to_s,
       ENV["WOO_API_SECRET"].to_s,
@@ -31,8 +25,12 @@ class WooImport
         wp_api: true
       }
     )
-    @sheets = Google::Apis::SheetsV4::SheetsService.new
+  end
+
+  def sheets
+    @sheets ||= Google::Apis::SheetsV4::SheetsService.new
     @sheets.authorization = Google::Auth::ServiceAccountCredentials.make_creds(scope: SHEETS_SCOPE)
+    @sheets
   end
 
   def create_job
@@ -84,7 +82,7 @@ class WooImport
     if context["sheet"].nil?
       log job, "Getting rows from sheet"
       context["sheet"] = sheet(job.event_code)
-      context["rows"] = @sheets.get_spreadsheet_values(SHEET_ID, "#{job.event_code}!A:AC").values
+      context["rows"] = sheets.get_spreadsheet_values(SHEET_ID, "#{job.event_code}!A:AC").values
       job.context = context.to_json
       job.save!
       log job, "Got #{context["rows"].count} rows from sheet"
@@ -131,7 +129,7 @@ class WooImport
       ["Status", status]
     ]
     value_range = Google::Apis::SheetsV4::ValueRange.new(values: values)
-    @sheets.update_spreadsheet_value(SHEET_ID, range, value_range, value_input_option: "RAW")
+    sheets.update_spreadsheet_value(SHEET_ID, range, value_range, value_input_option: "RAW")
   end
 
   def send_to_woo(woo_list, job)
@@ -249,14 +247,14 @@ class WooImport
   end
 
   def get_spreadsheet(job)
-    response = @sheets.get_spreadsheet(SHEET_ID)
+    response = sheets.get_spreadsheet(SHEET_ID)
     values = []
     response.sheets.each do |s|
       next if job.event_code != s.properties.title
 
       # Find the first row with an empty first cell in the row
       range = "#{job.event_code}!A1:AC"
-      response = @sheets.get_spreadsheet_values(SHEET_ID, range, value_render_option: "UNFORMATTED_VALUE")
+      response = sheets.get_spreadsheet_values(SHEET_ID, range, value_render_option: "UNFORMATTED_VALUE")
       values = response.values
     end
     return nil if values.empty?
@@ -285,7 +283,7 @@ class WooImport
   def sheet_status_index(job)
     return @index if @index.present?
 
-    @sheets.get_spreadsheet_values(SHEET_ID, "#{job.event_code}!A:AC").values.each_with_index do |row, index|
+    sheets.get_spreadsheet_values(SHEET_ID, "#{job.event_code}!A:AC").values.each_with_index do |row, index|
       if row[0] == "Status"
         @index = index + 1 # Add 1 to the array index to get the row number
         break

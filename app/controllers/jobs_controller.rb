@@ -52,12 +52,9 @@ class JobsController < ApplicationController
 
   # POST /jobs
   def create
-    # format HTML date field to postgres friendly format
-    start_date = "#{job_params["start_date"]}"
-    end_date = "#{job_params["end_date"]}"
-
-    sf_job = SFImport.new.create_job(job_params[:shop_id], start_date, end_date)
-    ls_job = LSExtract.new.create_job(job_params[:shop_id], start_date, end_date)
+    # TODO: test this
+    sf_job = SFImport.new.create_job(job_params[:shop_id], job_params[:start_date], job_params[:end_date])
+    ls_job = LSExtract.new.create_job(job_params[:shop_id], job_params[:start_date], job_params[:end_date])
 
     SalesforceImportJob.perform_later
     LightspeedExtractJob.perform_later
