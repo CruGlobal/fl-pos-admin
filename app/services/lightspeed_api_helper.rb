@@ -242,6 +242,7 @@ class LightspeedApiHelper
       difference = ((subtotal - total) * 100).round / 100.0
       prices[-1] += difference
     end
+    prices.map { |p| format("%.2f", p).to_f }
     prices
   end
 
@@ -263,6 +264,8 @@ class LightspeedApiHelper
       difference = ((tax_total - total) * 100).round / 100.0
       taxes[-1] += difference
     end
+    # Make sure all taxes are rounded to 2 decimal places
+    taxes.map { |t| format("%.2f", t).to_f }
     taxes
   end
 
