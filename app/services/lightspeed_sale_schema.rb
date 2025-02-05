@@ -8,6 +8,7 @@ class LightspeedSaleSchema
       "voided",
       "calcTotal",
       "calcSubtotal",
+      "calcDiscount",
       "Customer",
       "SaleLines",
       "calcTax1",

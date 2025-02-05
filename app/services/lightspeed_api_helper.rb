@@ -234,7 +234,7 @@ class LightspeedApiHelper
   end
 
   def get_discount(saleline)
-    discount = 0
+    discount = 0.0
     if saleline["discountAmount"]
       discount += saleline["discountAmount"].to_f
     end
