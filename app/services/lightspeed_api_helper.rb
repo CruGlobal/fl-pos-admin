@@ -231,7 +231,7 @@ class LightspeedApiHelper
       line.each do |salelines|
         if salelines.is_a?(Array)
           salelines.each do |sl|
-            price = sl["calcTotal"].to_f.floor(2)
+            price = sl["calcSubtotal"].to_f.floor(2)
             total += price
             prices << price
           end
