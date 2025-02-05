@@ -62,6 +62,15 @@ class LightspeedApiHelper
     Rails.logger.info log.content
   end
 
+  def get_sale(sale_id);
+    params = {
+      saleID: sale_id,
+      load_relations: "all"
+    }
+    count = @ls_account.sales.size(params: params)
+    @ls_account.sales.all(params: params)
+  end
+
   def get_sales(job, shop_id, start_date, end_date)
     # /Account/27010/Sale.json?
     # sort=completeTime
