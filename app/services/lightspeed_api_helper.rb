@@ -239,7 +239,7 @@ class LightspeedApiHelper
       discount += saleline["discountAmount"].to_f
     end
     if saleline["discountPercent"]
-      discount += (saleline["calcSubtotal"].to_f * saleline["discountPercent"].to_f / 100).floor(2)
+      discount += (saleline["calcSubtotal"].to_f * saleline["discountPercent"].to_f / 100).round(2)
     end
     if saleline["calcLineDiscount"]
       discount += saleline["calcLineDiscount"].to_f
@@ -255,7 +255,7 @@ class LightspeedApiHelper
         if salelines.is_a?(Array)
           salelines.each do |sl|
             discount = get_discount(sl)
-            price = (sl["calcSubtotal"].to_f - discount).floor(2)
+            price = (sl["calcSubtotal"].to_f - discount).round(2)
             total += price
             prices << price
           end
@@ -273,7 +273,7 @@ class LightspeedApiHelper
       line.each do |salelines|
         if salelines.is_a?(Array)
           salelines.each do |sl|
-            tax = (sl["calcTax1"].to_f.floor(2) + sl["calcTax2"].to_f.floor(2)).floor(2)
+            tax = (sl["calcTax1"].to_f.round(2) + sl["calcTax2"].to_f.round(2)).round(2)
             total += tax
             taxes << tax
           end
@@ -281,6 +281,10 @@ class LightspeedApiHelper
       end
     end
     # Make sure all taxes are rounded to 2 decimal places
+    if total != tax_total
+      difference = ((tax_total - total) * 100).round / 100.0
+        taxes[-1] += difference
+    end
     taxes.map { |t| format("%.2f", t) }
     taxes
   end
