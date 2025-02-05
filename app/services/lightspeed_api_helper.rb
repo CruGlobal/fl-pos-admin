@@ -237,9 +237,11 @@ class LightspeedApiHelper
     discount = 0
     if saleline["discountAmount"]
       discount += saleline["discountAmount"].to_f
-    elsif saleline["discountPercent"]
+    end
+    if saleline["discountPercent"]
       discount += (saleline["calcSubtotal"].to_f * saleline["discountPercent"].to_f / 100).floor(2)
-    elsif saleline["calcLineDiscount"]
+    end
+    if saleline["calcLineDiscount"]
       discount += saleline["calcLineDiscount"].to_f
     end
     discount
@@ -252,7 +254,6 @@ class LightspeedApiHelper
       line.each do |salelines|
         if salelines.is_a?(Array)
           salelines.each do |sl|
-            # Calculate discount
             discount = get_discount(sl)
             price = (sl["calcSubtotal"].to_f - discount).floor(2)
             total += price
