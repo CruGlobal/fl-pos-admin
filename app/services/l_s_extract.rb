@@ -1,17 +1,18 @@
 class LSExtract
-  # Google Sheets Service Instance
-  @sheets = nil
-
-  # Lightspeed API Helper
-  @lsh = nil
-
   SHEET_ID = ENV["GOOGLE_SHEET_ID"]
   SHEETS_SCOPE = Google::Apis::SheetsV4::AUTH_SPREADSHEETS
 
   def initialize
-    @lsh = LightspeedApiHelper.new
+  end
+
+  def lsh
+    @lsh ||= LightspeedApiHelper.new
+  end
+
+  def sheets
     @sheets = Google::Apis::SheetsV4::SheetsService.new
     @sheets.authorization = Google::Auth::ServiceAccountCredentials.make_creds(scope: SHEETS_SCOPE)
+    @sheets
   end
 
   def get_products(limit = 0)
@@ -22,7 +23,7 @@ class LSExtract
   end
 
   def create_job(shop_id, start_date, end_date)
-    shop = @lsh.find_shop(shop_id)
+    shop = lsh.find_shop(shop_id)
     context = {
       shop_id: shop_id,
       start_date: start_date,
@@ -79,9 +80,9 @@ class LSExtract
     # Get the job context, which is a jsonb store in the context column
     context = job.context
     # Get list of all sales for the shop_id between start_date and end_date (paging included)
-    context["sales"] = @lsh.get_sales(job, context["shop_id"], context["start_date"], context["end_date"])
+    context["sales"] = lsh.get_sales(job, context["shop_id"], context["start_date"], context["end_date"])
     # Optimize sales data to remove extreneous data from the Object
-    context["sales"] = context["sales"].map { |sale| @lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep) }
+    context["sales"] = context["sales"].map { |sale| lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep) }
     # delete the sales variable to free up memory
     # Save the sales data to the context object
     job.context = context
@@ -108,7 +109,7 @@ class LSExtract
 
   def generate_report(job, sales)
     products = get_products
-    shipping_customers = @lsh.get_shipping_customers(job, sales)
+    shipping_customers = lsh.get_shipping_customers(job, sales)
     lines = []
     sales.each do |sale|
       lines << get_report_line(job, sale, products, shipping_customers)
@@ -128,25 +129,25 @@ class LSExtract
       OrderTotal: sale["calcTotal"],
       ItemSubtotal: sale["calcSubtotal"],
       SalesTax: (sale["calcTax1"].to_f + sale["calcTax2"].to_f).round(2),
-      SpecialOrderFlag: @lsh.get_special_order_flag(sale),
-      TaxableOrderFlag: @lsh.get_taxable_order_flag(sale),
-      ProductCode: @lsh.get_all_product_codes(sale).join("|"),
-      Quantity: @lsh.get_all_quantities(sale).join("|"),
-      UnitPrice: @lsh.get_all_unit_prices(sale).join("|"),
-      ItemSalesTax: @lsh.get_all_unit_taxes(sale).join("|"),
-      AddressLine1: @lsh.get_address(sale, "address1"),
+      SpecialOrderFlag: lsh.get_special_order_flag(sale),
+      TaxableOrderFlag: lsh.get_taxable_order_flag(sale),
+      ProductCode: lsh.get_all_product_codes(sale).join("|"),
+      Quantity: lsh.get_all_quantities(sale).join("|"),
+      UnitPrice: lsh.get_all_unit_prices(sale).join("|"),
+      ItemSalesTax: lsh.get_all_unit_taxes(sale).join("|"),
+      AddressLine1: lsh.get_address(sale, "address1"),
       AddressLine2: "",
-      City: @lsh.get_address(sale, "city"),
-      State: @lsh.get_address(sale, "state"),
-      ZipPostal: @lsh.get_address(sale, "zip"),
+      City: lsh.get_address(sale, "city"),
+      State: lsh.get_address(sale, "state"),
+      ZipPostal: lsh.get_address(sale, "zip"),
       Country: "US",
-      ShipAddressLine1: @lsh.get_shipping_address(sale, customers, "address1"),
+      ShipAddressLine1: lsh.get_shipping_address(sale, customers, "address1"),
       ShipAddressLine2: "",
-      ShipCity: @lsh.get_shipping_address(sale, customers, "city"),
-      ShipState: @lsh.get_shipping_address(sale, customers, "state"),
-      ShipZipPostal: @lsh.get_shipping_address(sale, customers, "zip"),
+      ShipCity: lsh.get_shipping_address(sale, customers, "city"),
+      ShipState: lsh.get_shipping_address(sale, customers, "state"),
+      ShipZipPostal: lsh.get_shipping_address(sale, customers, "zip"),
       ShipCountry: "US",
-      EmailAddress: @lsh.get_email_addresses(sale).join("|"),
+      EmailAddress: lsh.get_email_addresses(sale).join("|"),
       POSImportID: sale["saleID"]
     }
   end
@@ -201,7 +202,7 @@ class LSExtract
     }
 
     # make sure tab exists first
-    response = @sheets.get_spreadsheet(SHEET_ID)
+    response = sheets.get_spreadsheet(SHEET_ID)
     tab = response.sheets.find { |s| s.properties.title == job.event_code }
 
     unless tab
@@ -221,8 +222,8 @@ class LSExtract
         ]
       )
       begin
-        @sheets.batch_update_spreadsheet(SHEET_ID, request)
-        response = @sheets.get_spreadsheet(SHEET_ID)
+        sheets.batch_update_spreadsheet(SHEET_ID, request)
+        response = sheets.get_spreadsheet(SHEET_ID)
         tab = response.sheets.find { |s| s.properties.title == job.event_code }
       rescue Google::Apis::ClientError => e
         throw e
@@ -234,11 +235,11 @@ class LSExtract
     end
     if tab
       Rails.logger.info "Tab '#{job.event_code}' exists."
-      @sheets.clear_values(SHEET_ID, clear_range)
+      sheets.clear_values(SHEET_ID, clear_range)
     end
     begin
       Rails.logger.info "Writing tab '#{job.event_code}'"
-      @sheets.update_spreadsheet_value(SHEET_ID, write_range, value_range_object, value_input_option: "RAW")
+      sheets.update_spreadsheet_value(SHEET_ID, write_range, value_range_object, value_input_option: "RAW")
       request = Google::Apis::SheetsV4::BatchUpdateSpreadsheetRequest.new(
         requests: [
           {
@@ -437,7 +438,7 @@ class LSExtract
           }
         ]
       )
-      @sheets.batch_update_spreadsheet(SHEET_ID, request)
+      sheets.batch_update_spreadsheet(SHEET_ID, request)
       Rails.logger.info "Tab '#{job.event_code}' created successfully."
     rescue Google::Apis::ClientError => e
       throw e
