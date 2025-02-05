@@ -89,7 +89,7 @@ class LSExtract
     log job, "Sales retrieved from Lightspeed"
     # Generate the report
     report = generate_report(job, context["sales"])
-    process_refunds(job, report)
+    process_report(job, report)
     context["report"] = report
     job.context = context
     job.save!
@@ -98,6 +98,10 @@ class LSExtract
     log job, "Report saved to Google Sheets"
     job.status_complete!
     job.save!
+  end
+
+  def process_report(job, report);
+    # Cancel out refunds
   end
 
   def is_bundle?(sku, products)
@@ -119,7 +123,7 @@ class LSExtract
   end
 
   def get_report_line(job, sale, products, customers)
-    last_name = sale["Customer"]["lastName"].gsub(/\*\d+\*$/, "").trim
+    last_name = sale["Customer"]["lastName"].gsub(/\*\d+\*$/, "").strip
     tax_total = (sale["calcTax1"].to_f.round(2) + sale["calcTax2"].to_f.round(2)).round(2)
     {
       EventCode: job.event_code,
