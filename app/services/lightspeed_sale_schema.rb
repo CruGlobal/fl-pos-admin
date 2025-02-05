@@ -27,6 +27,7 @@ class LightspeedSaleSchema
           "displayableSubtotal",
           "isSpecialOrder",
           "calcTotal",
+          "calcSubtotal",
           "calcTax1",
           "calcTax2",
           "tax",

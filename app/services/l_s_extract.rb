@@ -119,6 +119,7 @@ class LSExtract
 
   def get_report_line(job, sale, products, customers)
     last_name = sale["Customer"]["lastName"].gsub(/\s\*\d+\*$/, "")
+    tax_total = (sale["calcTax1"].to_f.round(2) + sale["calcTax2"].to_f.round(2)).round(2)
     {
       EventCode: job.event_code,
       SaleID: sale["saleID"],
@@ -126,15 +127,15 @@ class LSExtract
       Customer: "#{sale["Customer"]["firstName"]} #{sale["Customer"]["lastName"]}",
       FirstName: sale["Customer"]["firstName"],
       LastName: last_name,
-      OrderTotal: sale["calcTotal"],
-      ItemSubtotal: sale["calcSubtotal"],
-      SalesTax: (sale["calcTax1"].to_f + sale["calcTax2"].to_f).round(2),
+      OrderTotal: sale["calcTotal"].to_f.round(2),
+      ItemSubtotal: sale["calcSubtotal"].to_f.round(2),
+      SalesTax: tax_total,
       SpecialOrderFlag: lsh.get_special_order_flag(sale),
       TaxableOrderFlag: lsh.get_taxable_order_flag(sale),
       ProductCode: lsh.get_all_product_codes(sale).join("|"),
       Quantity: lsh.get_all_quantities(sale).join("|"),
-      UnitPrice: lsh.get_all_unit_prices(sale).join("|"),
-      ItemSalesTax: lsh.get_all_unit_taxes(sale).join("|"),
+      UnitPrice: lsh.get_all_unit_prices(sale,sale["calcSubtotal"]).join("|"),
+      ItemSalesTax: lsh.get_all_unit_taxes(sale,tax_total).join("|"),
       AddressLine1: lsh.get_address(sale, "address1"),
       AddressLine2: "",
       City: lsh.get_address(sale, "city"),

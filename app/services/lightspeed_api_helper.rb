@@ -62,6 +62,15 @@ class LightspeedApiHelper
     Rails.logger.info log.content
   end
 
+  def get_sale(sale_id);
+    params = {
+      saleID: sale_id,
+      load_relations: "all"
+    }
+    count = @ls_account.sales.size(params: params)
+    @ls_account.sales.all(params: params)
+  end
+
   def get_sales(job, shop_id, start_date, end_date)
     # /Account/27010/Sale.json?
     # sort=completeTime
@@ -224,31 +233,48 @@ class LightspeedApiHelper
     quantities
   end
 
-  def get_all_unit_prices(sale)
+  def get_all_unit_prices(sale, subtotal)
     prices = []
+    total = 0
     sale["SaleLines"].each do |line|
       line.each do |salelines|
         if salelines.is_a?(Array)
           salelines.each do |sl|
-            prices << sl["calcTotal"].to_f.round(2)
+            price = sl["calcSubtotal"].to_f.floor(2)
+            total += price
+            prices << price
           end
         end
       end
     end
+    if total != subtotal
+      difference = ((subtotal - total) * 100).round / 100.0
+      prices[-1] += difference
+    end
+    prices.map { |p| format("%.2f", p).to_f }
     prices
   end
 
-  def get_all_unit_taxes(sale)
+  def get_all_unit_taxes(sale, tax_total)
     taxes = []
+    total = 0
     sale["SaleLines"].each do |line|
       line.each do |salelines|
         if salelines.is_a?(Array)
           salelines.each do |sl|
-            taxes << (sl["calcTax1"].to_f + sl["calcTax2"].to_f).round(2)
+            tax = (sl["calcTax1"].to_f.floor(2) + sl["calcTax2"].to_f.floor(2)).floor(2)
+            total += tax
+            taxes << tax
           end
         end
       end
     end
+    if total != tax_total
+      difference = ((tax_total - total) * 100).round / 100.0
+      taxes[-1] += difference
+    end
+    # Make sure all taxes are rounded to 2 decimal places
+    taxes.map { |t| format("%.2f", t).to_f }
     taxes
   end
 
