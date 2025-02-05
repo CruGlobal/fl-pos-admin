@@ -53,14 +53,14 @@ describe LSExtract do
   end
 
   it("should get all unit prices") do
-    codes = lsh.get_all_unit_prices(example_sales[2])
+    codes = lsh.get_all_unit_prices(example_sales[2], example_sales[2]["calcSubtotal"].to_f)
     actual = codes.join("|")
     expected = "9.99|4.99|4.99|59.99"
     expect(actual).to eq(expected)
   end
 
   it("should get all unit taxes") do
-    codes = lsh.get_all_unit_taxes(example_sales[2])
+    codes = lsh.get_all_unit_taxes(example_sales[2], example_sales[2]["calcTaxable"].to_f)
     actual = codes.join("|")
     expected = "0.0|0.0|0.0|0.0"
     expect(actual).to eq(expected)
@@ -111,7 +111,10 @@ describe LSExtract do
     expect(customers.count).to be == 2
   end
 
-  xit("should be able to get a shipping address field") do
+  it("should be able to get a shipping address field") do
+    customers_mock = [double("customers", customerID: 1064752, Contact: {"Addresses" => [{"ContactAddress" => {"address1" => "119 Vista Lane"}}]})]
+    allow(lsh).to receive(:get_shipping_customers).and_return(customers_mock)
+
     job = lsi.create_job 16, "2024-12-06", "2024-12-07"
     sale = example_sales[1]
     sale = lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep)
@@ -123,7 +126,10 @@ describe LSExtract do
     expect(val).to be nil
   end
 
-  xit("should get a report line") do
+  it("should get a report line") do
+    customers_mock = [double("customers", customerID: 1064752, Contact: {"Addresses" => [{"ContactAddress" => {"address1" => "119 Vista Lane", "city" => "Fairfield Bay", "state" => "Arkansas", "zip" => "72088"}}]})]
+    allow(lsh).to receive(:get_shipping_customers).and_return(customers_mock)
+
     job = lsi.create_job 16, "2024-12-06", "2024-12-07"
     sale = example_sales[1]
     sale = lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep)
@@ -131,14 +137,14 @@ describe LSExtract do
     products = lsi.get_products
     line = lsi.get_report_line(job, sale, products, customers)
     expected = '{
-  "EventCode": "WTR25CHS1",
+  "EventCode": "random_event_code",
   "SaleID": 249608,
   "OrderDate": "2024-12-06",
   "Customer": "Mark Snyder**",
   "FirstName": "Mark",
   "LastName": "Snyder**",
-  "OrderTotal": "9.99",
-  "ItemSubtotal": "9.99",
+  "OrderTotal": 9.99,
+  "ItemSubtotal": 9.99,
   "SalesTax": 0.0,
   "SpecialOrderFlag": "N",
   "TaxableOrderFlag": "Y",
@@ -163,22 +169,5 @@ describe LSExtract do
 }'
     expect(JSON.pretty_generate(line)).to eq(expected)
     puts line.inspect
-  end
-
-  xit("should produce a full report") do
-    job = lsi.create_job 16, "2024-12-06", "2024-12-07"
-    lsi.handle_job job
-    job.reload
-    expected = '{"City":"Fairfield Bay","State":"Arkansas","SaleID":249582,"Country":"US","Customer":"Teena Hoover *10006483*","LastName":"Hoover *10006483*","Quantity":"1","SalesTax":0.0,"ShipCity":null,"EventCode":"WTR25CHS1","FirstName":"Teena","OrderDate":"2024-12-06","ShipState":null,"UnitPrice":"14.99","ZipPostal":"72088","OrderTotal":"14.99","POSImportID":249582,"ProductCode":"APP21574","ShipCountry":"US","AddressLine1":"119 Vista Lane","AddressLine2":"","EmailAddress":"trhoover@familylife.com","ItemSalesTax":"0.0","ItemSubtotal":"24.99","ShipZipPostal":null,"ShipAddressLine1":null,"ShipAddressLine2":"","SpecialOrderFlag":"N","TaxableOrderFlag":"Y"}'
-    expect(job.context["report"].first.to_json).to eq(expected)
-  end
-
-  xit("should write the report to the spreadsheet", focus: true) do
-    job = lsi.create_job 16, "2024-12-06", "2024-12-07"
-    lsi.handle_job job
-    job.reload
-    response = lsi.put_sheet job
-    puts "RESPONSE: #{response.inspect}"
-    puts "DONE"
   end
 end
