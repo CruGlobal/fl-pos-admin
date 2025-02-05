@@ -88,7 +88,9 @@ class LSExtract
     job.save!
     log job, "Sales retrieved from Lightspeed"
     # Generate the report
-    context["report"] = generate_report(job, context["sales"])
+    report = generate_report(job, context["sales"])
+    process_refunds(job, report)
+    context["report"] = report
     job.context = context
     job.save!
     log job, "Report generated and saved locally"
@@ -117,7 +119,7 @@ class LSExtract
   end
 
   def get_report_line(job, sale, products, customers)
-    last_name = sale["Customer"]["lastName"].gsub(/\s\*\d+\*$/, "")
+    last_name = sale["Customer"]["lastName"].gsub(/\*\d+\*$/, "").trim
     tax_total = (sale["calcTax1"].to_f.round(2) + sale["calcTax2"].to_f.round(2)).round(2)
     {
       EventCode: job.event_code,
