@@ -133,7 +133,7 @@ class LSExtract
       FirstName: sale["Customer"]["firstName"],
       LastName: last_name,
       OrderTotal: sale["calcTotal"].to_f.round(2),
-      ItemSubtotal: sale["calcSubtotal"].to_f.round(2),
+      ItemSubtotal: sale["calcTotal"].to_f.round(2),
       SalesTax: tax_total,
       SpecialOrderFlag: @lsh.get_special_order_flag(sale),
       TaxableOrderFlag: @lsh.get_taxable_order_flag(sale),
