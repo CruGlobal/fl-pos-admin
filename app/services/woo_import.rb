@@ -243,8 +243,8 @@ class WooImport
       items << {
         sku: row[@columns["ProductCode"]].split("|")[i],
         quantity: row[@columns["Quantity"]].split("|")[i].to_i,
-        total_tax: row[@columns["ItemSalesTax"]].split("|")[i].format("%0.2f"),
-        total: row[@columns["UnitPrice"]].split("|")[i].format("%0.2f")
+        total_tax: row[@columns["ItemSalesTax"]].split("|")[i],
+        total: row[@columns["UnitPrice"]].split("|")[i]
       }
     end
     items
