@@ -31,6 +31,10 @@ class PollSheet
       Rails.logger.info "POLLING: No POLL_SHEET jobs found."
       return
     end
+    # Delete all POLL_SHEET jobs that are older than 1 day
+    ActiveRecord::transaction do
+      ActiveRecord::Base.connection.execute("DELETE FROM jobs WHERE type = 'POLL_SHEET' AND created_at < NOW() - INTERVAL '1 day'")
+    end
     # Mark all found jobs as paused
     jobs.each do |job|
       job.status_paused!
