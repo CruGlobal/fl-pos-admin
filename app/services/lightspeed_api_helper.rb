@@ -1,7 +1,4 @@
 class LightspeedApiHelper
-  @ls_client = nil
-  @ls_account = nil
-
   attr_accessor :ls_client, :ls_account
 
   def initialize
