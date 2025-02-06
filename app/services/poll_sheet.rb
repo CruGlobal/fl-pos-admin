@@ -32,7 +32,7 @@ class PollSheet
       return
     end
     # Delete all POLL_SHEET jobs that are older than 1 day
-    ActiveRecord::transaction do
+    ActiveRecord::Base.transaction do
       ActiveRecord::Base.connection.execute("DELETE FROM logs WHERE jobs_id IN (SELECT id FROM jobs WHERE type = 'POLL_SHEET' AND created_at < NOW() - INTERVAL '1 day')")
       ActiveRecord::Base.connection.execute("DELETE FROM jobs WHERE type = 'POLL_SHEET' AND created_at < NOW() - INTERVAL '1 day'")
     end
