@@ -52,7 +52,6 @@ class JobsController < ApplicationController
 
   # POST /jobs
   def create
-    # TODO: test this
     sf_job = SFImport.new.create_job(job_params[:shop_id], job_params[:start_date], job_params[:end_date])
     ls_job = LSExtract.new.create_job(job_params[:shop_id], job_params[:start_date], job_params[:end_date])
 
