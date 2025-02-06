@@ -255,12 +255,16 @@ class LightspeedApiHelper
         if salelines.is_a?(Array)
           salelines.each do |sl|
             discount = get_discount(sl)
-            price = (sl["calcSubtotal"].to_f - discount).round(2)
+            price = (sl["calcSubtotal"].to_f - discount).floor(2)
             total += price
             prices << price
           end
         end
       end
+    end
+    if total != subtotal
+      difference = ((subtotal - total) * 100).round / 100.0
+        prices[-1] += difference
     end
     prices.map { |p| format("%.2f", p) }
     prices
@@ -274,7 +278,7 @@ class LightspeedApiHelper
       line.each do |salelines|
         if salelines.is_a?(Array)
           salelines.each do |sl|
-            tax = (sl["calcTax1"].to_f.round(2) + sl["calcTax2"].to_f.round(2)).round(2)
+            tax = (sl["calcTax1"].to_f + sl["calcTax2"].to_f).floor(2)
             total += tax
             taxes << tax
           end
