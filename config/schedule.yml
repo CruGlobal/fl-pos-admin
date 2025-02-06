@@ -9,3 +9,10 @@ PollingJob:
   class: "PollSheetJob"
   queue: default
   description: "Poll external API every 30 minutes"
+
+# Cron format should be every day at midnight
+CleaningJob:
+  cron: "0 0 * * *"
+  class: "CleanJobsJob"
+  queue: default
+  description: "Clean all jobs older than a month every day at midnight"

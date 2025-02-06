@@ -41,3 +41,5 @@ lightspeed_auth.json
 !/app/assets/builds/.keep
 
 /node_modules
+
+# Bogus commit to try to get github actions to work

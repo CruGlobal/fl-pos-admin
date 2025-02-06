@@ -215,6 +215,7 @@ class WooImport
         }
       ]
     }
+    puts create_object
     # If there is a shipping address, add it to the object
     if row[@columns["ShipAddressLine1"]].present?
       create_object[@columns["shipping"]] = {
@@ -235,12 +236,13 @@ class WooImport
   def get_row_items(row)
     count = row[@columns["ProductCode"]].split("|").count
     items = []
+    # Round to currency format
     count.times do |i|
       items << {
         sku: row[@columns["ProductCode"]].split("|")[i],
         quantity: row[@columns["Quantity"]].split("|")[i].to_i,
-        subtotal_tax: row[@columns["ItemSalesTax"]].split("|")[i],
-        subtotal: row[@columns["UnitPrice"]].split("|")[i]
+        total_tax: row[@columns["ItemSalesTax"]].split("|")[i],
+        total: row[@columns["UnitPrice"]].split("|")[i]
       }
     end
     items

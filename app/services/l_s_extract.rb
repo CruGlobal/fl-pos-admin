@@ -89,7 +89,9 @@ class LSExtract
     job.save!
     log job, "Sales retrieved from Lightspeed"
     # Generate the report
-    context["report"] = generate_report(job, context["sales"])
+    report = generate_report(job, context["sales"])
+    process_report(job, report)
+    context["report"] = report
     job.context = context
     job.save!
     log job, "Report generated and saved locally"
@@ -97,6 +99,10 @@ class LSExtract
     log job, "Report saved to Google Sheets"
     job.status_complete!
     job.save!
+  end
+
+  def process_report(job, report);
+    # Cancel out refunds
   end
 
   def is_bundle?(sku, products)
@@ -118,7 +124,7 @@ class LSExtract
   end
 
   def get_report_line(job, sale, products, customers)
-    last_name = sale["Customer"]["lastName"].gsub(/\s\*\d+\*$/, "")
+    last_name = sale["Customer"]["lastName"].gsub(/\*\d+\*$/, "").strip.tr('*','')
     tax_total = (sale["calcTax1"].to_f.round(2) + sale["calcTax2"].to_f.round(2)).round(2)
     {
       EventCode: job.event_code,
@@ -128,13 +134,13 @@ class LSExtract
       FirstName: sale["Customer"]["firstName"],
       LastName: last_name,
       OrderTotal: sale["calcTotal"].to_f.round(2),
-      ItemSubtotal: sale["calcSubtotal"].to_f.round(2),
+      ItemSubtotal: sale["calcTotal"].to_f.round(2),
       SalesTax: tax_total,
       SpecialOrderFlag: lsh.get_special_order_flag(sale),
       TaxableOrderFlag: lsh.get_taxable_order_flag(sale),
       ProductCode: lsh.get_all_product_codes(sale).join("|"),
       Quantity: lsh.get_all_quantities(sale).join("|"),
-      UnitPrice: lsh.get_all_unit_prices(sale, sale["calcSubtotal"].to_f).join("|"),
+      UnitPrice: lsh.get_all_unit_prices(sale, sale["calcTotal"]).join("|"),
       ItemSalesTax: lsh.get_all_unit_taxes(sale, tax_total).join("|"),
       AddressLine1: lsh.get_address(sale, "address1"),
       AddressLine2: "",

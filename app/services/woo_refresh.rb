@@ -80,6 +80,11 @@ class WooRefresh
       WoocommerceRefreshJob.set(wait: 5.minutes).perform_later
       return
     end
+    # Delete all WOO_REFRESH jobs that are older than 1 day
+    ActiveRecord::Base.transaction do
+      ActiveRecord::Base.connection.execute("DELETE FROM logs WHERE jobs_id IN (SELECT id FROM jobs WHERE type = 'WOO_REFRESH' AND created_at < NOW() - INTERVAL '1 day')")
+      ActiveRecord::Base.connection.execute("DELETE FROM jobs WHERE type = 'WOO_REFRESH' AND created_at < NOW() - INTERVAL '1 day'")
+    end
     job = Job.where(type: "WOO_REFRESH", status: :created).first
     if job.nil?
       Rails.logger.info "POLLING: No WOO_REFRESH jobs found."
