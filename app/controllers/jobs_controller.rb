@@ -11,21 +11,21 @@ class JobsController < ApplicationController
     end_date = params[:end_date]
 
     q = Job.order(updated_at: :desc).includes(:logs)
-    if (job_id != '')
+    if job_id != ""
       q = q.where(id: job_id)
     end
-    if (type != '')
-      q = q.where(type: type)
+    q = if type != ""
+      q.where(type: type)
     else
-      q = q.where.not(type: ['POLL_SHEET', 'WOO_REFRESH'])
+      q.where.not(type: ["POLL_SHEET", "WOO_REFRESH"])
     end
-    if (status != '')
+    if status != ""
       q = q.where(status: status)
     end
-    if (start_date != '')
+    if start_date != ""
       q = q.where("start_date >= ?", start_date)
     end
-    if (end_date != '')
+    if end_date != ""
       q = q.where("end_date <= ?", end_date)
     end
     @jobs = q.paginate(page: params[:page], per_page: 10)
@@ -35,8 +35,8 @@ class JobsController < ApplicationController
   def new
     @job = Job.new
     @event_options = get_event_options
-    @job_status = 'created'
-    @job_type = 'LS_EXTRACT'
+    @job_status = "created"
+    @job_type = "LS_EXTRACT"
     @start_date_default = Date.today.last_week(:thursday)
     @end_date_default = @start_date_default + 4.days
   end
@@ -52,12 +52,8 @@ class JobsController < ApplicationController
 
   # POST /jobs
   def create
-    # format HTML date field to postgres friendly format
-    start_date = "#{job_params["start_date"]}"
-    end_date = "#{job_params["end_date"]}"
-
-    sf_job = SFImport.new.create_job(job_params[:shop_id], start_date, end_date)
-    ls_job = LSExtract.new.create_job(job_params[:shop_id], start_date, end_date)
+    sf_job = SFImport.new.create_job(job_params[:shop_id], job_params[:start_date], job_params[:end_date])
+    ls_job = LSExtract.new.create_job(job_params[:shop_id], job_params[:start_date], job_params[:end_date])
 
     SalesforceImportJob.perform_later
     LightspeedExtractJob.perform_later
@@ -92,14 +88,14 @@ class JobsController < ApplicationController
   end
 
   def set_form_defaults
-    if(params[:id])
-      @job = Job.find(params[:id])
+    @job = if params[:id]
+      Job.find(params[:id])
     else
-      @job = Job.new
+      Job.new
     end
     @job.start_date = @job.start_date || params[:start_date] || Date.today.last_week(:thursday)
     @job.end_date = @job.end_date || params[:start_date] || @job.start_date + 4.days
-    @job_status = @job.status || 'created'
+    @job_status = @job.status || "created"
     @event_options = get_event_options
     @start_date_default = @job.start_date
     @end_date_default = @job.end_date

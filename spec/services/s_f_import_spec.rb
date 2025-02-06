@@ -2,13 +2,15 @@ require "rails_helper"
 require "json"
 
 describe SFImport do
-  sfi = SFImport.new
-  lsh = LightspeedApiHelper.new
+  before do
+    SFImport.new
+    LightspeedApiHelper.new
 
-  woo = WooRefresh.new
-  if woo.latest_refresh_timestamp.nil? || woo.latest_refresh_timestamp < 1.day.ago
-    puts "Woo cache is stale, refreshing..."
-    woo.handle_job woo.create_job
+    woo = WooRefresh.new
+    if woo.latest_refresh_timestamp.nil? || woo.latest_refresh_timestamp < 1.day.ago
+      puts "Woo cache is stale, refreshing..."
+      woo.handle_job woo.create_job
+    end
   end
 
   xit("should create a new job") do

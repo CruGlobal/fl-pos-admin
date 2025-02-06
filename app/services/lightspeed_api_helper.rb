@@ -1,7 +1,4 @@
 class LightspeedApiHelper
-  @ls_client = nil
-  @ls_account = nil
-
   attr_accessor :ls_client, :ls_account
 
   def initialize
@@ -62,12 +59,11 @@ class LightspeedApiHelper
     Rails.logger.info log.content
   end
 
-  def get_sale(sale_id);
+  def get_sale(sale_id)
     params = {
       saleID: sale_id,
       load_relations: "all"
     }
-    count = @ls_account.sales.size(params: params)
     @ls_account.sales.all(params: params)
   end
 
@@ -264,7 +260,7 @@ class LightspeedApiHelper
     end
     if total != subtotal
       difference = ((subtotal - total) * 100).round / 100.0
-        prices[-1] += difference
+      prices[-1] += difference
     end
     prices.map { |p| format("%.2f", p) }
     prices
@@ -287,7 +283,7 @@ class LightspeedApiHelper
     # Make sure all taxes are rounded to 2 decimal places
     if total != tax_total
       difference = ((tax_total - total) * 100).round / 100.0
-        taxes[-1] += difference
+      taxes[-1] += difference
     end
     taxes.map { |t| format("%.2f", t) }
     taxes
