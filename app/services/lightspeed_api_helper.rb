@@ -270,7 +270,6 @@ class LightspeedApiHelper
     prices
   end
 
-  # get all unit taxes
   def get_all_unit_taxes(sale, tax_total)
     taxes = []
     total = 0
