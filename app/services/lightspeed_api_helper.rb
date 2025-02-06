@@ -247,7 +247,7 @@ class LightspeedApiHelper
     discount
   end
 
-  def get_all_unit_prices(sale, subtotal)
+  def get_all_unit_prices(sale, total)
     prices = []
     total = 0
     sale["SaleLines"].each do |line|
@@ -255,19 +255,14 @@ class LightspeedApiHelper
         if salelines.is_a?(Array)
           salelines.each do |sl|
             discount = get_discount(sl)
-            price = (sl["calcSubtotal"].to_f - discount).floor(2)
+            price = (sl["unitPrice"].to_f - discount).floor(2)
             total += price
             prices << price
           end
         end
       end
     end
-    if total != subtotal
-      difference = ((subtotal - total) * 100).round / 100.0
-        prices[-1] += difference
-    end
-    prices.map { |p| format("%.2f", p) }
-    prices
+    prices.map { |p| format("%.2f", p).to_f.round(2) }
   end
 
   def get_all_unit_taxes(sale, tax_total)
@@ -277,20 +272,27 @@ class LightspeedApiHelper
       line.each do |salelines|
         if salelines.is_a?(Array)
           salelines.each do |sl|
-            tax = (sl["calcTax1"].to_f + sl["calcTax2"].to_f).floor(2)
+            tax = (sl["calcTax1"].to_f + sl["calcTax2"].to_f).round(2)
+            if tax_total == 0.0
+              tax = 0.0
+            end
             total += tax
             taxes << tax
           end
         end
       end
     end
-    # Make sure all taxes are rounded to 2 decimal places
+    total = total.to_f.round(2)
+    tax_total = tax_total.to_f.round(2)
     if total != tax_total
-      difference = ((tax_total - total) * 100).round / 100.0
-        taxes[-1] += difference
+      difference = (tax_total - total).round(2)
+      if difference > 0
+        taxes[0] += difference
+      end
+      taxes[0] = taxes[0].round(2)
     end
-    taxes.map { |t| format("%.2f", t) }
-    taxes
+    # round all taxes to nearest cent
+    taxes.map { |t| format("%.2f", t).to_f.round(2) }
   end
 
   def get_taxable_order_flag(sale)

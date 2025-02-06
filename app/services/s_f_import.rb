@@ -20,7 +20,8 @@ class SFImport
   end
 
   def log job, message
-    log = job.logs.create(content: "[SF_IMPORT] #{message}")
+    timestamp = Time.now.strftime("%Y-%m-%d %H:%M:%S")
+    log = job.logs.create(content: "[#{timestamp}] #{message}")
     log.save!
     Rails.logger.info log.content
   end
@@ -84,18 +85,24 @@ class SFImport
 
     # Get the products from the local cache
     products = get_products
+    log job, "Got products"
     bundles = get_bundles
+    log job, "Got bundles"
 
     # Get the sales from Lightspeed
     context = job.context
     context["sales"] = @lsh.get_sales(job, context["shop_id"], context["start_date"], context["end_date"])
+    log job, "Got sales"
 
     context["sales"] = context["sales"].map { |sale| @lsh.strip_to_named_fields(sale, LightspeedInventorySchema.fields_to_keep) }
+    log job, "Stripped sales to only essential fields."
 
     context["inventory"] = get_inventory(job, context["sales"], products, bundles)
+    log job, "Compiled inventory."
 
     # Push the inventory to SalesForce
     push_inventory_to_sf job, context["inventory"]
+    log job, "Saved to SalesForce."
 
     # Mark the job as complete
     job.status_complete!

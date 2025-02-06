@@ -43,7 +43,8 @@ class LSExtract
   end
 
   def log job, message
-    log = job.logs.create(content: "[LS_EXTRACT] #{message}")
+    timestamp = Time.now.strftime("%Y-%m-%d %H:%M:%S")
+    log = job.logs.create(content: "[#{timestamp}] #{message}")
     log.save!
     Rails.logger.info log.content
   end
@@ -80,20 +81,24 @@ class LSExtract
     context = job.context
     # Get list of all sales for the shop_id between start_date and end_date (paging included)
     context["sales"] = @lsh.get_sales(job, context["shop_id"], context["start_date"], context["end_date"])
+    log job, "Sales retrieved from Lightspeed"
     # Optimize sales data to remove extreneous data from the Object
     context["sales"] = context["sales"].map { |sale| @lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep) }
+    log job, "Sales optimized"
     # delete the sales variable to free up memory
     # Save the sales data to the context object
     job.context = context
     job.save!
-    log job, "Sales retrieved from Lightspeed"
+    log job, "Sales stored locally"
     # Generate the report
     report = generate_report(job, context["sales"])
+    log job, "Report generated"
     process_report(job, report)
+    log job, "Report processed"
     context["report"] = report
     job.context = context
     job.save!
-    log job, "Report generated and saved locally"
+    log job, "Report saved locally"
     put_sheet job
     log job, "Report saved to Google Sheets"
     job.status_complete!
@@ -124,7 +129,7 @@ class LSExtract
 
   def get_report_line(job, sale, products, customers)
     last_name = sale["Customer"]["lastName"].gsub(/\*\d+\*$/, "").strip.tr('*','')
-    tax_total = (sale["calcTax1"].to_f.round(2) + sale["calcTax2"].to_f.round(2)).round(2)
+    tax_total = (sale["calcTax1"].to_f + sale["calcTax2"].to_f).round(2)
     {
       EventCode: job.event_code,
       SaleID: sale["saleID"],
@@ -133,7 +138,7 @@ class LSExtract
       FirstName: sale["Customer"]["firstName"],
       LastName: last_name,
       OrderTotal: sale["calcTotal"].to_f.round(2),
-      ItemSubtotal: sale["calcTotal"].to_f.round(2),
+      ItemSubtotal: sale["calcSubtotal"].to_f.round(2),
       SalesTax: tax_total,
       SpecialOrderFlag: @lsh.get_special_order_flag(sale),
       TaxableOrderFlag: @lsh.get_taxable_order_flag(sale),

@@ -22,11 +22,18 @@ class LightspeedTokenHolder
   LIGHTSPEED_CLIENT_SECRET = ENV["LIGHTSPEED_CLIENT_SECRET"]
 
   def initialize(token: nil, refresh_token: nil)
-    raw = Rails.cache.read("lightspeed_auth")
+    # If we are in dev or test, read the file from Rails.root /lightspeed_auth.json
+    if Rails.env.development? || Rails.env.test?
+      raw = File.read("#{Rails.root}/lightspeed_auth.json")
+    else
+      raw = Rails.cache.read("lightspeed_auth")
+    end
     if raw
       auth = JSON.parse(raw)
       @token = auth["access_token"]
       @refresh_token = auth["refresh_token"]
+    else
+      Rails.logger.info "No lightspeed token found. Must reauthenticate."
     end
     @expires_in = 3600
     @token_type = "Bearer"

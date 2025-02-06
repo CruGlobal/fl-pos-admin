@@ -6,7 +6,11 @@ class LightspeedauthController < ApplicationController
     # Get the access token
     token = lth.trade_access_token(code)
     # write the current response to cache
-    Rails.cache.write("lightspeed_auth", token)
+    if Rails.env.development? || Rails.env.test?
+      File.write("#{Rails.root}/lightspeed_auth.json", token)
+    else
+      Rails.cache.write("lightspeed_auth", token)
+    end
     # Redirect to the home page
     redirect_to root_path
   end
