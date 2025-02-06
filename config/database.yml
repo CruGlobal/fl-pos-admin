@@ -30,7 +30,6 @@ development:
     <<: *default
   cache:
     <<: *default
-    database: fl_pos_admin_development_cache
     migrations_paths: db/cache_migrate
   # database: fl_pos_admin_development
 
@@ -65,13 +64,16 @@ development:
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
 test:
-  <<: *default
+  primary: &test
+    <<: *default
 
-  database: <%= ENV['DB_ENV_POSTGRESQL_DB_TEST'] || 'fl_pos_admin_test' %>
-  username: <%= ENV['DB_ENV_POSTGRESQL_USER_TEST'] || ENV['DB_ENV_POSTGRESQL_USER'] || 'postgres' %>
-  password: <%= ENV['DB_ENV_POSTGRESQL_PASS_TEST'] || ENV['DB_ENV_POSTGRESQL_PASS'] || 'postgres' %>
-  host: <%= ENV['DB_PORT_5432_TCP_ADDR_TEST'] || ENV['DB_PORT_5432_TCP_ADDR'] || 'localhost' %>
-  port: <%= ENV['DB_PORT_5432_TCP_PORT_TEST'] || ENV['DB_PORT_5432_TCP_PORT'] %>
+    database: <%= ENV['DB_ENV_POSTGRESQL_DB_TEST'] || 'fl_pos_admin_test' %>
+    username: <%= ENV['DB_ENV_POSTGRESQL_USER_TEST'] || ENV['DB_ENV_POSTGRESQL_USER'] || 'postgres' %>
+    password: <%= ENV['DB_ENV_POSTGRESQL_PASS_TEST'] || ENV['DB_ENV_POSTGRESQL_PASS'] || 'postgres' %>
+    host: <%= ENV['DB_PORT_5432_TCP_ADDR_TEST'] || ENV['DB_PORT_5432_TCP_ADDR'] || 'localhost' %>
+    port: <%= ENV['DB_PORT_5432_TCP_PORT_TEST'] || ENV['DB_PORT_5432_TCP_PORT'] %>
+  cache:
+    <<: *test
 
   # database: fl_pos_admin_test
 

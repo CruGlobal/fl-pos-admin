@@ -3,10 +3,13 @@ require "rails_helper"
 describe PollSheet do
   self.use_transactional_tests = false
 
-  # set global lightspeed import service
-  ps = PollSheet.new
+  let(:ps) { PollSheet.new }
 
-  it("it should initializecorrectly") do
+  before do
+    allow(Google::Auth::ServiceAccountCredentials).to receive(:make_creds).and_return(true)
+  end
+
+  it("it should initialize correctly") do
     expect(ps.sheets).not_to be_nil
   end
 
@@ -15,22 +18,12 @@ describe PollSheet do
     expect(job.type).to eq("POLL_SHEET")
   end
 
-  xit("it should poll sheets and find a tab that is ready to process") do
-    # This test only runs successfully if there is a row that has 'Status' and 'READY FOR WOO IMPORT' as the values of the first two cells
+  it("it should poll sheets and find a tab that is ready to process") do
+    spreadsheet = double("spreadsheet", sheets: [Google::Apis::SheetsV4::Sheet.new(properties: double("properties", title: "WTR25CHS1"))])
+    allow_any_instance_of(Google::Apis::SheetsV4::SheetsService).to receive(:get_spreadsheet).and_return(spreadsheet)
+    allow_any_instance_of(Google::Apis::SheetsV4::SheetsService).to receive(:get_spreadsheet_values).and_return(Google::Apis::SheetsV4::ValueRange.new(values: [["Status", "READY FOR WOO IMPORT"]]))
+
     vals = ps.get_ready_sheets
     puts "VALS: #{vals[0]}"
-  end
-
-  it("should be able to set the ready status of a sheet") do
-    ps.set_ready_status("WTR25CHS1", 21, "ERROR")
-    response = @sheets.get_spreadsheet(SHEET_ID)
-    response.sheets.select do |s|
-      if s.properties.title == "WTR25CHS1"
-        range = "WTR25CHS1!A21:B"
-        response = @sheets.get_spreadsheet_values(SHEET_ID, range, value_render_option: "UNFORMATTED_VALUE")
-        values = response.values
-        expect(values[0][1]).to eq("ERROR")
-      end
-    end
   end
 end

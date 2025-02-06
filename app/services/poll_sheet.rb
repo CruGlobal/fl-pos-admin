@@ -1,14 +1,14 @@
 class PollSheet
-  @sheets = nil
-
   SHEET_ID = ENV["GOOGLE_SHEET_ID"]
   SHEETS_SCOPE = Google::Apis::SheetsV4::AUTH_SPREADSHEETS
 
-  attr_reader :sheets
-
   def initialize
-    @sheets = Google::Apis::SheetsV4::SheetsService.new
+  end
+
+  def sheets
+    @sheets ||= Google::Apis::SheetsV4::SheetsService.new
     @sheets.authorization = Google::Auth::ServiceAccountCredentials.make_creds(scope: SHEETS_SCOPE)
+    @sheets
   end
 
   def create_job
@@ -85,12 +85,12 @@ class PollSheet
   def get_ready_sheets
     ready_sheets = []
     # make sure tab exists first
-    response = @sheets.get_spreadsheet(SHEET_ID)
+    response = sheets.get_spreadsheet(SHEET_ID)
     response.sheets.each do |s|
       tab_event_code = s.properties.title
       # Find the first row with an empty first cell in the row
       range = "#{tab_event_code}!A1:B"
-      response = @sheets.get_spreadsheet_values(SHEET_ID, range, value_render_option: "UNFORMATTED_VALUE")
+      response = sheets.get_spreadsheet_values(SHEET_ID, range, value_render_option: "UNFORMATTED_VALUE")
       values = response.values
       index = 0
       values.each do |row|
@@ -110,6 +110,6 @@ class PollSheet
       ["Status", status]
     ]
     value_range = Google::Apis::SheetsV4::ValueRange.new(values: values)
-    @sheets.update_spreadsheet_value(SHEET_ID, range, value_range, value_input_option: "RAW")
+    sheets.update_spreadsheet_value(SHEET_ID, range, value_range, value_input_option: "RAW")
   end
 end
