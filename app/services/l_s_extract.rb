@@ -101,7 +101,7 @@ class LSExtract
     job.save!
   end
 
-  def process_report(job, report);
+  def process_report(job, report)
     # Cancel out refunds
   end
 
@@ -124,7 +124,7 @@ class LSExtract
   end
 
   def get_report_line(job, sale, products, customers)
-    last_name = sale["Customer"]["lastName"].gsub(/\*\d+\*$/, "").strip.tr('*','')
+    last_name = sale["Customer"]["lastName"].gsub(/\*\d+\*$/, "").strip.tr("*", "")
     tax_total = (sale["calcTax1"].to_f.round(2) + sale["calcTax2"].to_f.round(2)).round(2)
     {
       EventCode: job.event_code,

@@ -1,7 +1,5 @@
 class CleanJobs
-
-  def create_job()
-    shop = @lsh.find_shop(shop_id)
+  def create_job
     job = Job.create(
       type: "CLEAN_JOBS",
       status: :created
@@ -54,5 +52,4 @@ class CleanJobs
     job.status_complete!
     job.save!
   end
-
 end
