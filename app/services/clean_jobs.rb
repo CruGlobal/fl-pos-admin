@@ -48,6 +48,7 @@ class CleanJobs
     log job, "Found #{count} jobs older than a month. Deleting them."
     ActiveRecord::Base.transaction do
       # INFO: Log deletions are cascaded at a database level
+      ActiveRecord::Base.connection.execute("DELETE FROM logs WHERE jobs_id IN (SELECT id FROM jobs WHERE created_at < '#{1.month.ago}')")
       ActiveRecord::Base.connection.execute("DELETE FROM jobs WHERE created_at < '#{1.month.ago}'")
     end
     job.status_complete!
