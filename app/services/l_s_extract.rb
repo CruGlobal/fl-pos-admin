@@ -198,9 +198,9 @@ class LSExtract
   end
 
   def get_report_line(job, sale, products, customers)
-    last_name = sale["Customer"]["lastName"].gsub(/\*\d+\*$/, "").strip.tr('*','')
+    last_name = sale["Customer"]["lastName"].gsub(/\*\d+\*$/, "").strip.tr("*", "")
     tax_total = (sale["calcTax1"].to_f + sale["calcTax2"].to_f).round(2)
-    item_subtotal = lsh.get_all_unit_prices(sale).map{ |p| p.to_f}.sum.round(2)
+    item_subtotal = lsh.get_all_unit_prices(sale).map { |p| p.to_f }.sum.round(2)
     {
       EventCode: job.event_code,
       SaleID: sale["saleID"],

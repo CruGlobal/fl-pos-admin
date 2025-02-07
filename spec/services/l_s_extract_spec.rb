@@ -19,8 +19,8 @@ describe LSExtract do
     LightspeedStubHelpers.stub_lightspeed_account_request
   end
 
-  it('should calculate unit prices properly') do
-    job = lsi.create_job 66, "2025-01-30", "2025-02-05"
+  it("should calculate unit prices properly") do
+    lsi.create_job 66, "2025-01-30", "2025-02-05"
     sales = JSON.parse(File.read("#{Rails.root}/spec/fixtures/2025.02.05.grand_rapids.json"))
     context = {}
     context["sales"] = sales
@@ -39,17 +39,16 @@ describe LSExtract do
       order_total = sale["calcTotal"].to_f.round(2)
       item_total = (lsh.get_all_unit_prices(sale).sum.to_f.round(2) + tax_total.to_f.round(2)).round(2)
 
-      #puts 'Tax Total: ' + tax_total.to_s
-      #puts 'Tax Items: ' + item_tax_total.to_s
-      #puts 'Tax Difference: ' + (item_tax_total - tax_total).to_s
-      #puts ''
-      #puts 'Order Total: ' + order_total.to_s
-      #puts 'Item Total: ' + item_total.to_s
-      #puts 'Item Difference: ' + (item_total - order_total).to_s
+      # puts 'Tax Total: ' + tax_total.to_s
+      # puts 'Tax Items: ' + item_tax_total.to_s
+      # puts 'Tax Difference: ' + (item_tax_total - tax_total).to_s
+      # puts ''
+      # puts 'Order Total: ' + order_total.to_s
+      # puts 'Item Total: ' + item_total.to_s
+      # puts 'Item Difference: ' + (item_total - order_total).to_s
 
       expect(item_tax_total).to eq(tax_total)
       expect(order_total).to eq(item_total)
-
     end
   end
 
