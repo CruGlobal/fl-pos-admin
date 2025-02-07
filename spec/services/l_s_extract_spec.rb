@@ -170,4 +170,290 @@ describe LSExtract do
     expect(JSON.pretty_generate(line)).to eq(expected)
     puts line.inspect
   end
+
+  context "#process_report" do
+    let(:sale_line) { {
+      EventCode: "random_event_code",
+      SaleID: 249608,
+      OrderDate: "2024-12-06",
+      Customer: "Mark Snyder**",
+      FirstName: "Mark",
+      LastName: "Snyder",
+      OrderTotal: 9.99,
+      ItemSubtotal: 9.99,
+      SalesTax: 0.5,
+      SpecialOrderFlag: "N",
+      TaxableOrderFlag: "Y",
+      ProductCode: "MSC21692",
+      Quantity: "1",
+      UnitPrice: "9.99",
+      ItemSalesTax: "0.5",
+      AddressLine1: "3249 Ian Patrick",
+      AddressLine2: "",
+      City: "Kannapolis",
+      State: "NC",
+      ZipPostal: "28083",
+      Country: "US",
+      ShipAddressLine1: "119 Vista Lane",
+      ShipAddressLine2: "",
+      ShipCity: "Fairfield Bay",
+      ShipState: "Arkansas",
+      ShipZipPostal: "72088",
+      ShipCountry: "US",
+      EmailAddress: "mjsnyder7@icloud.com",
+      POSImportID: 249608
+    } }
+    let(:refund_line) { {
+      EventCode: "random_event_code",
+      SaleID: 249608,
+      OrderDate: "2024-12-06",
+      Customer: "Mark Snyder**",
+      FirstName: "Mark",
+      LastName: "Snyder",
+      OrderTotal: -9.99,
+      ItemSubtotal: -9.99,
+      SalesTax: -0.5,
+      SpecialOrderFlag: "N",
+      TaxableOrderFlag: "Y",
+      ProductCode: "MSC21692",
+      Quantity: "-1",
+      UnitPrice: "-9.99",
+      ItemSalesTax: "-0.5",
+      AddressLine1: "3249 Ian Patrick",
+      AddressLine2: "",
+      City: "Kannapolis",
+      State: "NC",
+      ZipPostal: "28083",
+      Country: "US",
+      ShipAddressLine1: "119 Vista Lane",
+      ShipAddressLine2: "",
+      ShipCity: "Fairfield Bay",
+      ShipState: "Arkansas",
+      ShipZipPostal: "72088",
+      ShipCountry: "US",
+      EmailAddress: "mjsnyder7@icloud.com",
+      POSImportID: 249608
+    } }
+    let(:bundle_sale_line) { {
+      EventCode: "random_event_code",
+      SaleID: 249608,
+      OrderDate: "2024-12-06",
+      Customer: "Mark Snyder**",
+      FirstName: "Mark",
+      LastName: "Snyder",
+      OrderTotal: 14.98,
+      ItemSubtotal: 14.98,
+      SalesTax: 0.8,
+      SpecialOrderFlag: "N",
+      TaxableOrderFlag: "Y",
+      ProductCode: "MSC21692|BKP21307",
+      Quantity: "1|1",
+      UnitPrice: "9.99|4.99",
+      ItemSalesTax: "0.5|0.3",
+      AddressLine1: "3249 Ian Patrick",
+      AddressLine2: "",
+      City: "Kannapolis",
+      State: "NC",
+      ZipPostal: "28083",
+      Country: "US",
+      ShipAddressLine1: "119 Vista Lane",
+      ShipAddressLine2: "",
+      ShipCity: "Fairfield Bay",
+      ShipState: "Arkansas",
+      ShipZipPostal: "72088",
+      ShipCountry: "US",
+      EmailAddress: "mjsnyder7@icloud.com",
+      POSImportID: 249608
+    } }
+    let(:bundle_sale_line_more_quantity) { {
+      EventCode: "random_event_code",
+      SaleID: 249608,
+      OrderDate: "2024-12-06",
+      Customer: "Mark Snyder**",
+      FirstName: "Mark",
+      LastName: "Snyder",
+      OrderTotal: 24.97,
+      ItemSubtotal: 24.97,
+      SalesTax: 1.30,
+      SpecialOrderFlag: "N",
+      TaxableOrderFlag: "Y",
+      ProductCode: "MSC21692|BKP21307",
+      Quantity: "2|1",
+      UnitPrice: "9.99|4.99",
+      ItemSalesTax: "0.5|0.3",
+      AddressLine1: "3249 Ian Patrick",
+      AddressLine2: "",
+      City: "Kannapolis",
+      State: "NC",
+      ZipPostal: "28083",
+      Country: "US",
+      ShipAddressLine1: "119 Vista Lane",
+      ShipAddressLine2: "",
+      ShipCity: "Fairfield Bay",
+      ShipState: "Arkansas",
+      ShipZipPostal: "72088",
+      ShipCountry: "US",
+      EmailAddress: "mjsnyder7@icloud.com",
+      POSImportID: 249608
+    } }
+    let(:same_customer_different_item) { {
+      EventCode: "random_event_code",
+      SaleID: 249608,
+      OrderDate: "2024-12-06",
+      Customer: "Mark Snyder**",
+      FirstName: "Mark",
+      LastName: "Snyder",
+      OrderTotal: 14.99,
+      ItemSubtotal: 14.99,
+      SalesTax: 1.30,
+      SpecialOrderFlag: "N",
+      TaxableOrderFlag: "Y",
+      ProductCode: "MSC21307",
+      Quantity: "1",
+      UnitPrice: "14.99",
+      ItemSalesTax: "1.30",
+      AddressLine1: "3249 Ian Patrick",
+      AddressLine2: "",
+      City: "Kannapolis",
+      State: "NC",
+      ZipPostal: "28083",
+      Country: "US",
+      ShipAddressLine1: "119 Vista Lane",
+      ShipAddressLine2: "",
+      ShipCity: "Fairfield Bay",
+      ShipState: "Arkansas",
+      ShipZipPostal: "72088",
+      ShipCountry: "US",
+      EmailAddress: "mjsnyder7@icloud.com",
+      POSImportID: 249608
+    } }
+    let(:different_customer) { {
+      EventCode: "random_event_code",
+      SaleID: 249608,
+      OrderDate: "2024-12-06",
+      Customer: "Jeff Snyder**",
+      FirstName: "Jeff",
+      LastName: "Snyder",
+      OrderTotal: 14.99,
+      ItemSubtotal: 14.99,
+      SalesTax: 1.30,
+      SpecialOrderFlag: "N",
+      TaxableOrderFlag: "Y",
+      ProductCode: "MSC21307",
+      Quantity: "1",
+      UnitPrice: "14.99",
+      ItemSalesTax: "1.30",
+      AddressLine1: "3249 Ian Patrick",
+      AddressLine2: "",
+      City: "Kannapolis",
+      State: "NC",
+      ZipPostal: "28083",
+      Country: "US",
+      ShipAddressLine1: "119 Vista Lane",
+      ShipAddressLine2: "",
+      ShipCity: "Fairfield Bay",
+      ShipState: "Arkansas",
+      ShipZipPostal: "72088",
+      ShipCountry: "US",
+      EmailAddress: "jjsnyder7@icloud.com",
+      POSImportID: 249608
+    } }
+    let(:bundle_refund_line) { {
+      EventCode: "random_event_code",
+      SaleID: 249608,
+      OrderDate: "2024-12-06",
+      Customer: "Mark Snyder**",
+      FirstName: "Mark",
+      LastName: "Snyder",
+      OrderTotal: -14.98,
+      ItemSubtotal: -14.98,
+      SalesTax: -0.8,
+      SpecialOrderFlag: "N",
+      TaxableOrderFlag: "Y",
+      ProductCode: "MSC21692|BKP21307",
+      Quantity: "-1|-1",
+      UnitPrice: "-9.99|-4.99",
+      ItemSalesTax: "-0.5|-0.3",
+      AddressLine1: "3249 Ian Patrick",
+      AddressLine2: "",
+      City: "Kannapolis",
+      State: "NC",
+      ZipPostal: "28083",
+      Country: "US",
+      ShipAddressLine1: "119 Vista Lane",
+      ShipAddressLine2: "",
+      ShipCity: "Fairfield Bay",
+      ShipState: "Arkansas",
+      ShipZipPostal: "72088",
+      ShipCountry: "US",
+      EmailAddress: "mjsnyder7@icloud.com",
+      POSImportID: 249608
+    } }
+
+    it "should remove sale and refund lines" do
+      report = [sale_line, refund_line]
+      processed_report = lsi.process_report(report)
+      expect(processed_report.count).to eq(0)
+    end
+
+    it "should remove item from bundle sale" do
+      report = [bundle_sale_line, refund_line]
+      processed_report = lsi.process_report(report)
+      expect(processed_report.count).to eq(1)
+      expect(processed_report.first[:OrderTotal]).to eq(4.99)
+      expect(processed_report.first[:ItemSubtotal]).to eq(4.99)
+      expect(processed_report.first[:SalesTax]).to eq(0.3)
+      expect(processed_report.first[:ProductCode]).to eq("BKP21307")
+      expect(processed_report.first[:Quantity]).to eq("1")
+      expect(processed_report.first[:UnitPrice]).to eq("4.99")
+      expect(processed_report.first[:ItemSalesTax]).to eq("0.3")
+    end
+
+    it "should remove item from bundle sale with more quantity" do
+      report = [bundle_sale_line_more_quantity, refund_line]
+      processed_report = lsi.process_report(report)
+      expect(processed_report.count).to eq(1)
+      expect(processed_report.first[:OrderTotal]).to eq(14.98)
+      expect(processed_report.first[:ItemSubtotal]).to eq(14.98)
+      expect(processed_report.first[:SalesTax]).to eq(0.8)
+      expect(processed_report.first[:ProductCode]).to eq("MSC21692|BKP21307")
+      expect(processed_report.first[:Quantity]).to eq("1|1")
+      expect(processed_report.first[:UnitPrice]).to eq("9.99|4.99")
+      expect(processed_report.first[:ItemSalesTax]).to eq("0.5|0.3")
+    end
+
+    it "should remove item from bundle sale with more quantity and extra lines" do
+      report = [bundle_sale_line_more_quantity, refund_line, same_customer_different_item, different_customer]
+      processed_report = lsi.process_report(report)
+      expect(processed_report.count).to eq(3)
+      expect(processed_report.first[:OrderTotal]).to eq(14.98)
+      expect(processed_report.first[:ItemSubtotal]).to eq(14.98)
+      expect(processed_report.first[:SalesTax]).to eq(0.8)
+      expect(processed_report.first[:ProductCode]).to eq("MSC21692|BKP21307")
+      expect(processed_report.first[:Quantity]).to eq("1|1")
+      expect(processed_report.first[:UnitPrice]).to eq("9.99|4.99")
+      expect(processed_report.first[:ItemSalesTax]).to eq("0.5|0.3")
+      expect(processed_report.second).to eq(same_customer_different_item)
+      expect(processed_report.last).to eq(different_customer)
+    end
+
+    it "should remove items from bundle refund" do
+      report = [bundle_sale_line, bundle_refund_line]
+      processed_report = lsi.process_report(report)
+      expect(processed_report.count).to eq(0)
+    end
+
+    it "should remove items from bundle refund with more quantity" do
+      report = [bundle_sale_line_more_quantity, bundle_refund_line]
+      processed_report = lsi.process_report(report)
+      expect(processed_report.count).to eq(1)
+      expect(processed_report.first[:OrderTotal]).to eq(9.99)
+      expect(processed_report.first[:ItemSubtotal]).to eq(9.99)
+      expect(processed_report.first[:SalesTax]).to eq(0.5)
+      expect(processed_report.first[:ProductCode]).to eq("MSC21692")
+      expect(processed_report.first[:Quantity]).to eq("1")
+      expect(processed_report.first[:UnitPrice]).to eq("9.99")
+      expect(processed_report.first[:ItemSalesTax]).to eq("0.5")
+    end
+  end
 end
