@@ -158,7 +158,7 @@ class LSExtract
 
             # Update the totals
             customer_line[:OrderTotal] = (order_total + refund_line[:OrderTotal]).round(2)
-            customer_line[:ItemSubtotal] = (item_subtotal + refund_line[:OrderTotal]).round(2)
+            customer_line[:ItemSubtotal] = (item_subtotal + refund_line[:ItemSubtotal]).round(2)
             customer_line[:SalesTax] = (sales_tax + refund_line[:SalesTax]).round(2)
           end
         end
