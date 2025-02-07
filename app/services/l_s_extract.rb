@@ -96,8 +96,8 @@ class LSExtract
     # Generate the report
     report = generate_report(job, context["sales"])
     log job, "Report generated"
-    process_report(job, report)
-    log job, "Report processed"
+    report = process_report(report)
+    log job, "Refunds squashed"
     context["report"] = report
     job.context = context
     job.save!
@@ -108,8 +108,68 @@ class LSExtract
     job.save!
   end
 
-  def process_report(job, report)
+  def process_report(report)
     # Cancel out refunds
+    refund_lines = report.select { |line| line[:OrderTotal] < 0 }
+    refund_lines.each do |refund_line|
+      refunded_product_codes = refund_line[:ProductCode].split("|")
+      email = refund_line[:EmailAddress]
+      customer_lines = report.select { |line| line[:EmailAddress] == email }
+
+      # Find the original sale
+      customer_lines.each do |customer_line|
+        product_codes = customer_line[:ProductCode].split("|")
+        product_codes.dup.each do |product_code|
+          if refunded_product_codes.include?(product_code)
+            sale_line_product_code_index = product_codes.index(product_code)
+
+            # Update quantities
+            quantities = customer_line[:Quantity].split("|")
+            refunded_quantity = refund_line[:Quantity].split("|")[refunded_product_codes.index(product_code)].to_i
+            quantities[sale_line_product_code_index] = (quantities[sale_line_product_code_index].to_i + refunded_quantity).to_s
+            customer_line[:Quantity] = quantities.join("|")
+
+            # Remove item from sale line completely if quantity is 0
+            if quantities[sale_line_product_code_index].to_i <= 0
+              quantities.delete_at(sale_line_product_code_index)
+              customer_line[:Quantity] = quantities.join("|")
+
+              # Update unit prices
+              unit_prices = customer_line[:UnitPrice].split("|")
+              unit_prices.delete_at(sale_line_product_code_index)
+              customer_line[:UnitPrice] = unit_prices.join("|")
+
+              # Update item sales tax
+              item_sales_taxes = customer_line[:ItemSalesTax].split("|")
+              item_sales_taxes.delete_at(sale_line_product_code_index)
+              customer_line[:ItemSalesTax] = item_sales_taxes.join("|")
+
+              # Remove the refunded product from the product code list
+              product_codes.delete(product_code)
+              customer_line[:ProductCode] = product_codes.join("|")
+            end
+
+            # Remove the sale line if it was the only/last item in the sale
+            if product_codes.count == 0
+              report.delete(customer_line)
+            end
+
+            # This product has been refunded
+            refunded_product_codes.delete(product_code)
+          end
+        end
+
+        # Update the totals
+        customer_line[:OrderTotal] = (customer_line[:OrderTotal] + refund_line[:OrderTotal]).round(2)
+        customer_line[:ItemSubtotal] = (customer_line[:ItemSubtotal] + refund_line[:OrderTotal]).round(2)
+        customer_line[:SalesTax] = (customer_line[:SalesTax] + refund_line[:SalesTax]).round(2)
+      end
+
+      # Remove the refund line from the report
+      report.delete(refund_line)
+    end
+
+    report
   end
 
   def is_bundle?(sku, products)
