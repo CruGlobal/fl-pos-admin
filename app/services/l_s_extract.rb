@@ -115,10 +115,15 @@ class LSExtract
       refunded_product_codes = refund_line[:ProductCode].split("|")
       email = refund_line[:EmailAddress]
       customer_lines = report.select { |line| line[:EmailAddress] == email }
+      customer_lines.delete(refund_line) # Don't refund the refund line itself
 
       # Find the original sale
       customer_lines.each do |customer_line|
         product_codes = customer_line[:ProductCode].split("|")
+        order_total = customer_line[:OrderTotal]
+        item_subtotal = customer_line[:ItemSubtotal]
+        sales_tax = customer_line[:SalesTax]
+
         product_codes.dup.each do |product_code|
           if refunded_product_codes.include?(product_code)
             sale_line_product_code_index = product_codes.index(product_code)
@@ -156,17 +161,19 @@ class LSExtract
 
             # This product has been refunded
             refunded_product_codes.delete(product_code)
+
+            # Update the totals
+            customer_line[:OrderTotal] = (order_total + refund_line[:OrderTotal]).round(2)
+            customer_line[:ItemSubtotal] = (item_subtotal + refund_line[:OrderTotal]).round(2)
+            customer_line[:SalesTax] = (sales_tax + refund_line[:SalesTax]).round(2)
           end
         end
-
-        # Update the totals
-        customer_line[:OrderTotal] = (customer_line[:OrderTotal] + refund_line[:OrderTotal]).round(2)
-        customer_line[:ItemSubtotal] = (customer_line[:ItemSubtotal] + refund_line[:OrderTotal]).round(2)
-        customer_line[:SalesTax] = (customer_line[:SalesTax] + refund_line[:SalesTax]).round(2)
       end
 
       # Remove the refund line from the report
-      report.delete(refund_line)
+      if refunded_product_codes.count == 0
+        report.delete(refund_line)
+      end
     end
 
     report
