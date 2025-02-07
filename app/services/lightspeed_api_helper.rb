@@ -17,6 +17,26 @@ class LightspeedApiHelper
     strip(record, fields_to_keep)
   end
 
+  def custom_round(value)
+    # Split the value into integer and fractional parts
+    integer_part, fractional_part = value.to_s.split('.')
+    fractional_part = fractional_part.ljust(3, '0') # Ensure at least 3 decimal places
+
+    # Extract the first three decimal places
+    first_two_decimals = fractional_part[0..1].to_i
+    third_decimal = fractional_part[2].to_i
+
+    # Apply the custom rounding logic
+    if third_decimal < 6
+      # Round down (truncate after two decimal places)
+      "#{integer_part}.#{first_two_decimals}".to_f
+    else
+      # Round up (add 0.01 to the first two decimal places)
+      rounded_value = "#{integer_part}.#{first_two_decimals}".to_f + 0.01
+      rounded_value
+    end
+  end
+
   def strip(record, fields_to_keep)
     rec = record.as_json
     return unless fields_to_keep["root"]
@@ -231,28 +251,24 @@ class LightspeedApiHelper
 
   def get_discount(saleline)
     discount = 0.0
-    if saleline["discountAmount"]
-      discount += saleline["discountAmount"].to_f
-    end
-    if saleline["discountPercent"]
-      discount += (saleline["calcSubtotal"].to_f * saleline["discountPercent"].to_f / 100).round(2)
-    end
     if saleline["calcLineDiscount"]
-      discount += saleline["calcLineDiscount"].to_f
+      discount = saleline["calcLineDiscount"].to_f.round(2)
+    elsif saleline["discountAmount"]
+      discount = saleline["discountAmount"].to_f.round(2)
+    elsif saleline["discountPercent"]
+      discount = (saleline["calcSubtotal"].to_f * saleline["discountPercent"].to_f).round(2)
     end
     discount
   end
 
-  def get_all_unit_prices(sale, total)
+  def get_all_unit_prices(sale)
     prices = []
-    total = 0
     sale["SaleLines"].each do |line|
       line.each do |salelines|
         if salelines.is_a?(Array)
           salelines.each do |sl|
-            discount = get_discount(sl)
-            price = (sl["unitPrice"].to_f - discount).floor(2)
-            total += price
+            # discount = get_discount(sl)
+            price = (sl["displayableSubtotal"].to_f).round(2)
             prices << price
           end
         end
@@ -268,7 +284,7 @@ class LightspeedApiHelper
       line.each do |salelines|
         if salelines.is_a?(Array)
           salelines.each do |sl|
-            tax = (sl["calcTax1"].to_f + sl["calcTax2"].to_f).round(2)
+            tax = custom_round(sl["calcTax1"].to_f + sl["calcTax2"].to_f)
             if tax_total == 0.0
               tax = 0.0
             end
@@ -282,7 +298,7 @@ class LightspeedApiHelper
     tax_total = tax_total.to_f.round(2)
     if total != tax_total
       difference = (tax_total - total).round(2)
-      if difference > 0
+      if difference != 0
         taxes[0] += difference
       end
       taxes[0] = taxes[0].round(2)

@@ -76,6 +76,7 @@ gem "sidekiq-unique-jobs"
 gem "will_paginate"
 gem "will_paginate-bootstrap"
 gem "woocommerce_api"
+gem "bigdecimal"
 
 group :development, :test do
   gem "bundler-audit"

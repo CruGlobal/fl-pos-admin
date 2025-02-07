@@ -537,6 +537,7 @@ PLATFORMS
 
 DEPENDENCIES
   amazing_print
+  bigdecimal
   bootsnap
   brakeman
   bundler-audit

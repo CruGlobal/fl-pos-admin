@@ -81,10 +81,12 @@ class LSExtract
     # Get the job context, which is a jsonb store in the context column
     context = job.context
     # Get list of all sales for the shop_id between start_date and end_date (paging included)
-    context["sales"] = @lsh.get_sales(job, context["shop_id"], context["start_date"], context["end_date"])
+    context["sales"] = lsh.get_sales(job, context["shop_id"], context["start_date"], context["end_date"])
     log job, "Sales retrieved from Lightspeed"
+    minutes = (context["sales"].count / 300).ceil * 10
+    log job, "Optimizing for storage. This may take up to #{minutes} minutes."
     # Optimize sales data to remove extreneous data from the Object
-    context["sales"] = context["sales"].map { |sale| @lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep) }
+    context["sales"] = context["sales"].map { |sale| lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep) }
     log job, "Sales optimized"
     # delete the sales variable to free up memory
     # Save the sales data to the context object
@@ -131,6 +133,7 @@ class LSExtract
   def get_report_line(job, sale, products, customers)
     last_name = sale["Customer"]["lastName"].gsub(/\*\d+\*$/, "").strip.tr('*','')
     tax_total = (sale["calcTax1"].to_f + sale["calcTax2"].to_f).round(2)
+    item_subtotal = lsh.get_all_unit_prices(sale).map{ |p| p.to_f}.sum.round(2)
     {
       EventCode: job.event_code,
       SaleID: sale["saleID"],
@@ -139,13 +142,13 @@ class LSExtract
       FirstName: sale["Customer"]["firstName"],
       LastName: last_name,
       OrderTotal: sale["calcTotal"].to_f.round(2),
-      ItemSubtotal: sale["calcSubtotal"].to_f.round(2),
+      ItemSubtotal: item_subtotal,
       SalesTax: tax_total,
       SpecialOrderFlag: lsh.get_special_order_flag(sale),
       TaxableOrderFlag: lsh.get_taxable_order_flag(sale),
       ProductCode: lsh.get_all_product_codes(sale).join("|"),
       Quantity: lsh.get_all_quantities(sale).join("|"),
-      UnitPrice: lsh.get_all_unit_prices(sale, sale["calcTotal"].to_f).join("|"),
+      UnitPrice: lsh.get_all_unit_prices(sale).join("|"),
       ItemSalesTax: lsh.get_all_unit_taxes(sale, tax_total).join("|"),
       AddressLine1: lsh.get_address(sale, "address1"),
       AddressLine2: "",

@@ -25,27 +25,31 @@ describe LSExtract do
     context = {}
     context["sales"] = sales
     context["sales"] = context["sales"].map { |sale| lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep) }
-    count = 0
-    sales.each do |sale|
-      count += 1
-      # next if count < 10
 
-      break if count > 10
+    count = 0
+
+    # Visual test for values
+    sales.each do |sale|
+      # add up al of the unit prices
+      count += 1
 
       tax_total = (sale["calcTax1"].to_f + sale["calcTax2"].to_f).round(2)
-      puts 'Total:'
-      puts sale["calcTotal"]
-      puts 'SubTotal:'
-      puts sale["calcSubtotal"]
-      puts 'SKUS:'
-      puts lsh.get_all_product_codes(sale)
-      puts 'TaxTotal:'
-      puts tax_total
-      puts 'UNIT PRICES:'
-      puts lsh.get_all_unit_prices(sale, sale["calcTotal"])
-      puts 'UNIT TAXES:'
-      puts lsh.get_all_unit_taxes(sale, tax_total)
-      puts '---------'
+      item_tax_total = lsh.get_all_unit_taxes(sale, tax_total).sum.to_f.round(2)
+
+      order_total = sale["calcTotal"].to_f.round(2)
+      item_total = (lsh.get_all_unit_prices(sale).sum.to_f.round(2) + tax_total.to_f.round(2)).round(2)
+
+      #puts 'Tax Total: ' + tax_total.to_s
+      #puts 'Tax Items: ' + item_tax_total.to_s
+      #puts 'Tax Difference: ' + (item_tax_total - tax_total).to_s
+      #puts ''
+      #puts 'Order Total: ' + order_total.to_s
+      #puts 'Item Total: ' + item_total.to_s
+      #puts 'Item Difference: ' + (item_total - order_total).to_s
+
+      expect(item_tax_total).to eq(tax_total)
+      expect(order_total).to eq(item_total)
+
     end
   end
 
@@ -83,7 +87,7 @@ describe LSExtract do
   end
 
   it("should get all unit prices") do
-    codes = lsh.get_all_unit_prices(example_sales[2], example_sales[2]["calcSubtotal"].to_f)
+    codes = lsh.get_all_unit_prices(example_sales[2])
     actual = codes.join("|")
     expected = "9.99|4.99|4.99|59.99"
     expect(actual).to eq(expected)
@@ -198,7 +202,7 @@ describe LSExtract do
   "POSImportID": 249608
 }'
     expect(JSON.pretty_generate(line)).to eq(expected)
-    puts line.inspect
+    # puts line.inspect
   end
 
 end

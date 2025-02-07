@@ -41,7 +41,8 @@ class WooImport
   end
 
   def log job, message
-    log = job.logs.create(content: "[WOO_IMPORT] #{message}")
+    timestamp = Time.now.strftime("%Y-%m-%d %H:%M:%S")
+    log = job.logs.create(content: "[#{timestamp}] #{message}")
     log.save!
     Rails.logger.info log.content
   end
@@ -242,7 +243,9 @@ class WooImport
         sku: row[@columns["ProductCode"]].split("|")[i],
         quantity: row[@columns["Quantity"]].split("|")[i].to_i,
         total_tax: row[@columns["ItemSalesTax"]].split("|")[i],
-        total: row[@columns["UnitPrice"]].split("|")[i]
+        total: row[@columns["UnitPrice"]].split("|")[i],
+        subtotal_tax: row[@columns["ItemSalesTax"]].split("|")[i],
+        subtotal: row[@columns["UnitPrice"]].split("|")[i]
       }
     end
     items
