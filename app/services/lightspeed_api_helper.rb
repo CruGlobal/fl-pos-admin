@@ -107,25 +107,6 @@ class LightspeedApiHelper
     @ls_account.sales.all(params: params)
   end
 
-  def get_shipping_customers(job, sales)
-    ids = []
-    sales.each do |sale|
-      ship_to_id = sale["shipToID"].to_i
-      next unless ship_to_id > 0
-
-      ids << sale["shipToID"]
-    end
-    return [] unless ids.count > 0
-
-    params = {
-      customerID: "IN,[#{ids.uniq.join(",")}]",
-      load_relations: "all"
-    }
-    count = @ls_account.customers.size(params: params)
-    log job, "Found #{count} shipping customers."
-    @ls_account.customers.all(params: params)
-  end
-
   def find_shop(shop_id)
     @ls_account.shops.find(shop_id)
   end
@@ -163,14 +144,11 @@ class LightspeedApiHelper
     address[field]
   end
 
-  def get_shipping_address(sale, customers, field)
-    return unless sale["shipToID"].to_i != 0
+  def get_shipping_address(sale, field)
+    return unless sale['ShipTo'].present?
 
-    filtered = customers.select { |c| c.customerID == sale["shipToID"].to_i }
-    customer = filtered.first
-    return unless customer
-
-    addresses = customer.Contact["Addresses"]
+    customer = sale['ShipTo']
+    addresses = customer['Contact']['Addresses']
     return unless addresses
 
     unless addresses.is_a?(Array)

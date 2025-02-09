@@ -64,6 +64,65 @@ class LightspeedSaleSchema
         "lastName",
         "Contact"
       ],
+      "ShipTo" => {
+        "arrayable" => false,
+        "root" => [
+          "shipToID",
+          "shipped",
+          "firstName",
+          "lastName",
+          "Contact"
+        ],
+        "Contact" => {
+          "arrayable" => false,
+          "root" => [
+            "Addresses",
+            "Phones",
+            "Emails"
+          ],
+          "Addresses" => {
+            "arrayable" => false,
+            "root" => [
+              "ContactAddress"
+            ],
+            "ContactAddress" => {
+              "arrayable" => true,
+              "root" => [
+                "address1",
+                "city",
+                "state",
+                "zip"
+              ]
+            }
+          },
+          "Phones" => {
+            "arrayable" => false,
+            "root" => [
+              "ContactPhone"
+            ],
+            "ContactPhone" => {
+              "arrayable" => true,
+              "root" => [
+                "number",
+                "useType"
+              ]
+            }
+          },
+          "Emails" => {
+            "arrayable" => false,
+            "root" => [
+              "ContactEmail"
+            ],
+            "ContactEmail" => {
+              "arrayable" => true,
+              "root" => [
+                "address",
+                "useType"
+              ]
+            }
+          }
+        }
+      },
       "Contact" => {
         "arrayable" => false,
         "root" => [

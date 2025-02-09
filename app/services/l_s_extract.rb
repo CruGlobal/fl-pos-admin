@@ -188,16 +188,14 @@ class LSExtract
   end
 
   def generate_report(job, sales)
-    products = get_products
-    shipping_customers = lsh.get_shipping_customers(job, sales)
     lines = []
     sales.each do |sale|
-      lines << get_report_line(job, sale, products, shipping_customers)
+      lines << get_report_line(job, sale)
     end
     lines
   end
 
-  def get_report_line(job, sale, products, customers)
+  def get_report_line(job, sale)
     last_name = sale["Customer"]["lastName"].gsub(/\*\d+\*$/, "").strip.tr('*','')
     tax_total = (sale["calcTax1"].to_f + sale["calcTax2"].to_f).round(2)
     item_subtotal = lsh.get_all_unit_prices(sale).map{ |p| p.to_f}.sum.round(2)
@@ -223,11 +221,11 @@ class LSExtract
       State: lsh.get_address(sale, "state"),
       ZipPostal: lsh.get_address(sale, "zip"),
       Country: "US",
-      ShipAddressLine1: lsh.get_shipping_address(sale, customers, "address1"),
+      ShipAddressLine1: lsh.get_shipping_address(sale, "address1"),
       ShipAddressLine2: "",
-      ShipCity: lsh.get_shipping_address(sale, customers, "city"),
-      ShipState: lsh.get_shipping_address(sale, customers, "state"),
-      ShipZipPostal: lsh.get_shipping_address(sale, customers, "zip"),
+      ShipCity: lsh.get_shipping_address(sale, "city"),
+      ShipState: lsh.get_shipping_address(sale, "state"),
+      ShipZipPostal: lsh.get_shipping_address(sale, "zip"),
       ShipCountry: "US",
       EmailAddress: lsh.get_email_addresses(sale).join("|"),
       POSImportID: sale["saleID"]
