@@ -91,7 +91,6 @@ describe LSExtract do
 
       expect(item_tax_total).to eq(tax_total)
       expect(order_total).to eq(item_total)
-
     end
   end
 

@@ -19,8 +19,8 @@ class LightspeedApiHelper
 
   def custom_round(value)
     # Split the value into integer and fractional parts
-    integer_part, fractional_part = value.to_s.split('.')
-    fractional_part = fractional_part.ljust(3, '0') # Ensure at least 3 decimal places
+    integer_part, fractional_part = value.to_s.split(".")
+    fractional_part = fractional_part.ljust(3, "0") # Ensure at least 3 decimal places
 
     # Extract the first three decimal places
     first_two_decimals = fractional_part[0..1].to_i
@@ -32,8 +32,8 @@ class LightspeedApiHelper
       "#{integer_part}.#{first_two_decimals}".to_f
     else
       # Round up (add 0.01 to the first two decimal places)
-      rounded_value = "#{integer_part}.#{first_two_decimals}".to_f + 0.01
-      rounded_value
+      "#{integer_part}.#{first_two_decimals}".to_f + 0.01
+
     end
   end
 
@@ -246,7 +246,7 @@ class LightspeedApiHelper
         if salelines.is_a?(Array)
           salelines.each do |sl|
             # discount = get_discount(sl)
-            price = (sl["displayableSubtotal"].to_f).round(2)
+            price = sl["displayableSubtotal"].to_f.round(2)
             prices << price
           end
         end

@@ -22,12 +22,7 @@ class LightspeedTokenHolder
   LIGHTSPEED_CLIENT_SECRET = ENV["LIGHTSPEED_CLIENT_SECRET"]
 
   def initialize(token: nil, refresh_token: nil)
-    # If we are in dev or test, read the file from Rails.root /lightspeed_auth.json
-    if Rails.env.development? || Rails.env.test?
-      raw = File.read("#{Rails.root}/lightspeed_auth.json")
-    else
-      raw = Rails.cache.read("lightspeed_auth")
-    end
+    raw = Rails.cache.read("lightspeed_auth")
     if raw
       auth = JSON.parse(raw)
       @token = auth["access_token"]

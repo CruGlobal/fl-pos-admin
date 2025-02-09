@@ -164,7 +164,7 @@ class LSExtract
 
             # Update the totals
             customer_line[:OrderTotal] = (order_total + refund_line[:OrderTotal]).round(2)
-            customer_line[:ItemSubtotal] = (item_subtotal + refund_line[:OrderTotal]).round(2)
+            customer_line[:ItemSubtotal] = (item_subtotal + refund_line[:ItemSubtotal]).round(2)
             customer_line[:SalesTax] = (sales_tax + refund_line[:SalesTax]).round(2)
           end
         end
@@ -198,7 +198,7 @@ class LSExtract
   def get_report_line(job, sale)
     last_name = sale["Customer"]["lastName"].gsub(/\*\d+\*$/, "").strip.tr('*','')
     tax_total = (sale["calcTax1"].to_f + sale["calcTax2"].to_f).round(2)
-    item_subtotal = lsh.get_all_unit_prices(sale).map{ |p| p.to_f}.sum.round(2)
+    item_subtotal = lsh.get_all_unit_prices(sale).map { |p| p.to_f }.sum.round(2)
     {
       EventCode: job.event_code,
       SaleID: sale["saleID"],
