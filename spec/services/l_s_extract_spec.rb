@@ -176,7 +176,9 @@ describe LSExtract do
     job = lsi.create_job 16, "2024-12-06", "2024-12-07"
     sale = example_sales[1]
     sale = lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep)
-    line = lsi.get_report_line(job, sale)
+    report = lsi.generate_report(job, [sale])
+    report = lsi.process_report(report)
+    line = report.first
     expected = '{
   "EventCode": "random_event_code",
   "SaleID": 249608,
@@ -211,7 +213,7 @@ describe LSExtract do
     expect(JSON.pretty_generate(line)).to eq(expected)
   end
 
-  context "#process_report" do
+  context "#remove_refunds" do
     let(:sale_line) {
       {
         EventCode: "random_event_code",
@@ -499,6 +501,55 @@ describe LSExtract do
 
     it "should remove items from bundle refund with more quantity" do
       report = [bundle_sale_line_more_quantity, bundle_refund_line]
+      processed_report = lsi.process_report(report)
+      expect(processed_report.count).to eq(1)
+      expect(processed_report.first[:OrderTotal]).to eq(9.99)
+      expect(processed_report.first[:ItemSubtotal]).to eq(9.99)
+      expect(processed_report.first[:SalesTax]).to eq(0.5)
+      expect(processed_report.first[:ProductCode]).to eq("MSC21692")
+      expect(processed_report.first[:Quantity]).to eq("1")
+      expect(processed_report.first[:UnitPrice]).to eq("9.99")
+      expect(processed_report.first[:ItemSalesTax]).to eq("0.5")
+    end
+  end
+
+  context "#remove_shipping_product_codes" do
+    let(:special_order_sale_line) {
+      {
+        EventCode: "random_event_code",
+        SaleID: 249608,
+        OrderDate: "2024-12-06",
+        Customer: "Mark Snyder**",
+        FirstName: "Mark",
+        LastName: "Snyder",
+        OrderTotal: 14.98,
+        ItemSubtotal: 14.98,
+        SalesTax: 0.8,
+        SpecialOrderFlag: "Y",
+        TaxableOrderFlag: "Y",
+        ProductCode: "MSC21692|MSC17061",
+        Quantity: "1|1",
+        UnitPrice: "9.99|4.99",
+        ItemSalesTax: "0.5|0.3",
+        AddressLine1: "3249 Ian Patrick",
+        AddressLine2: "",
+        City: "Kannapolis",
+        State: "NC",
+        ZipPostal: "28083",
+        Country: "US",
+        ShipAddressLine1: "119 Vista Lane",
+        ShipAddressLine2: "",
+        ShipCity: "Fairfield Bay",
+        ShipState: "Arkansas",
+        ShipZipPostal: "72088",
+        ShipCountry: "US",
+        EmailAddress: "mjsnyder7@icloud.com",
+        POSImportID: 249608
+      }
+    }
+
+    it "should remove shipping product code" do
+      report = [special_order_sale_line]
       processed_report = lsi.process_report(report)
       expect(processed_report.count).to eq(1)
       expect(processed_report.first[:OrderTotal]).to eq(9.99)

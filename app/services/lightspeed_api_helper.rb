@@ -308,7 +308,7 @@ class LightspeedApiHelper
   # If any SaleLines.SaleLine.isSpecialOrder is true, then the SpecialOrderFlag should be set to 'Y'
   def get_special_order_flag(sale)
     sale["SaleLines"]["SaleLine"].each do |line|
-      if line["Item"]["customSku"] == "MSC17061"
+      if line["Item"]["customSku"] == LSExtract::SPECIAL_ORDER_SKU
         return "Y"
       end
     end

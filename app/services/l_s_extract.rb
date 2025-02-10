@@ -1,6 +1,7 @@
 class LSExtract
   SHEET_ID = ENV["GOOGLE_SHEET_ID"]
   SHEETS_SCOPE = Google::Apis::SheetsV4::AUTH_SPREADSHEETS
+  SPECIAL_ORDER_SKU = "MSC17061"
 
   def initialize
   end
@@ -109,6 +110,11 @@ class LSExtract
   end
 
   def process_report(report)
+    report = remove_refunds(report)
+    remove_shipping_product_codes(report)
+  end
+
+  def remove_refunds(report)
     # Cancel out refunds
     refund_lines = report.select { |line| line[:OrderTotal] < 0 }
     refund_lines.each do |refund_line|
@@ -180,7 +186,37 @@ class LSExtract
   end
 
   def remove_shipping_product_codes(report)
+    special_order_lines = report.select { |line| line[:ProductCode].include?(SPECIAL_ORDER_SKU) }
+    special_order_lines.each do |special_order_line|
+      product_codes = special_order_line[:ProductCode].split("|")
+      special_order_product_code_index = product_codes.index(SPECIAL_ORDER_SKU)
+      quantities = special_order_line[:Quantity].split("|")
+      unit_prices = special_order_line[:UnitPrice].split("|")
+      item_sales_taxes = special_order_line[:ItemSalesTax].split("|")
 
+      # Update the totals
+      special_order_line[:OrderTotal] = (special_order_line[:OrderTotal] - unit_prices[special_order_product_code_index].to_f).round(2)
+      special_order_line[:ItemSubtotal] = (special_order_line[:ItemSubtotal] - unit_prices[special_order_product_code_index].to_f).round(2)
+      special_order_line[:SalesTax] = (special_order_line[:SalesTax] - item_sales_taxes[special_order_product_code_index].to_f).round(2)
+
+      # Remove the special order product from the product code list
+      product_codes.delete_at(special_order_product_code_index)
+      special_order_line[:ProductCode] = product_codes.join("|")
+
+      # Remove the special order product from the quantities list
+      quantities.delete_at(special_order_product_code_index)
+      special_order_line[:Quantity] = quantities.join("|")
+
+      # Remove the special order product from the unit prices list
+      unit_prices.delete_at(special_order_product_code_index)
+      special_order_line[:UnitPrice] = unit_prices.join("|")
+
+      # Remove the special order product from the item sales taxes list
+      item_sales_taxes.delete_at(special_order_product_code_index)
+      special_order_line[:ItemSalesTax] = item_sales_taxes.join("|")
+    end
+
+    report
   end
 
   def is_bundle?(sku, products)
