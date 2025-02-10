@@ -137,7 +137,7 @@ describe LSExtract do
   end
 
   it("should get the special order flag") do
-    flag = lsh.get_special_order_flag(example_sales[0])
+    flag = lsh.get_special_order_flag(example_sales[1])
     expected = "Y"
     expect(flag).to eq(expected)
     flag = lsh.get_special_order_flag(example_sales[2])
@@ -187,7 +187,7 @@ describe LSExtract do
   "OrderTotal": 9.99,
   "ItemSubtotal": 9.99,
   "SalesTax": 0.0,
-  "SpecialOrderFlag": "N",
+  "SpecialOrderFlag": "Y",
   "TaxableOrderFlag": "Y",
   "ProductCode": "MSC21692",
   "Quantity": "1",

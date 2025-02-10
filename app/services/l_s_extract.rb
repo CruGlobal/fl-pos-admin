@@ -179,6 +179,10 @@ class LSExtract
     report
   end
 
+  def remove_shipping_product_codes(report)
+
+  end
+
   def is_bundle?(sku, products)
     products.each do |product|
       if product["sku"] == sku
