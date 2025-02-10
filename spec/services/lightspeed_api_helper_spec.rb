@@ -36,10 +36,10 @@ describe LightspeedApiHelper do
 
   it("can get a shipping address") do
     sales = JSON.parse(File.read("#{Rails.root}/spec/fixtures/2025.02.05.grand_rapids.json"))
-    test = sales.select { |sale| sale["saleID"] == 250210 }.first
-    expect(lsapi.get_shipping_address(test,'address1')).to eq('550 Riley St.')
-    expect(lsapi.get_shipping_address(test,'city')).to eq('Lansing')
-    expect(lsapi.get_shipping_address(test,'state')).to eq('MI')
-    expect(lsapi.get_shipping_address(test,'zip')).to eq('48910')
+    test = sales.find { |sale| sale["saleID"] == 250210 }
+    expect(lsapi.get_shipping_address(test, "address1")).to eq("550 Riley St.")
+    expect(lsapi.get_shipping_address(test, "city")).to eq("Lansing")
+    expect(lsapi.get_shipping_address(test, "state")).to eq("MI")
+    expect(lsapi.get_shipping_address(test, "zip")).to eq("48910")
   end
 end

@@ -182,7 +182,7 @@ class LightspeedSaleSchema
       "Contact" => {
         "arrayable" => false,
         "root" => [
-          "Addresses",
+          "Addresses"
         ],
         "Addresses" => {
           "arrayable" => false,
@@ -198,7 +198,7 @@ class LightspeedSaleSchema
               "zip"
             ]
           }
-        },
+        }
       }
     }
   }.freeze

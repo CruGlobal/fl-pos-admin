@@ -145,10 +145,10 @@ class LightspeedApiHelper
   end
 
   def get_shipping_address(sale, field)
-    return unless sale['ShipTo'].present?
+    return unless sale["ShipTo"].present?
 
-    customer = sale['ShipTo']
-    addresses = customer['Contact']['Addresses']
+    customer = sale["ShipTo"]
+    addresses = customer["Contact"]["Addresses"]
     return unless addresses
 
     unless addresses.is_a?(Array)
