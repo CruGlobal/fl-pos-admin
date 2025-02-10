@@ -11,6 +11,7 @@ class LightspeedSaleSchema
       "calcDiscount",
       "Customer",
       "SaleLines",
+      "ShipTo",
       "calcTax1",
       "calcTax2",
       "shipToID"
@@ -171,6 +172,33 @@ class LightspeedSaleSchema
             ]
           }
         }
+      }
+    },
+    "ShipTo" => {
+      "arrayable" => false,
+      "root" => [
+        "Contact"
+      ],
+      "Contact" => {
+        "arrayable" => false,
+        "root" => [
+          "Addresses",
+        ],
+        "Addresses" => {
+          "arrayable" => false,
+          "root" => [
+            "ContactAddress"
+          ],
+          "ContactAddress" => {
+            "arrayable" => true,
+            "root" => [
+              "address1",
+              "city",
+              "state",
+              "zip"
+            ]
+          }
+        },
       }
     }
   }.freeze

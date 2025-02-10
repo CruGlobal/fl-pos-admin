@@ -162,6 +162,10 @@ class LightspeedApiHelper
     ca = address["ContactAddress"]
     return unless ca
 
+    if ca.is_a?(Array)
+      ca = ca.first
+    end
+
     return unless ca[field]
 
     ca[field]
@@ -301,7 +305,7 @@ class LightspeedApiHelper
     "N"
   end
 
-  # If a any SaleLines.SaleLine.isSpecialOrder is true, then the SpecialOrderFlag should be set to 'Y'
+  # If any SaleLines.SaleLine.isSpecialOrder is true, then the SpecialOrderFlag should be set to 'Y'
   def get_special_order_flag(sale)
     sale["SaleLines"].each do |line|
       line.each do |salelines|
@@ -314,7 +318,7 @@ class LightspeedApiHelper
         end
       end
     end
-
+    # MSC17061
     "N"
   end
 end
