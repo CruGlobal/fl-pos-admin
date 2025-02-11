@@ -4,7 +4,7 @@ class WoocommerceImportJob < ApplicationJob
 
   def perform(*args)
     WooImport.new.poll_jobs
-  rescue StandardError => e
+  rescue => e
     WooImport.where(type: "WOO_IMPORT", status: :processing).order(updated_at: :desc).first.status_error!
     raise e
   end
