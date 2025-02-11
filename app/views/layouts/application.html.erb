@@ -36,8 +36,9 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <!-- Include the stylesheet from the asset pipeline -->
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
   </head>
 
   <body class="text-white bg-dark">
@@ -66,6 +67,5 @@
         </div>
       </div>
     </div>
-    <%= javascript_include_tag "application", "data-turbo-track": "reload" %>
   </body>
 </html>
