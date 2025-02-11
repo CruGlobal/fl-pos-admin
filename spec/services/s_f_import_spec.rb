@@ -2,28 +2,27 @@ require "rails_helper"
 require "json"
 
 describe SFImport do
-  before do
-    SFImport.new
-    LightspeedApiHelper.new
+  let(:sfi) { SFImport.new }
+  let(:lsh) { LightspeedApiHelper.new }
 
-    woo = WooRefresh.new
-    if woo.latest_refresh_timestamp.nil? || woo.latest_refresh_timestamp < 1.day.ago
-      puts "Woo cache is stale, refreshing..."
-      woo.handle_job woo.create_job
-    end
+  before do
+    shop = double("shop", Contact: { "custom" => "WTR25CHS1" })
+    allow_any_instance_of(LightspeedApiHelper).to receive(:find_shop).and_return(shop)
+    LightspeedStubHelpers.stub_lightspeed_account_request
   end
 
-  xit("should create a new job") do
+  it("should create a new job") do
     job = sfi.create_job 16, "2024-12-01", "2024-12-31"
     expect(job[:event_code]).not_to be_nil
   end
 
-  xit("should be able to login to SalesForce") do
+  it("should be able to login to SalesForce") do
+    expect_any_instance_of(Restforce::Data::Client).to receive(:authenticate!).and_return(true)
+    expect_any_instance_of(SalesforceBulkApi::Api).to receive(:initialize).and_return(true)
     sfi.init_sf_client
-    puts "Logged in to SalesForce"
   end
 
-  xit("should convert inventory to SF Product_Sale__c objects") do
+  it("should convert inventory to SF Product_Sale__c objects") do
     job = sfi.create_job 16, "2024-12-08", "2024-12-09"
     inventory = {BKP21475: 9, BKH17526: 2, BKH17525: 3, CER21841: 19, MSC21693: 3, BKP20576: 2, BKP18001: 3, BKP13003: 3, BKP21762: 3, BKP21550: 6, BKP21307: 4, BKP21308: 4, BKH21586: 3, BKP12001: 2, BKP21541: 4, BKP21761: 4, BKP21411: 5, BKP21764: 7, BKH20397: 9, BKP20649: 1, BKH21579: 8, BKP20074: 2, MSC21692: 4, MSC17061: 4, BKP21289: 2, RPK21431: 4, APP21575: 2, APP21562: 1, APP21564: 2, BKH21610: 7, BKP20588: 3, BKP21348: 3, BKP21158: 2, BKP19056: 3, BKP19500: 5, BKP21673: 3, APP21563: 1, RPK20929: 4, BKP21127: 1, RPK20869: 1, BKP14193: 1, APP21574: 2, APP21565: 1, MAN21792: 1, COL20277: 1, MSC21145: 1, MSC21146: 1}
     products = sfi.convert_inventory_to_sf_objects(job, inventory)
@@ -31,18 +30,15 @@ describe SFImport do
     expect(products.to_json).to eq(expected.to_json)
   end
 
-  xit("should save a record to salesforce") do
-    # This test cannot be verified programmatically. Records must be verified
-    # manually in the Salesforce UI.
+  it("should save a record to salesforce") do
     job = sfi.create_job 16, "2024-12-08", "2024-12-09"
     inventory = {BKP21475: 9, BKH17526: 2, BKH17525: 3, CER21841: 19, MSC21693: 3, BKP20576: 2, BKP18001: 3, BKP13003: 3, BKP21762: 3, BKP21550: 6, BKP21307: 4, BKP21308: 4, BKH21586: 3, BKP12001: 2, BKP21541: 4, BKP21761: 4, BKP21411: 5, BKP21764: 7, BKH20397: 9, BKP20649: 1, BKH21579: 8, BKP20074: 2, MSC21692: 4, MSC17061: 4, BKP21289: 2, RPK21431: 4, APP21575: 2, APP21562: 1, APP21564: 2, BKH21610: 7, BKP20588: 3, BKP21348: 3, BKP21158: 2, BKP19056: 3, BKP19500: 5, BKP21673: 3, APP21563: 1, RPK20929: 4, BKP21127: 1, RPK20869: 1, BKP14193: 1, APP21574: 2, APP21565: 1, MAN21792: 1, COL20277: 1, MSC21145: 1, MSC21146: 1}
     sfi.convert_inventory_to_sf_objects job, inventory
+    expect_any_instance_of(Restforce::Data::Client).to receive(:create!).exactly(47).times
     sfi.push_inventory_to_sf job, inventory
-    inserted = sfi.get_inventory_from_salesforce job, "WTR25CHS1"
-    puts "Upserted: #{inserted.inspect}"
   end
 
-  xit("should get an inventory count") do
+  it("should get an inventory count") do
     job = sfi.create_job 16, "2024-12-08", "2024-12-09"
     # Get the sales from Lightspeed
     # Get the products from the local cache
@@ -50,11 +46,10 @@ describe SFImport do
     bundles = sfi.get_bundles
 
     context = job.context
-    context["sales"] = lsh.get_sales(job, context["shop_id"], context["start_date"], context["end_date"])
+    context["sales"] = JSON.parse(File.read("#{Rails.root}/spec/fixtures/2025.02.05.grand_rapids.json"))
     context["sales"] = context["sales"].map { |sale| lsh.strip_to_named_fields(sale, LightspeedInventorySchema.fields_to_keep) }
     context["inventory"] = sfi.get_inventory(job, context["sales"], products, bundles)
 
-    puts "Inventory: #{context["inventory"]}"
-    puts "Inventory count: #{context["inventory"].count}"
+    expect(context["inventory"].count).to eq(0)
   end
 end

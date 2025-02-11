@@ -3,18 +3,23 @@ require "rails_helper"
 describe WooImport do
   self.use_transactional_tests = false
 
+  let(:wi) { WooImport.new }
+
   before do
-    # set global lightspeed import service
-    WooImport.new
+    allow(Google::Auth::ServiceAccountCredentials).to receive(:make_creds).and_return(nil)
   end
 
-  xit("it should initializecorrectly") do
+  it("it should initialize correctly") do
     expect(wi.woo).not_to be_nil
     expect(wi.sheets).not_to be_nil
     expect(wi.products).not_to be_nil
   end
 
-  xit("it should get an array of objects from the sheet") do
+  it("it should get an array of objects from the sheet") do
+    spreadsheet = double("spreadsheet", sheets: [Google::Apis::SheetsV4::Sheet.new(properties: double("properties", title: "WTR25CHS1"))])
+    allow_any_instance_of(Google::Apis::SheetsV4::SheetsService).to receive(:get_spreadsheet).and_return(spreadsheet)
+    allow_any_instance_of(Google::Apis::SheetsV4::SheetsService).to receive(:get_spreadsheet_values).and_return(Google::Apis::SheetsV4::ValueRange.new(values: [["FakeData", "READY FOR WOO IMPORT"], ["FakeData", "READY FOR WOO IMPORT"], ["FakeData", "READY FOR WOO IMPORT"]]))
+
     job = wi.create_job
     job.event_code = "WTR25CHS1"
     rows = wi.get_spreadsheet job
