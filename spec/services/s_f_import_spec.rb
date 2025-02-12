@@ -2,15 +2,35 @@ require "rails_helper"
 require "json"
 
 describe SFImport do
-  before do
-    SFImport.new
-    LightspeedApiHelper.new
+  let(:sfi) { SFImport.new }
+  let(:lsh) { LightspeedApiHelper.new }
 
-    woo = WooRefresh.new
-    if woo.latest_refresh_timestamp.nil? || woo.latest_refresh_timestamp < 1.day.ago
-      puts "Woo cache is stale, refreshing..."
-      woo.handle_job woo.create_job
-    end
+  before do
+    shop = double("shop")
+    allow_any_instance_of(LightspeedApiHelper).to receive(:find_shop).and_return(shop)
+    allow(shop).to receive("Contact").and_return({"custom" => "random_event_code"})
+
+    create_list(:woo_product, 401)
+
+    allow_any_instance_of(WooRefresh).to receive(:latest_refresh_timestamp).and_return(1.hour.ago)
+    allow(Google::Auth::ServiceAccountCredentials).to receive(:make_creds).and_return(nil)
+    LightspeedStubHelpers.stub_lightspeed_account_request
+  end
+
+  it('should filter special orders (MSC17061) and collateral (COL20277) out of inventory') do
+    job = SFImport.new.create_job 36, "2025-02-06", "2025-02-12"
+    sales = JSON.parse(File.read("#{Rails.root}/spec/fixtures/2025.02.05.grand_rapids.json"))
+    skus = {}
+    skus["TEST0"] = 1
+    skus["MSC17061"] = 1
+    skus["COL20277"] = 1
+    skus["TEST1"] = 1
+    skus = sfi.filter_skus skus
+    expect skus.keys.count == 2
+    expect skus.keys.include?("MSC17061") == false
+    expect skus.keys.include?("COL20277") == false
+    expect skus.keys.include?("TEST0") == true
+    expect skus.keys.include?("TEST1") == true
   end
 
   xit("should create a new job") do
