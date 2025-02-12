@@ -25,10 +25,10 @@ describe SFImport do
     skus["TEST1"] = 1
     skus = sfi.filter_skus skus
     expect skus.keys.count == 2
-    expect skus.keys.include?("MSC17061") == false
-    expect skus.keys.include?("COL20277") == false
-    expect skus.keys.include?("TEST0") == true
-    expect skus.keys.include?("TEST1") == true
+    expect skus.key?("MSC17061") == false
+    expect skus.key?("COL20277") == false
+    expect skus.key?("TEST0") == true
+    expect skus.key?("TEST1") == true
   end
 
   xit("should create a new job") do
