@@ -17,7 +17,7 @@ describe SFImport do
     LightspeedStubHelpers.stub_lightspeed_account_request
   end
 
-  it('should filter special orders (MSC17061) and collateral (COL20277) out of inventory') do
+  it("should filter special orders (MSC17061) and collateral (COL20277) out of inventory") do
     skus = {}
     skus["TEST0"] = 1
     skus["MSC17061"] = 1
