@@ -185,9 +185,14 @@ class SFImport
       end
     end
     inventory = []
-    skus.each do |sku, quantity|
+    filtered_skus = filter_skus(skus)
+    filtered_skus.each do |sku, quantity|
       inventory << {sku:, quantity:}
     end
+  end
+
+  def filter_skus(skus)
+    skus.filter { |sku, _quantity| sku != "MSC17061" && sku != "COL20277" }
   end
 
   def is_bundle?(sku, products)
