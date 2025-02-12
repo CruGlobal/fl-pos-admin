@@ -18,8 +18,6 @@ describe SFImport do
   end
 
   it('should filter special orders (MSC17061) and collateral (COL20277) out of inventory') do
-    job = SFImport.new.create_job 36, "2025-02-06", "2025-02-12"
-    sales = JSON.parse(File.read("#{Rails.root}/spec/fixtures/2025.02.05.grand_rapids.json"))
     skus = {}
     skus["TEST0"] = 1
     skus["MSC17061"] = 1
