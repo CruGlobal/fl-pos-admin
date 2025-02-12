@@ -185,11 +185,10 @@ class SFImport
       end
     end
     inventory = []
-    skus = filter_skus(skus)
-    skus.each do |sku, quantity|
+    filtered_skus = filter_skus(skus)
+    filtered_skus.each do |sku, quantity|
       inventory << {sku:, quantity:}
     end
-    filter_inventory(inventory)
   end
 
   def filter_skus(skus)
