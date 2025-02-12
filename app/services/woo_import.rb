@@ -217,8 +217,8 @@ class WooImport
       ]
     }
     if row[@columns["SpecialOrderFlag"]] == "Y"
-      create_object[@columns["shipping_lines"]] = []
-      create_object[@columns["shipping_lines"]] << {
+      create_object[:shipping_lines] = []
+      create_object[:shipping_lines] << {
         method_id: "free_shipping",
         method_title: "Free Standard Shipping",
         total: "0.00"
@@ -226,7 +226,7 @@ class WooImport
     end
     # If there is a shipping address, add it to the object
     if row[@columns["ShipAddressLine1"]].present?
-      create_object[@columns["shipping"]] = {
+      create_object[:shipping] = {
         first_name: row[@columns["FirstName"]],
         last_name: row[@columns["LastName"]],
         address_1: row[@columns["ShipAddressLine1"]],
