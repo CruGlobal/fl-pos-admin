@@ -11,6 +11,20 @@ describe SFImport do
     LightspeedStubHelpers.stub_lightspeed_account_request
   end
 
+  it("should filter special orders (MSC17061) and collateral (COL20277) out of inventory") do
+    skus = {}
+    skus["TEST0"] = 1
+    skus["MSC17061"] = 1
+    skus["COL20277"] = 1
+    skus["TEST1"] = 1
+    skus = sfi.filter_skus skus
+    expect skus.keys.count == 2
+    expect skus.key?("MSC17061") == false
+    expect skus.key?("COL20277") == false
+    expect skus.key?("TEST0") == true
+    expect skus.key?("TEST1") == true
+  end
+
   it("should create a new job") do
     job = sfi.create_job 16, "2024-12-01", "2024-12-31"
     expect(job[:event_code]).not_to be_nil
