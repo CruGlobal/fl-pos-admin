@@ -6,7 +6,7 @@ describe SFImport do
   let(:lsh) { LightspeedApiHelper.new }
 
   before do
-    shop = double("shop", Contact: { "custom" => "WTR25CHS1" })
+    shop = double("shop", Contact: {"custom" => "WTR25CHS1"})
     allow_any_instance_of(LightspeedApiHelper).to receive(:find_shop).and_return(shop)
     LightspeedStubHelpers.stub_lightspeed_account_request
   end

@@ -20,7 +20,6 @@ describe WooRefresh do
   end
 
   it("it should get a page of products") do
-
     job = Job.create(type: "WOO_REFRESH")
     response = woo.get_page job, 1, {status: "publish", per_page: 1, page: 1}
     expect(response.code).to eq(200)

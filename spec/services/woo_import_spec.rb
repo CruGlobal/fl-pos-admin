@@ -45,8 +45,8 @@ describe WooImport do
 
   it("it should build a list of objects from a sheet") do
     rows = [["EventCode", "SaleID", "OrderDate", "Customer", "FirstName", "LastName", "OrderTotal", "ItemSubtotal", "SalesTax", "SpecialOrderFlag", "TaxableOrderFlag", "ProductCode", "Quantity", "UnitPrice", "ItemSalesTax", "AddressLine1", "AddressLine2", "City", "State", "ZipPostal", "Country", "ShipAddressLine1", "ShipAddressLine2", "ShipCity", "ShipState", "ShipZipPostal", "ShipCountry", "EmailAddress", "POSImportID"],
-            ["WTR25CHS1", "249582", "2021-06-25 12:00:00", "Teena Hoover", "Teena", "Hoover", "14.99", "14.99", "0.0", "N", "Y", "APP21574", "1", "14.99", "0.0", "119 Vista Lane", "", "Fairfield Bay", "Arkansas", "72088", "US", "119 Vista Lane", "", "Fairfield Bay", "Arkansas", "72088", "US", "trhoover@familylife.com", "POS import"],
-            ["WTR25CHS1", "249608", "2021-06-25 12:00:00", "Mark Snyder", "Mark", "Snyder", "9.99", "9.99", "0.0", "N", "Y", "MSC21692", "1", "9.99", "0.0", "3249 Ian Patrick", "", "Kannapolis", "NC", "28083", "US", "3249 Ian Patrick", "", "Kannapolis", "NC", "28083", "US", "mjsnyder7@icloud.com", "POS import"]]
+      ["WTR25CHS1", "249582", "2021-06-25 12:00:00", "Teena Hoover", "Teena", "Hoover", "14.99", "14.99", "0.0", "N", "Y", "APP21574", "1", "14.99", "0.0", "119 Vista Lane", "", "Fairfield Bay", "Arkansas", "72088", "US", "119 Vista Lane", "", "Fairfield Bay", "Arkansas", "72088", "US", "trhoover@familylife.com", "POS import"],
+      ["WTR25CHS1", "249608", "2021-06-25 12:00:00", "Mark Snyder", "Mark", "Snyder", "9.99", "9.99", "0.0", "N", "Y", "MSC21692", "1", "9.99", "0.0", "3249 Ian Patrick", "", "Kannapolis", "NC", "28083", "US", "3249 Ian Patrick", "", "Kannapolis", "NC", "28083", "US", "mjsnyder7@icloud.com", "POS import"]]
     event_code = "WTR25CHS1"
 
     objects = wi.build_woo_list rows, event_code
@@ -56,8 +56,8 @@ describe WooImport do
 
   it("it should be able to send a batch of sales to woo") do
     rows = [["EventCode", "SaleID", "OrderDate", "Customer", "FirstName", "LastName", "OrderTotal", "ItemSubtotal", "SalesTax", "SpecialOrderFlag", "TaxableOrderFlag", "ProductCode", "Quantity", "UnitPrice", "ItemSalesTax", "AddressLine1", "AddressLine2", "City", "State", "ZipPostal", "Country", "ShipAddressLine1", "ShipAddressLine2", "ShipCity", "ShipState", "ShipZipPostal", "ShipCountry", "EmailAddress", "POSImportID"],
-            ["WTR25CHS1", "249582", "2021-06-25 12:00:00", "Teena Hoover", "Teena", "Hoover", "14.99", "14.99", "0.0", "N", "Y", "APP21574", "1", "14.99", "0.0", "119 Vista Lane", "", "Fairfield Bay", "Arkansas", "72088", "US", "119 Vista Lane", "", "Fairfield Bay", "Arkansas", "72088", "US", "trhoover@familylife.com", "POS import"],
-            ["WTR25CHS1", "249608", "2021-06-25 12:00:00", "Mark Snyder", "Mark", "Snyder", "9.99", "9.99", "0.0", "N", "Y", "MSC21692", "1", "9.99", "0.0", "3249 Ian Patrick", "", "Kannapolis", "NC", "28083", "US", "3249 Ian Patrick", "", "Kannapolis", "NC", "28083", "US", "mjsnyder7@icloud.com", "POS import"]]
+      ["WTR25CHS1", "249582", "2021-06-25 12:00:00", "Teena Hoover", "Teena", "Hoover", "14.99", "14.99", "0.0", "N", "Y", "APP21574", "1", "14.99", "0.0", "119 Vista Lane", "", "Fairfield Bay", "Arkansas", "72088", "US", "119 Vista Lane", "", "Fairfield Bay", "Arkansas", "72088", "US", "trhoover@familylife.com", "POS import"],
+      ["WTR25CHS1", "249608", "2021-06-25 12:00:00", "Mark Snyder", "Mark", "Snyder", "9.99", "9.99", "0.0", "N", "Y", "MSC21692", "1", "9.99", "0.0", "3249 Ian Patrick", "", "Kannapolis", "NC", "28083", "US", "3249 Ian Patrick", "", "Kannapolis", "NC", "28083", "US", "mjsnyder7@icloud.com", "POS import"]]
     event_code = "WTR25CHS1"
 
     expect_any_instance_of(WooCommerce::API).to receive(:post).exactly(2).times.and_return({"id" => 1234})
