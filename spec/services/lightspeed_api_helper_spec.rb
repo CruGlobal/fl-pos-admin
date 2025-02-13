@@ -15,16 +15,16 @@ describe LightspeedApiHelper do
     allow_any_instance_of(Lightspeed::Account).to receive(:shops).and_return(shops)
   end
 
-  xit("should initialize with a token holder") do
+  it("should initialize with a token holder") do
     expect(lsapi.ls_client.oauth_token).not_to be_nil
   end
 
-  xit("should get a list of shops") do
+  it("should get a list of shops") do
     shops = lsapi.shops
     expect(shops.count).to be > 0
   end
 
-  xit("should get sales") do
+  it("should get sales") do
     allow_any_instance_of(LightspeedApiHelper).to receive(:find_shop).and_return(double("shop", id: 1, Contact: {firstName: "John", lastName: "Doe"}))
     allow_any_instance_of(Lightspeed::Sales).to receive(:size).and_return(18)
     allow_any_instance_of(Lightspeed::Sales).to receive(:all).and_return([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18])
