@@ -6,7 +6,11 @@
   <td><%= job.status %></td>
   <td><%= (job.start_date) ? job.start_date.strftime("%Y-%m-%d"):'' %></td>
   <td><%= (job.end_date) ? job.end_date.strftime("%Y-%m-%d"):'' %></td>
-  <td><%= link_to('Edit', edit_job_path(job)) %></td>
+  <td>
+    <%= button_to('Edit', edit_job_path(job), method: :get, class: "btn btn-secondary btn-sm") %>
+    <%= button_to('Restart', restart_job_path(job), class: "btn btn-secondary btn-sm") %>
+    <%= button_to('Delete', job, method: :delete, form: { data: { turbo_confirm: 'Are you sure?' }}, class: "btn btn-secondary btn-sm") %>
+  </td>
 </tr>
 <% if job.logs.empty? %>
   <tr class="acollapse aaccordion-collapse" id="job-logs-<%= job.id %>" data-bs-parent=".table">
@@ -14,12 +18,17 @@
     <td colspan="7" style="background-color:black !important;font-family:monospace;color:white;">No logs yet.</td>
   </tr>
 <% else %>
-<tr class="acollapse aaccordion-collapse" id="job-logs-<%= job.id %>" data-bs-parent=".table">
-  <td></td>
-  <td colspan="7" style="background-color:black !important;font-family:monospace;color:white;">
-<% job.logs.order(updated_at: :desc).limit(10).each do |log| %>
-  <%= log.content %><br />
-<% end %>
-  </td>
-</tr>
+  <tr class="acollapse aaccordion-collapse" id="job-logs-<%= job.id %>" data-bs-parent=".table">
+    <td></td>
+    <td colspan="7" style="background-color:black !important;font-family:monospace;color:white;">
+      <% logs = job.logs.order(updated_at: :desc) %>
+      <% logs = logs.limit(limit) if limit %>
+      <% logs.each do |log| %>
+        <%= log.content %><br />
+      <% end %>
+      <% if limit && job.logs.count > limit %>
+        <%= link_to 'Show more', job_path(job), class: 'btn btn-secondary btn-sm' %>
+      <% end %>
+    </td>
+  </tr>
 <% end %>

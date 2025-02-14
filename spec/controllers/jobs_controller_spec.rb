@@ -48,6 +48,14 @@ RSpec.describe JobsController, type: :controller do
     end
   end
 
+  describe "GET /show" do
+    it "renders a successful response" do
+      job = Job.create! valid_attributes
+      get :show, params: {id: job.to_param}
+      expect(response).to be_successful
+    end
+  end
+
   describe "GET /new" do
     it "renders a successful response" do
       get :new
@@ -105,6 +113,29 @@ RSpec.describe JobsController, type: :controller do
         job.reload
         expect(response).to redirect_to(jobs_url)
       end
+    end
+  end
+
+  describe "POST /restart" do
+    it "restarts the requested job" do
+      job = Job.create! valid_attributes
+      post :restart, params: {id: job.id}
+      job.reload
+      expect(job.status).to eq("created")
+    end
+
+    it "redirects to the dashboard" do
+      job = Job.create! valid_attributes
+      job.update(type: "WOO_IMPORT")
+      post :restart, params: {id: job.id}
+      expect(response).to redirect_to(jobs_url)
+    end
+
+    it "gives a 422 on invalid job" do
+      job = Job.create! valid_attributes
+      job.update(type: "INVALID")
+      post :restart, params: {id: job.id}
+      expect(response).to have_http_status(:unprocessable_entity)
     end
   end
 end
