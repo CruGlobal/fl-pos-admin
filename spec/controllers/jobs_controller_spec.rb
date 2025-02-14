@@ -116,6 +116,21 @@ RSpec.describe JobsController, type: :controller do
     end
   end
 
+  describe "DELETE /destroy" do
+    it "destroys the requested job" do
+      job = Job.create! valid_attributes
+      expect {
+        delete :destroy, params: {id: job.id}
+      }.to change(Job, :count).by(-1)
+    end
+
+    it "redirects to the jobs list" do
+      job = Job.create! valid_attributes
+      delete :destroy, params: {id: job.id}
+      expect(response).to redirect_to(jobs_url)
+    end
+  end
+
   describe "POST /restart" do
     it "restarts the requested job" do
       job = Job.create! valid_attributes
