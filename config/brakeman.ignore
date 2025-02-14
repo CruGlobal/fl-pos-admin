@@ -3,13 +3,13 @@
     {
       "warning_type": "Dynamic Render Path",
       "warning_code": 15,
-      "fingerprint": "128893125ced64caffe282ad169dc0690a69e9d6e985d149ddf4675d2fd6cb6d",
+      "fingerprint": "6ddeb63cd44e2acf6262f3c840eb267b3d68bf33ca1961bac070c389f2a1c517",
       "check_name": "Render",
       "message": "Render path contains parameter value",
       "file": "app/views/jobs/index.html.erb",
-      "line": 49,
+      "line": 50,
       "link": "https://brakemanscanner.org/docs/warning_types/dynamic_render_path/",
-      "code": "render(action => (Job.order(:updated_at => :desc).includes(:logs).where(:id => params[:job_id]).where(:type => params[:type]) or Job.order(:updated_at => :desc).includes(:logs).where(:id => params[:job_id]).where.not(:type => ([\"POLL_SHEET\", \"WOO_REFRESH\"]))).where(:status => params[:status]).where(\"start_date >= ?\", params[:start_date]).where(\"end_date <= ?\", params[:end_date]).paginate(:page => params[:page], :per_page => 10), {})",
+      "code": "render(action => (Job.order(:updated_at => :desc).includes(:logs).where(:id => params[:job_id]).where(:type => params[:type]) or Job.order(:updated_at => :desc).includes(:logs).where(:id => params[:job_id]).where.not(:type => ([\"POLL_SHEET\", \"WOO_REFRESH\"]))).where(:status => params[:status]).where(\"start_date >= ?\", params[:start_date]).where(\"end_date <= ?\", params[:end_date]).paginate(:page => params[:page], :per_page => 10), { :limit => 10 })",
       "render_path": [
         {
           "type": "controller",
