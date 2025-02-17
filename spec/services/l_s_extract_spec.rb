@@ -10,7 +10,7 @@ describe LSExtract do
   before do
     shop = double("shop")
     allow_any_instance_of(LightspeedApiHelper).to receive(:find_shop).and_return(shop)
-    allow(shop).to receive("Contact").and_return({"custom" => "random_event_code"})
+    allow(shop).to receive("Contact").and_return({"custom" => "WTR25GRR1"})
 
     create_list(:woo_product, 401)
 
@@ -31,6 +31,22 @@ describe LSExtract do
     expect(line[:ShipZipPostal]).to eq("48910")
   end
 
+  it("should get a report line with event code when no shipping is present") do
+    shop = double("shop")
+    allow_any_instance_of(LightspeedApiHelper).to receive(:find_shop).and_return(shop)
+    allow(shop).to receive("Contact").and_return({"custom" => "WTR25GRR1"})
+    job = lsi.create_job 66, "2025-01-30", "2025-02-05"
+    sales = JSON.parse(File.read("#{Rails.root}/spec/fixtures/2025.02.05.grand_rapids.json"))
+    sale = sales.find { |sale| sale["saleID"] == 250212 }
+    sale = lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep)
+    line = lsi.get_report_line(job, sale)
+    expect(line[:ShipAddressLine1]).to eq("Weekend to Remember Planner: Jon Tippman")
+    expect(line[:ShipAddressLine2]).to eq("187 Monroe Ave NW")
+    expect(line[:ShipCity]).to eq("Grand Rapids")
+    expect(line[:ShipState]).to eq("MI")
+    expect(line[:ShipZipPostal]).to eq("49503-2666")
+  end
+
   it("should generate an entire report with shipping in places where it needs it") do
     job = lsi.create_job 66, "2025-01-30", "2025-02-05"
     sales = JSON.parse(File.read("#{Rails.root}/spec/fixtures/2025.02.05.grand_rapids.json"))
@@ -39,7 +55,7 @@ describe LSExtract do
     line1 = report.find { |line| line[:SaleID] == 250210 }
     line2 = report.find { |line| line[:SaleID] == 250212 }
     expect(line1[:ShipAddressLine1]).to eq("550 Riley St.")
-    expect(line2[:ShipAddressLine1]).to be_nil
+    expect(line2[:ShipAddressLine1]).to eq("Weekend to Remember Planner: Jon Tippman")
   end
 
   it("should calculate unit prices properly") do
@@ -165,7 +181,19 @@ describe LSExtract do
   it("should be able to get a shipping address field") do
     sale = example_sales[1]
     sale = lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep)
-    val = lsh.get_shipping_address(sale, "address1")
+    context = {}
+    context["shop_id"] = 66
+    context["start_date"] = "2025-01-30"
+    context["end_date"] = "2025-02-05"
+    context["event_code"] = "WTR25GRR1"
+    context["event_address"] = {
+      "address1" => "Weekend to Remember Planner: Jon Tippman",
+      "address2" => "187 Monroe Ave NW",
+      "city" => "Grand Rapids",
+      "state" => "MI",
+      "zip" => "49503-2666"
+    }
+    val = lsh.get_shipping_address(sale, "address1", context)
     expect(val).to be == "119 Vista Lane"
 
     val = lsh.get_address(sale, "foo")
@@ -180,7 +208,7 @@ describe LSExtract do
     report = lsi.process_report(report)
     line = report.first
     expected = '{
-  "EventCode": "random_event_code",
+  "EventCode": "WTR25GRR1",
   "SaleID": 249608,
   "OrderDate": "2024-12-06",
   "Customer": "Mark Snyder**",
@@ -216,7 +244,7 @@ describe LSExtract do
   context "#remove_refunds" do
     let(:sale_line) {
       {
-        EventCode: "random_event_code",
+        EventCode: "WTR25GRR1",
         SaleID: 249608,
         OrderDate: "2024-12-06",
         Customer: "Mark Snyder**",
@@ -249,7 +277,7 @@ describe LSExtract do
     }
     let(:refund_line) {
       {
-        EventCode: "random_event_code",
+        EventCode: "WTR25GRR1",
         SaleID: 249608,
         OrderDate: "2024-12-06",
         Customer: "Mark Snyder**",
@@ -282,7 +310,7 @@ describe LSExtract do
     }
     let(:bundle_sale_line) {
       {
-        EventCode: "random_event_code",
+        EventCode: "WTR25GRR1",
         SaleID: 249608,
         OrderDate: "2024-12-06",
         Customer: "Mark Snyder**",
@@ -315,7 +343,7 @@ describe LSExtract do
     }
     let(:bundle_sale_line_more_quantity) {
       {
-        EventCode: "random_event_code",
+        EventCode: "WTR25GRR1",
         SaleID: 249608,
         OrderDate: "2024-12-06",
         Customer: "Mark Snyder**",
@@ -348,7 +376,7 @@ describe LSExtract do
     }
     let(:same_customer_different_item) {
       {
-        EventCode: "random_event_code",
+        EventCode: "WTR25GRR1",
         SaleID: 249608,
         OrderDate: "2024-12-06",
         Customer: "Mark Snyder**",
@@ -381,7 +409,7 @@ describe LSExtract do
     }
     let(:different_customer) {
       {
-        EventCode: "random_event_code",
+        EventCode: "WTR25GRR1",
         SaleID: 249608,
         OrderDate: "2024-12-06",
         Customer: "Jeff Snyder**",
@@ -414,7 +442,7 @@ describe LSExtract do
     }
     let(:bundle_refund_line) {
       {
-        EventCode: "random_event_code",
+        EventCode: "WTR25GRR1",
         SaleID: 249608,
         OrderDate: "2024-12-06",
         Customer: "Mark Snyder**",
@@ -516,7 +544,7 @@ describe LSExtract do
   context "#remove_shipping_product_codes" do
     let(:special_order_sale_line) {
       {
-        EventCode: "random_event_code",
+        EventCode: "WTR25GRR1",
         SaleID: 249608,
         OrderDate: "2024-12-06",
         Customer: "Mark Snyder**",

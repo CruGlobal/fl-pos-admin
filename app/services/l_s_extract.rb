@@ -3,7 +3,18 @@ class LSExtract
   SHEETS_SCOPE = Google::Apis::SheetsV4::AUTH_SPREADSHEETS
   SPECIAL_ORDER_SKU = "MSC17061"
 
+  @sf_client = nil
+
   def initialize
+    @sf_client = Restforce.new(
+      username: ENV["SF_USERNAME"],
+      password: ENV["SF_PASSWORD"],
+      security_token: ENV["SF_TOKEN"],
+      instance_url: ENV["SF_INSTANCE_URL"],
+      host: ENV["SF_HOST"],
+      client_id: ENV["SF_CLIENT_ID"],
+      client_secret: ENV["SF_CLIENT_SECRET"]
+    )
   end
 
   def lsh
@@ -24,24 +35,49 @@ class LSExtract
   end
 
   def create_job(shop_id, start_date, end_date)
+    # Get the shop from Lightspeed
     shop = lsh.find_shop(shop_id)
+    # This allows us to know the event_code
+    event_code = shop.Contact["custom"]
+    # Now use the event_code to get the event address from SalesForce
+    event_address = get_event_address(event_code)
+    # Now build the context
     context = {
       shop_id: shop_id,
       start_date: start_date,
       end_date: end_date,
-      event_code: shop.Contact["custom"]
+      event_code: event_code,
+      event_address: event_address.to_h
     }
     job = Job.create(
       type: "LS_EXTRACT",
       shop_id: shop_id,
       start_date: start_date,
       end_date: end_date,
-      event_code: shop.Contact["custom"],
+      event_code: event_code,
       context: context,
       status: :created
     )
     job.save!
     job
+  end
+
+  def get_event_address(event_code)
+    soql = "SELECT Id,
+      Conference_Location__r.Name,
+      Conference_Location__r.ShippingStreet,
+      Conference_Location__r.ShippingCity,
+      Conference_Location__r.ShippingState,
+      Conference_Location__r.ShippingPostalCode
+      FROM Event_Details__c
+      WHERE EventCode__c = '#{event_code}'"
+    sfaddress = @sf_client.query(soql).first
+    {
+      address1: sfaddress["Conference_Location__r"]["ShippingStreet"],
+      city: sfaddress["Conference_Location__r"]["ShippingCity"],
+      state: sfaddress["Conference_Location__r"]["ShippingState"],
+      zip: sfaddress["Conference_Location__r"]["ShippingPostalCode"]
+    }
   end
 
   def log job, message
@@ -261,11 +297,11 @@ class LSExtract
       State: lsh.get_address(sale, "state"),
       ZipPostal: lsh.get_address(sale, "zip"),
       Country: "US",
-      ShipAddressLine1: lsh.get_shipping_address(sale, "address1"),
-      ShipAddressLine2: "",
-      ShipCity: lsh.get_shipping_address(sale, "city"),
-      ShipState: lsh.get_shipping_address(sale, "state"),
-      ShipZipPostal: lsh.get_shipping_address(sale, "zip"),
+      ShipAddressLine1: lsh.get_shipping_address(sale, "address1", job.context),
+      ShipAddressLine2: lsh.get_shipping_address(sale, "address2", job.context),
+      ShipCity: lsh.get_shipping_address(sale, "city", job.context),
+      ShipState: lsh.get_shipping_address(sale, "state", job.context),
+      ShipZipPostal: lsh.get_shipping_address(sale, "zip", job.context),
       ShipCountry: "US",
       EmailAddress: lsh.get_email_addresses(sale).join("|"),
       POSImportID: sale["saleID"]

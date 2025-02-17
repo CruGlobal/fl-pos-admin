@@ -144,31 +144,46 @@ class LightspeedApiHelper
     address[field]
   end
 
-  def get_shipping_address(sale, field)
-    return unless sale["ShipTo"].present?
+  def get_shipping_address(sale, field, context)
+    if sale["ShipTo"].present?
+      customer = sale["ShipTo"]
+      addresses = customer["Contact"]["Addresses"]
+      return unless addresses
 
-    customer = sale["ShipTo"]
-    addresses = customer["Contact"]["Addresses"]
-    return unless addresses
+      unless addresses.is_a?(Array)
+        addresses = [addresses]
+      end
 
-    unless addresses.is_a?(Array)
-      addresses = [addresses]
+      return unless addresses.count > 0
+
+      address = addresses.first
+
+      ca = address["ContactAddress"]
+      return unless ca
+
+      if ca.is_a?(Array)
+        ca = ca.first
+      end
+
+      return '' unless ca[field]
+
+      ca[field]
+    else
+      if field == 'address1' || field == 'address2'
+        value = context['event_address']['address1']
+        if(field == 'address1')
+          return value.split("\n")[0]
+        end
+        if (field == 'address2')
+          return value.split("\n")[1]
+        end
+      end
+
+      return '' unless context['event_address'][field].present?
+
+      context['event_address'][field]
     end
 
-    return unless addresses.count > 0
-
-    address = addresses.first
-
-    ca = address["ContactAddress"]
-    return unless ca
-
-    if ca.is_a?(Array)
-      ca = ca.first
-    end
-
-    return unless ca[field]
-
-    ca[field]
   end
 
   def get_email_addresses(sale)
