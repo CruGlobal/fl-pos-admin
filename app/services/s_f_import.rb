@@ -119,7 +119,7 @@ class SFImport
         Product_Code__c: inv[:sku],
         Quantity__c: inv[:quantity],
         Source_Code__c: job["event_code"],
-        Agent__c: "Lightspeed",
+        Agent__c: ENV["SF_AGENT"],
         Upsert_Key__c: "#{job["event_code"]}-#{inv[:sku]}"
       }
     end
