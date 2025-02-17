@@ -43,13 +43,15 @@ class LSExtract
     event_code = shop.Contact["custom"]
     # Now use the event_code to get the event address from SalesForce
     event_address = get_event_address(event_code)
+    shop_name = shop.name.gsub("EVENT - ", "")
 
     context = {
       shop_id: shop_id,
       start_date: start_date,
       end_date: end_date,
       event_code: event_code,
-      event_address: event_address
+      event_address: event_address,
+      shop_name: shop_name
     }
     job = Job.create(
       type: "LS_EXTRACT",
@@ -278,7 +280,37 @@ class LSExtract
     lines
   end
 
+  def guest_customer_data(job)
+    {
+      "firstName" => "WTR",
+      "lastName" => "GUEST - #{job.context["shop_name"]}",
+      "Contact" => {
+        "Emails" => {
+          "ContactEmail" => [
+            {
+              "address" => "fleventanonymoussales@familylife.com",
+              "useType" => "Primary"
+            }
+          ]
+        },
+        "Addresses" => {
+          "ContactAddress" => [
+            {
+              "address1" => "100 Lake Hart Dr",
+              "city" => "Orlando",
+              "state" => "FL",
+              "zip" => "32832"
+            }
+          ]
+        }
+      }
+    }
+  end
+
   def get_report_line(job, sale)
+    # If the sale has no customer, use a guest customer
+    sale["Customer"] ||= guest_customer_data(job)
+
     last_name = sale["Customer"]["lastName"].gsub(/\*\d+\*$/, "").strip.tr("*", "")
     tax_total = (sale["calcTax1"].to_f + sale["calcTax2"].to_f).round(2)
     item_subtotal = lsh.get_all_unit_prices(sale).map { |p| p.to_f }.sum.round(2)
