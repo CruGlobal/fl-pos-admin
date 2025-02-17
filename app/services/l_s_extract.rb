@@ -308,6 +308,7 @@ class LSExtract
   end
 
   def get_report_line(job, sale)
+    puts "Sale: " + sale["saleID"].to_s
     # If the sale has no customer, use a guest customer
     sale["Customer"] ||= guest_customer_data(job)
 
@@ -356,7 +357,7 @@ class LSExtract
       ShipState: ship_address["state"],
       ShipZipPostal: ship_address["zip"],
       ShipCountry: "US",
-      EmailAddress: lsh.get_email_addresses(sale).join("|"),
+      EmailAddress: lsh.get_email_addresses(sale)&.join("|"),
       POSImportID: sale["saleID"]
     }
   end
