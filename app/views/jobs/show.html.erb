@@ -1,0 +1,25 @@
+<p style="color: green"><%= notice %></p>
+
+<% content_for :title, "Jobs" %>
+
+<h1>Job <%= @job.id %></h1>
+
+<div class="table-responsive">
+  <table class="table accordion table-dark">
+    <thead>
+    <tr>
+      <th scope="col"> Job ID </th>
+      <th scope="col"> Shop ID </th>
+      <th scope="col"> Event Code </th>
+      <th scope="col"> Type </th>
+      <th scope="col"> Status </th>
+      <th scope="col"> Start Date &gt;= </th>
+      <th scope="col"> End Date &lt;= </th>
+      <th scope="col"> Actions </th>
+    </tr>
+    </thead>
+    <tbody>
+      <%= render @job, limit: nil %>
+    </tbody>
+  </table>
+</div>

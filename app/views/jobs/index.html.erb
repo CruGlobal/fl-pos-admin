@@ -4,7 +4,6 @@
 
 <h1>Jobs</h1>
 
-<%= form_tag(jobs_path, class: 'form', method: 'GET') do |form| %>
 <div class="table-responsive">
 <table class="table accordion table-dark">
   <thead>
@@ -19,38 +18,39 @@
     <th scope="col"> Actions </th>
   </tr>
   </thead>
-  <tr>
-    <td scope="col">
-      <%= text_field_tag :job_id, params[:job_id], class: 'form-control' %>
-    </td>
-    <td scope="col">
-      <%= text_field_tag :shop_id, params[:shop_id], class: 'form-control' %>
-    </td>
-    <td scope="col">
-      <%= text_field_tag :event_code, params[:event_code], class: 'form-control' %>
-    </td>
-    <td scope="col">
-      <%= select_tag :type, options_for_select(Job::TYPE, params[:type]), {include_blank: true, class: 'form-select'} %>
-    </td>
-    <td scope="col">
-      <%= select_tag :status, options_for_select(Job::STATUS, params[:status]), {include_blank: true, class: 'form-select'} %>
-    </td>
-    <td scope="col">
-      <%= text_field_tag :start_date, params[:start_date], class: 'form-control', type: 'date' %>
-    </td>
-    <td scope="col">
-      <%= text_field_tag :end_date, params[:end_date], class: 'form-control', type: 'date' %>
-    </td>
-    <td scope="col">
-      <%= submit_tag "Filter", class: "btn btn-primary" %>
-    </td>
-  </tr>
+  <%= form_tag(jobs_path, class: 'form', method: 'GET') do |form| %>
+    <tr>
+      <td scope="col">
+        <%= text_field_tag :job_id, params[:job_id], class: 'form-control' %>
+      </td>
+      <td scope="col">
+        <%= text_field_tag :shop_id, params[:shop_id], class: 'form-control' %>
+      </td>
+      <td scope="col">
+        <%= text_field_tag :event_code, params[:event_code], class: 'form-control' %>
+      </td>
+      <td scope="col">
+        <%= select_tag :type, options_for_select(Job::TYPE, params[:type]), {include_blank: true, class: 'form-select'} %>
+      </td>
+      <td scope="col">
+        <%= select_tag :status, options_for_select(Job::STATUS, params[:status]), {include_blank: true, class: 'form-select'} %>
+      </td>
+      <td scope="col">
+        <%= text_field_tag :start_date, params[:start_date], class: 'form-control', type: 'date' %>
+      </td>
+      <td scope="col">
+        <%= text_field_tag :end_date, params[:end_date], class: 'form-control', type: 'date' %>
+      </td>
+      <td scope="col">
+        <%= submit_tag "Filter", class: "btn btn-primary" %>
+      </td>
+    </tr>
+  <% end %>
   <tbody>
-  <%= render @jobs %>
+  <%= render @jobs, limit: 10 %>
   </tbody>
 </table>
 </div>
-<% end %>
 
 <nav>
 <%= will_paginate @jobs, renderer: BootstrapPaginationRenderer %>

@@ -20,7 +20,11 @@ Rails.application.routes.draw do
   match "/lightspeedinit", to: "lightspeedinit#index", via: [:get]
   match "/lightspeedauth", to: "lightspeedauth#index", via: [:get]
 
-  resources :jobs, except: %i[show destroy]
+  resources :jobs do
+    member do
+      post :restart
+    end
+  end
   get "/jobs", to: "jobs#index"
   match "/google_sheets", to: "google_sheets#index", via: [:get]
   match "/google_sheets/import", to: "google_sheets#import", via: [:post]

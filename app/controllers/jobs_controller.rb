@@ -1,5 +1,5 @@
 class JobsController < ApplicationController
-  before_action :set_job, only: %i[edit update]
+  before_action :set_job, except: %i[index new create]
   before_action :set_form_defaults, only: %i[new edit]
 
   # GET /jobs
@@ -29,6 +29,10 @@ class JobsController < ApplicationController
       q = q.where("end_date <= ?", end_date)
     end
     @jobs = q.paginate(page: params[:page], per_page: 10)
+  end
+
+  # GET /jobs/1
+  def show
   end
 
   # GET /jobs/new
@@ -62,6 +66,21 @@ class JobsController < ApplicationController
       redirect_to jobs_path, notice: "Job was successfully created."
     else
       render :new, status: :unprocessable_entity
+    end
+  end
+
+  # DELETE /jobs/1
+  def destroy
+    @job.destroy
+    redirect_to jobs_url, notice: "Job was successfully destroyed."
+  end
+
+  # POST /jobs/1/restart
+  def restart
+    if @job.restart_job
+      redirect_to jobs_path, notice: "Job was successfully restarted."
+    else
+      render :edit, status: :unprocessable_entity
     end
   end
 
