@@ -114,13 +114,13 @@ class SFImport
 
   def convert_inventory_to_sf_objects(job, inventory)
     ps_objects = []
-    inventory.each do |inv, v|
+    inventory.each do |inv|
       ps_objects << {
-        Product_Code__c: inv.to_s,
-        Quantity__c: v.to_i,
+        Product_Code__c: inv[:sku],
+        Quantity__c: inv[:quantity],
         Source_Code__c: job["event_code"],
         Agent__c: "Lightspeed",
-        Upsert_Key__c: "#{job["event_code"]}-#{inv}"
+        Upsert_Key__c: "#{job["event_code"]}-#{inv[:sku]}"
       }
     end
     ps_objects
