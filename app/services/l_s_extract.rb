@@ -106,7 +106,8 @@ class LSExtract
     # Get list of all sales for the shop_id between start_date and end_date (paging included)
     context["sales"] = lsh.get_sales(job, context["shop_id"], context["start_date"], context["end_date"])
     log job, "Sales retrieved from Lightspeed"
-    minutes = (context["sales"].count / 300).ceil * 10
+    division_result = context["sales"].count / 300
+    minutes = (division_result.zero? ? 1 : division_result) * 10
     log job, "Optimizing for storage. This may take up to #{minutes} minutes."
     # Optimize sales data to remove extreneous data from the Object
     context["sales"] = context["sales"].map { |sale| lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep) }
