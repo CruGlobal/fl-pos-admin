@@ -38,6 +38,16 @@ RSpec.describe JobsController, type: :controller do
 
     allow_any_instance_of(JobsController).to receive(:get_event_options).and_return([])
     LightspeedStubHelpers.stub_lightspeed_account_request
+
+    event_address = {
+      "Conference_Location__r" => {
+        "ShippingStreet" => "Weekend to Remember Planner: Jon Tippman\n187 Monroe Ave NW",
+        "ShippingCity" => "Grand Rapids",
+        "ShippingState" => "MI",
+        "ShippingPostalCode" => "49503-2666"
+      }
+    }
+    allow_any_instance_of(Restforce::Data::Client).to receive(:query).and_return([event_address])
   end
 
   describe "GET /index" do

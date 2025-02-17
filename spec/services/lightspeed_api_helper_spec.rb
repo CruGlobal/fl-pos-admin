@@ -13,6 +13,16 @@ describe LightspeedApiHelper do
     allow_any_instance_of(Lightspeed::Client).to receive(:accounts).and_return(accounts)
     shops = double("shops", all: [Lightspeed::Shop.new], find: Lightspeed::Shop.new)
     allow_any_instance_of(Lightspeed::Account).to receive(:shops).and_return(shops)
+
+    event_address = {
+      "Conference_Location__r" => {
+        "ShippingStreet" => "Weekend to Remember Planner: Jon Tippman\n187 Monroe Ave NW",
+        "ShippingCity" => "Grand Rapids",
+        "ShippingState" => "MI",
+        "ShippingPostalCode" => "49503-2666"
+      }
+    }
+    allow_any_instance_of(Restforce::Data::Client).to receive(:query).and_return([event_address])
   end
 
   it("should initialize with a token holder") do
