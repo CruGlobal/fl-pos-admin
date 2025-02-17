@@ -83,7 +83,9 @@ RSpec.describe JobsController, type: :controller do
 
   describe "POST /create" do
     before do
-      allow_any_instance_of(LightspeedApiHelper).to receive(:find_shop).and_return(double("shop", id: 1, Contact: {firstName: "John", lastName: "Doe"}))
+      shop = double("shop", id: 1, Contact: {firstName: "John", lastName: "Doe"})
+      allow_any_instance_of(LightspeedApiHelper).to receive(:find_shop).and_return(shop)
+      allow(shop).to receive("name").and_return("EVENT - Grand Rapids Store random_event_code")
     end
 
     context "with valid parameters" do

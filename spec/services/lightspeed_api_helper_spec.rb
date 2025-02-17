@@ -35,7 +35,7 @@ describe LightspeedApiHelper do
   end
 
   it("should get sales") do
-    allow_any_instance_of(LightspeedApiHelper).to receive(:find_shop).and_return(double("shop", id: 1, Contact: {firstName: "John", lastName: "Doe"}))
+    allow_any_instance_of(LightspeedApiHelper).to receive(:find_shop).and_return(double("shop", id: 1, Contact: {firstName: "John", lastName: "Doe"}, name: "Test Shop"))
     allow_any_instance_of(Lightspeed::Sales).to receive(:size).and_return(18)
     allow_any_instance_of(Lightspeed::Sales).to receive(:all).and_return([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18])
 
