@@ -26,13 +26,11 @@ class WooRefresh
   def get_page job, current_page, query
     log job, "Getting page #{current_page}"
     response = @woo.get("products", query)
-    response.headers["x-wp-total"]
     pages = response.headers["x-wp-totalpages"]
-    response.headers["link"]
     log job, "Got page #{current_page} of #{pages}: #{response.parsed_response.count} records"
     if response.code != 200
       log job, "Error getting products from WooCommerce: #{response.code} #{response.parsed_response}"
-      return results
+      return
     end
     response
   end

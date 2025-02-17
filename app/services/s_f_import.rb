@@ -1,14 +1,15 @@
 require "salesforce_bulk_api"
 
 class SFImport
-  @lsh = nil
-  @sf_client = nil
-  @sf = nil
-
   def initialize
-    @lsh = LightspeedApiHelper.new
+  end
 
-    @sf_client = Restforce.new(
+  def lsh
+    @lsh ||= LightspeedApiHelper.new
+  end
+
+  def sf_client
+    @sf_client ||= Restforce.new(
       username: ENV["SF_USERNAME"],
       password: ENV["SF_PASSWORD"],
       security_token: ENV["SF_TOKEN"],
@@ -27,7 +28,7 @@ class SFImport
   end
 
   def create_job(shop_id, start_date, end_date)
-    shop = @lsh.find_shop(shop_id)
+    shop = lsh.find_shop(shop_id)
     context = {
       shop_id: shop_id,
       start_date: start_date,
@@ -71,8 +72,10 @@ class SFImport
   end
 
   def init_sf_client
-    @sf_client.authenticate!
-    @sf = SalesforceBulkApi::Api.new(@sf_client)
+    return @sf if @sf
+
+    sf_client.authenticate!
+    @sf = SalesforceBulkApi::Api.new(sf_client)
   end
 
   def handle_job(job)
@@ -91,10 +94,10 @@ class SFImport
 
     # Get the sales from Lightspeed
     context = job.context
-    context["sales"] = @lsh.get_sales(job, context["shop_id"], context["start_date"], context["end_date"])
+    context["sales"] = lsh.get_sales(job, context["shop_id"], context["start_date"], context["end_date"])
     log job, "Got sales"
 
-    context["sales"] = context["sales"].map { |sale| @lsh.strip_to_named_fields(sale, LightspeedInventorySchema.fields_to_keep) }
+    context["sales"] = context["sales"].map { |sale| lsh.strip_to_named_fields(sale, LightspeedInventorySchema.fields_to_keep) }
     log job, "Stripped sales to only essential fields."
 
     context["inventory"] = get_inventory(job, context["sales"], products, bundles)
@@ -116,7 +119,7 @@ class SFImport
         Product_Code__c: inv.to_s,
         Quantity__c: v.to_i,
         Source_Code__c: job["event_code"],
-        Agent__c: "LightSpeed",
+        Agent__c: "Lightspeed",
         Upsert_Key__c: "#{job["event_code"]}-#{inv}"
       }
     end
@@ -129,7 +132,7 @@ class SFImport
     # Push the inventory to SalesForce
     upserts = []
     ps_objects.each do |ps_object|
-      upserts << @sf_client.create!("Product_Sale__c",
+      upserts << sf_client.create!("Product_Sale__c",
         Upsert_Key__c: ps_object[:Upsert_Key__c],
         Product_Code__c: ps_object[:Product_Code__c],
         Quantity__c: ps_object[:Quantity__c],
@@ -189,6 +192,7 @@ class SFImport
     filtered_skus.each do |sku, quantity|
       inventory << {sku:, quantity:}
     end
+    inventory
   end
 
   def filter_skus(skus)
