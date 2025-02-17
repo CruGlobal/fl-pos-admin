@@ -17,6 +17,16 @@ describe LSExtract do
     allow_any_instance_of(WooRefresh).to receive(:latest_refresh_timestamp).and_return(1.hour.ago)
     allow(Google::Auth::ServiceAccountCredentials).to receive(:make_creds).and_return(nil)
     LightspeedStubHelpers.stub_lightspeed_account_request
+
+    event_address = {
+      "Conference_Location__r" => {
+        "ShippingStreet" => "Weekend to Remember Planner: Jon Tippman\n187 Monroe Ave NW",
+        "ShippingCity" => "Grand Rapids",
+        "ShippingState" => "MI",
+        "ShippingPostalCode" => "49503-2666"
+      }
+    }
+    allow_any_instance_of(Restforce::Data::Client).to receive(:query).and_return([event_address])
   end
 
   it("should get a report line with shipping") do
@@ -31,6 +41,19 @@ describe LSExtract do
     expect(line[:ShipZipPostal]).to eq("48910")
   end
 
+  it("should get a report line with event code when no shipping is present") do
+    job = lsi.create_job 66, "2025-01-30", "2025-02-05"
+    sales = JSON.parse(File.read("#{Rails.root}/spec/fixtures/2025.02.05.grand_rapids.json"))
+    sale = sales.find { |sale| sale["saleID"] == 250212 }
+    sale = lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep)
+    line = lsi.get_report_line(job, sale)
+    expect(line[:ShipAddressLine1]).to eq("Weekend to Remember Planner: Jon Tippman")
+    expect(line[:ShipAddressLine2]).to eq("187 Monroe Ave NW")
+    expect(line[:ShipCity]).to eq("Grand Rapids")
+    expect(line[:ShipState]).to eq("MI")
+    expect(line[:ShipZipPostal]).to eq("49503-2666")
+  end
+
   it("should generate an entire report with shipping in places where it needs it") do
     job = lsi.create_job 66, "2025-01-30", "2025-02-05"
     sales = JSON.parse(File.read("#{Rails.root}/spec/fixtures/2025.02.05.grand_rapids.json"))
@@ -39,7 +62,7 @@ describe LSExtract do
     line1 = report.find { |line| line[:SaleID] == 250210 }
     line2 = report.find { |line| line[:SaleID] == 250212 }
     expect(line1[:ShipAddressLine1]).to eq("550 Riley St.")
-    expect(line2[:ShipAddressLine1]).to be_nil
+    expect(line2[:ShipAddressLine1]).to eq("Weekend to Remember Planner: Jon Tippman")
   end
 
   it("should calculate unit prices properly") do
