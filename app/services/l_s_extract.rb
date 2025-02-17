@@ -6,6 +6,18 @@ class LSExtract
   def initialize
   end
 
+  def sf_client
+    @sf_client ||= Restforce.new(
+      username: ENV["SF_USERNAME"],
+      password: ENV["SF_PASSWORD"],
+      security_token: ENV["SF_TOKEN"],
+      instance_url: ENV["SF_INSTANCE_URL"],
+      host: ENV["SF_HOST"],
+      client_id: ENV["SF_CLIENT_ID"],
+      client_secret: ENV["SF_CLIENT_SECRET"]
+    )
+  end
+
   def lsh
     @lsh ||= LightspeedApiHelper.new
   end
@@ -24,19 +36,27 @@ class LSExtract
   end
 
   def create_job(shop_id, start_date, end_date)
+    # Get the shop from Lightspeed
     shop = lsh.find_shop(shop_id)
+
+    # Grab the event_code
+    event_code = shop.Contact["custom"]
+    # Now use the event_code to get the event address from SalesForce
+    event_address = get_event_address(event_code)
+
     context = {
       shop_id: shop_id,
       start_date: start_date,
       end_date: end_date,
-      event_code: shop.Contact["custom"]
+      event_code: event_code,
+      event_address: event_address
     }
     job = Job.create(
       type: "LS_EXTRACT",
       shop_id: shop_id,
       start_date: start_date,
       end_date: end_date,
-      event_code: shop.Contact["custom"],
+      event_code: event_code,
       context: context,
       status: :created
     )
@@ -107,6 +127,29 @@ class LSExtract
     log job, "Report saved to Google Sheets"
     job.status_complete!
     job.save!
+  end
+
+  def get_event_address(event_code)
+    return @event_address if @event_address
+
+    soql = "SELECT Id,
+      Conference_Location__r.Name,
+      Conference_Location__r.ShippingStreet,
+      Conference_Location__r.ShippingCity,
+      Conference_Location__r.ShippingState,
+      Conference_Location__r.ShippingPostalCode
+      FROM Event_Details__c
+      WHERE EventCode__c = '#{event_code}'"
+    sf_address = sf_client.query(soql).first
+    street = sf_address["Conference_Location__r"]["ShippingStreet"]
+    address1, address2 = street.split("\n")
+    @event_address = {
+      address1: address1,
+      address2: address2,
+      city: sf_address["Conference_Location__r"]["ShippingCity"],
+      state: sf_address["Conference_Location__r"]["ShippingState"],
+      zip: sf_address["Conference_Location__r"]["ShippingPostalCode"]
+    }
   end
 
   def process_report(report)
@@ -239,6 +282,20 @@ class LSExtract
     last_name = sale["Customer"]["lastName"].gsub(/\*\d+\*$/, "").strip.tr("*", "")
     tax_total = (sale["calcTax1"].to_f + sale["calcTax2"].to_f).round(2)
     item_subtotal = lsh.get_all_unit_prices(sale).map { |p| p.to_f }.sum.round(2)
+
+    # Get shipping address from the event if it's not specified in the sale
+    ship_address = if sale["ShipTo"].present?
+      {
+        "address1" => lsh.get_shipping_address(sale, "address1"),
+        "address2" => "",
+        "city" => lsh.get_shipping_address(sale, "city"),
+        "state" => lsh.get_shipping_address(sale, "state"),
+        "zip" => lsh.get_shipping_address(sale, "zip")
+      }
+    else
+      job.context["event_address"]
+    end
+
     {
       EventCode: job.event_code,
       SaleID: sale["saleID"],
@@ -261,11 +318,11 @@ class LSExtract
       State: lsh.get_address(sale, "state"),
       ZipPostal: lsh.get_address(sale, "zip"),
       Country: "US",
-      ShipAddressLine1: lsh.get_shipping_address(sale, "address1"),
-      ShipAddressLine2: "",
-      ShipCity: lsh.get_shipping_address(sale, "city"),
-      ShipState: lsh.get_shipping_address(sale, "state"),
-      ShipZipPostal: lsh.get_shipping_address(sale, "zip"),
+      ShipAddressLine1: ship_address["address1"],
+      ShipAddressLine2: ship_address["address2"],
+      ShipCity: ship_address["city"],
+      ShipState: ship_address["state"],
+      ShipZipPostal: ship_address["zip"],
       ShipCountry: "US",
       EmailAddress: lsh.get_email_addresses(sale).join("|"),
       POSImportID: sale["saleID"]
