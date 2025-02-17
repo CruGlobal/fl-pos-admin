@@ -66,6 +66,16 @@ describe LSExtract do
     expect(line2[:ShipAddressLine1]).to eq("Weekend to Remember Planner: Jon Tippman")
   end
 
+  it("should use the anonymous email if customer data has no email") do
+    job = lsi.create_job 66, "2025-01-30", "2025-02-05"
+    sales = JSON.parse(File.read("#{Rails.root}/spec/fixtures/2025.02.05.grand_rapids.json"))
+    sale = sales.find { |sale| sale["saleID"] == 250212 }
+    sale["Customer"]["Contact"]["Emails"] = nil
+    sale = lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep)
+    line = lsi.get_report_line(job, sale)
+    expect(line[:EmailAddress]).to eq(LSExtract::CUSTOMER_ANONYMOUS_EMAIL)
+  end
+
   it("should calculate unit prices properly") do
     lsi.create_job 66, "2025-01-30", "2025-02-05"
     # get sales and JSON pretty print them to the file

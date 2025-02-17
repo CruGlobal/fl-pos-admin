@@ -2,6 +2,7 @@ class LSExtract
   SHEET_ID = ENV["GOOGLE_SHEET_ID"]
   SHEETS_SCOPE = Google::Apis::SheetsV4::AUTH_SPREADSHEETS
   SPECIAL_ORDER_SKU = "MSC17061"
+  CUSTOMER_ANONYMOUS_EMAIL = "fleventanonymoussales@familylife.com"
 
   def initialize
   end
@@ -289,7 +290,7 @@ class LSExtract
         "Emails" => {
           "ContactEmail" => [
             {
-              "address" => "fleventanonymoussales@familylife.com",
+              "address" => CUSTOMER_ANONYMOUS_EMAIL,
               "useType" => "Primary"
             }
           ]
@@ -358,7 +359,7 @@ class LSExtract
       ShipState: ship_address["state"],
       ShipZipPostal: ship_address["zip"],
       ShipCountry: "US",
-      EmailAddress: lsh.get_email_addresses(sale)&.join("|"),
+      EmailAddress: lsh.get_email_addresses(sale)&.join("|") || CUSTOMER_ANONYMOUS_EMAIL,
       POSImportID: sale["saleID"]
     }
   end
