@@ -54,6 +54,10 @@ class WooImport
       WoocommerceImportJob.set(wait: 5.minutes).perform_later
       return
     end
+    if Job.where(type: "WOO_IMPORT", status: :processing).count > 0
+      Rails.logger.info "POLLING: A WOO_IMPORT job is currently running or failed unexpectedly. Will not start another job."
+      return
+    end
     jobs = Job.where(type: "WOO_IMPORT", status: [:created, :paused]).all
     if jobs.count == 0
       Rails.logger.info "POLLING: No WOO_IMPORT jobs found."
