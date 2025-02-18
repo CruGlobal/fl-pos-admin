@@ -2,6 +2,7 @@ class LSExtract
   SHEET_ID = ENV["GOOGLE_SHEET_ID"]
   SHEETS_SCOPE = Google::Apis::SheetsV4::AUTH_SPREADSHEETS
   SPECIAL_ORDER_SKU = "MSC17061"
+  CUSTOMER_ANONYMOUS_EMAIL = "fleventanonymoussales@familylife.com"
 
   def initialize
   end
@@ -43,13 +44,15 @@ class LSExtract
     event_code = shop.Contact["custom"]
     # Now use the event_code to get the event address from SalesForce
     event_address = get_event_address(event_code)
+    shop_name = shop.name.gsub("EVENT - ", "")
 
     context = {
       shop_id: shop_id,
       start_date: start_date,
       end_date: end_date,
       event_code: event_code,
-      event_address: event_address
+      event_address: event_address,
+      shop_name: shop_name
     }
     job = Job.create(
       type: "LS_EXTRACT",
@@ -104,7 +107,8 @@ class LSExtract
     # Get list of all sales for the shop_id between start_date and end_date (paging included)
     context["sales"] = lsh.get_sales(job, context["shop_id"], context["start_date"], context["end_date"])
     log job, "Sales retrieved from Lightspeed"
-    minutes = (context["sales"].count / 300).ceil * 10
+    division_result = context["sales"].count / 300
+    minutes = (division_result.zero? ? 1 : division_result) * 10
     log job, "Optimizing for storage. This may take up to #{minutes} minutes."
     # Optimize sales data to remove extreneous data from the Object
     context["sales"] = context["sales"].map { |sale| lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep) }
@@ -278,7 +282,38 @@ class LSExtract
     lines
   end
 
+  def guest_customer_data(job)
+    {
+      "firstName" => "WTR",
+      "lastName" => "GUEST - #{job.context["shop_name"]}",
+      "Contact" => {
+        "Emails" => {
+          "ContactEmail" => [
+            {
+              "address" => CUSTOMER_ANONYMOUS_EMAIL,
+              "useType" => "Primary"
+            }
+          ]
+        },
+        "Addresses" => {
+          "ContactAddress" => [
+            {
+              "address1" => "100 Lake Hart Dr",
+              "city" => "Orlando",
+              "state" => "FL",
+              "zip" => "32832"
+            }
+          ]
+        }
+      }
+    }
+  end
+
   def get_report_line(job, sale)
+    puts "Sale: " + sale["saleID"].to_s
+    # If the sale has no customer, use a guest customer
+    sale["Customer"] ||= guest_customer_data(job)
+
     last_name = sale["Customer"]["lastName"].gsub(/\*\d+\*$/, "").strip.tr("*", "")
     tax_total = (sale["calcTax1"].to_f + sale["calcTax2"].to_f).round(2)
     item_subtotal = lsh.get_all_unit_prices(sale).map { |p| p.to_f }.sum.round(2)
@@ -324,7 +359,7 @@ class LSExtract
       ShipState: ship_address["state"],
       ShipZipPostal: ship_address["zip"],
       ShipCountry: "US",
-      EmailAddress: lsh.get_email_addresses(sale).join("|"),
+      EmailAddress: lsh.get_email_addresses(sale)&.join("|") || CUSTOMER_ANONYMOUS_EMAIL,
       POSImportID: sale["saleID"]
     }
   end

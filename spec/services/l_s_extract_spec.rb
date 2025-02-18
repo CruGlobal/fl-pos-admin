@@ -11,6 +11,7 @@ describe LSExtract do
     shop = double("shop")
     allow_any_instance_of(LightspeedApiHelper).to receive(:find_shop).and_return(shop)
     allow(shop).to receive("Contact").and_return({"custom" => "random_event_code"})
+    allow(shop).to receive("name").and_return("EVENT - Grand Rapids Store random_event_code")
 
     create_list(:woo_product, 401)
 
@@ -63,6 +64,16 @@ describe LSExtract do
     line2 = report.find { |line| line[:SaleID] == 250212 }
     expect(line1[:ShipAddressLine1]).to eq("550 Riley St.")
     expect(line2[:ShipAddressLine1]).to eq("Weekend to Remember Planner: Jon Tippman")
+  end
+
+  it("should use the anonymous email if customer data has no email") do
+    job = lsi.create_job 66, "2025-01-30", "2025-02-05"
+    sales = JSON.parse(File.read("#{Rails.root}/spec/fixtures/2025.02.05.grand_rapids.json"))
+    sale = sales.find { |sale| sale["saleID"] == 250212 }
+    sale["Customer"]["Contact"]["Emails"] = nil
+    sale = lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep)
+    line = lsi.get_report_line(job, sale)
+    expect(line[:EmailAddress]).to eq(LSExtract::CUSTOMER_ANONYMOUS_EMAIL)
   end
 
   it("should calculate unit prices properly") do
@@ -234,6 +245,46 @@ describe LSExtract do
   "POSImportID": 249608
 }'
     expect(JSON.pretty_generate(line)).to eq(expected)
+  end
+
+  it "should handle a sale with no customer data" do
+    job = lsi.create_job 66, "2025-01-30", "2025-02-05"
+    sales = JSON.parse(File.read("#{Rails.root}/spec/fixtures/2025.02.05.grand_rapids.json"))
+    sale = sales.find { |sale| sale["saleID"] == 250212 }
+    sale["Customer"] = nil
+    sale = lsh.strip_to_named_fields(sale, LightspeedSaleSchema.fields_to_keep)
+    line = lsi.get_report_line(job, sale)
+    expect(line).to eql({
+      EventCode: "random_event_code",
+      SaleID: 250212,
+      OrderDate: "2025-02-01",
+      Customer: "WTR GUEST - Grand Rapids Store random_event_code",
+      FirstName: "WTR",
+      LastName: "GUEST - Grand Rapids Store random_event_code",
+      OrderTotal: 175.0,
+      ItemSubtotal: 175.0,
+      SalesTax: 0.0,
+      SpecialOrderFlag: "N",
+      TaxableOrderFlag: "N",
+      ProductCode: "CER21841",
+      Quantity: "1",
+      UnitPrice: "175.0",
+      ItemSalesTax: "0.0",
+      AddressLine1: "100 Lake Hart Dr",
+      AddressLine2: "",
+      City: "Orlando",
+      State: "FL",
+      ZipPostal: "32832",
+      Country: "US",
+      ShipAddressLine1: "Weekend to Remember Planner: Jon Tippman",
+      ShipAddressLine2: "187 Monroe Ave NW",
+      ShipCity: "Grand Rapids",
+      ShipState: "MI",
+      ShipZipPostal: "49503-2666",
+      ShipCountry: "US",
+      EmailAddress: "fleventanonymoussales@familylife.com",
+      POSImportID: 250212
+    })
   end
 
   context "#remove_refunds" do
