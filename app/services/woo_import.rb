@@ -58,17 +58,18 @@ class WooImport
       Rails.logger.info "POLLING: A WOO_IMPORT job is currently running or failed unexpectedly. Will not start another job."
       return
     end
-    jobs = Job.where(type: "WOO_IMPORT", status: [:created, :paused]).all
-    if jobs.count == 0
+
+    jobs_to_run = Job.where(type: "WOO_IMPORT", status: [:created, :paused])
+    if jobs_to_run.count == 0
       Rails.logger.info "POLLING: No WOO_IMPORT jobs found."
       return
     end
     # Mark all found jobs as paused
-    jobs.each do |job|
+    jobs_to_run.each do |job|
       job.status_paused!
-      job.save!
     end
-    jobs.each do |job|
+    # Run each job sequentially
+    jobs_to_run.each do |job|
       Rails.logger.info "POLLING: Found job #{job.id}. Starting job."
       handle_job job
     end

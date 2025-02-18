@@ -15,6 +15,36 @@ describe WooImport do
     expect(wi.products).not_to be_nil
   end
 
+  it "should start a new job if a WOO_REFRESH job is running" do
+    allow(Job).to receive(:where).with(type: "WOO_REFRESH", status: :processing).and_return([double("job")])
+    expect{wi.poll_jobs}.to have_enqueued_job(WoocommerceImportJob)
+  end
+
+  it "should not start a new job if a WOO_IMPORT job is running" do
+    allow(Job).to receive(:where).with(type: "WOO_REFRESH", status: :processing).and_return([])
+    allow(Job).to receive(:where).with(type: "WOO_IMPORT", status: :processing).and_return([double("job")])
+    expect{wi.poll_jobs}.not_to have_enqueued_job(WoocommerceImportJob)
+  end
+
+  it "should return nil if no jobs to run are found" do
+    allow(Job).to receive(:where).with(type: "WOO_REFRESH", status: :processing).and_return([])
+    allow(Job).to receive(:where).with(type: "WOO_IMPORT", status: :processing).and_return([])
+    allow(Job).to receive(:where).with(type: "WOO_IMPORT", status: [:created, :paused]).and_return([])
+    expect(wi.poll_jobs).to be_nil
+  end
+
+  it "should mark all jobs as paused and handle them" do
+    jobs = [double("job", id: 1), double("job", id: 2)]
+    allow(Job).to receive(:where).with(type: "WOO_REFRESH", status: :processing).and_return([])
+    allow(Job).to receive(:where).with(type: "WOO_IMPORT", status: :processing).and_return([])
+    allow(Job).to receive(:where).with(type: "WOO_IMPORT", status: [:created, :paused]).and_return(jobs)
+    jobs.each do |job|
+      expect(job).to receive(:status_paused!)
+      expect(wi).to receive(:handle_job).with(job)
+    end
+    wi.poll_jobs
+  end
+
   it("it should get an array of objects from the sheet") do
     spreadsheet = double("spreadsheet", sheets: [Google::Apis::SheetsV4::Sheet.new(properties: double("properties", title: "WTR25CHS1"))])
     allow_any_instance_of(Google::Apis::SheetsV4::SheetsService).to receive(:get_spreadsheet).and_return(spreadsheet)
