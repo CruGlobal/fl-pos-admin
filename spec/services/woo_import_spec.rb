@@ -17,13 +17,13 @@ describe WooImport do
 
   it "should start a new job if a WOO_REFRESH job is running" do
     allow(Job).to receive(:where).with(type: "WOO_REFRESH", status: :processing).and_return([double("job")])
-    expect{wi.poll_jobs}.to have_enqueued_job(WoocommerceImportJob)
+    expect { wi.poll_jobs }.to have_enqueued_job(WoocommerceImportJob)
   end
 
   it "should not start a new job if a WOO_IMPORT job is running" do
     allow(Job).to receive(:where).with(type: "WOO_REFRESH", status: :processing).and_return([])
     allow(Job).to receive(:where).with(type: "WOO_IMPORT", status: :processing).and_return([double("job")])
-    expect{wi.poll_jobs}.not_to have_enqueued_job(WoocommerceImportJob)
+    expect { wi.poll_jobs }.not_to have_enqueued_job(WoocommerceImportJob)
   end
 
   it "should return nil if no jobs to run are found" do
