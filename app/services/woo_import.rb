@@ -148,7 +148,11 @@ class WooImport
         order["id"] = response["id"]
       else
         log job, "Order creation failed: #{response}"
-        order["error"] = response.body
+
+        # assume duplicates were sent in a previous job, so don't log them as errors
+        if !response["code"] == "duplicate_lightspeed_order"
+          order["error"] = response.body
+        end
       end
     end
     woo_list
