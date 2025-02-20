@@ -59,7 +59,7 @@ class WooImport
       return
     end
 
-    jobs_to_run = Job.where(type: "WOO_IMPORT", status: [:created, :paused])
+    jobs_to_run = Job.where(type: "WOO_IMPORT", status: [:created, :paused, :error])
     if jobs_to_run.count == 0
       Rails.logger.info "POLLING: No WOO_IMPORT jobs found."
       return
