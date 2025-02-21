@@ -29,7 +29,7 @@ describe WooImport do
   it "should return nil if no jobs to run are found" do
     allow(Job).to receive(:where).with(type: "WOO_REFRESH", status: :processing).and_return([])
     allow(Job).to receive(:where).with(type: "WOO_IMPORT", status: :processing).and_return([])
-    allow(Job).to receive(:where).with(type: "WOO_IMPORT", status: [:created, :paused]).and_return([])
+    allow(Job).to receive(:where).with(type: "WOO_IMPORT", status: [:created, :paused, :error]).and_return([])
     expect(wi.poll_jobs).to be_nil
   end
 
@@ -37,7 +37,7 @@ describe WooImport do
     jobs = [double("job", id: 1), double("job", id: 2)]
     allow(Job).to receive(:where).with(type: "WOO_REFRESH", status: :processing).and_return([])
     allow(Job).to receive(:where).with(type: "WOO_IMPORT", status: :processing).and_return([])
-    allow(Job).to receive(:where).with(type: "WOO_IMPORT", status: [:created, :paused]).and_return(jobs)
+    allow(Job).to receive(:where).with(type: "WOO_IMPORT", status: [:created, :paused, :error]).and_return(jobs)
     jobs.each do |job|
       expect(job).to receive(:status_paused!)
       expect(wi).to receive(:handle_job).with(job)
