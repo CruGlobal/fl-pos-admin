@@ -30,7 +30,6 @@ class LightspeedTokenHolder
       code: code
     })
     if response.code == 200
-      puts "Token traded: #{response.body}"
       response.body
     else
       # log the error
@@ -56,7 +55,6 @@ class LightspeedTokenHolder
       auth = JSON.parse(response.body)
       @token = auth["access_token"]
       @refresh_token = auth["refresh_token"]
-      puts "Access token refreshed: #{response.body}"
       @token
     else
       # log the error

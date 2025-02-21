@@ -151,7 +151,7 @@ class WooImport
 
         # assume duplicates were sent in a previous job, so don't log them as errors
         if response["code"] == "duplicate_lightspeed_order"
-          order["id"] = response["id"]
+          order["id"] = 1 # set to 1 to fake success
         else
           order["error"] = response.body
         end
@@ -249,7 +249,6 @@ class WooImport
         email: email_address
       }
     end
-    puts create_object.inspect
     create_object
   end
 

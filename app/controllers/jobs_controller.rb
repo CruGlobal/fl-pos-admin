@@ -86,7 +86,6 @@ class JobsController < ApplicationController
 
   # PATCH/PUT /jobs/1
   def update
-    puts job_params
     if @job.update!(job_params)
       redirect_to jobs_path, notice: "Job was successfully updated.", status: :see_other
     else

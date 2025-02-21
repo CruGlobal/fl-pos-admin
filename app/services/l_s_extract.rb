@@ -310,7 +310,6 @@ class LSExtract
   end
 
   def get_report_line(job, sale)
-    puts "Sale: " + sale["saleID"].to_s
     # If the sale has no customer, use a guest customer
     sale["Customer"] ||= guest_customer_data(job)
 
