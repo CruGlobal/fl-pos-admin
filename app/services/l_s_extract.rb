@@ -146,7 +146,7 @@ class LSExtract
       WHERE EventCode__c = '#{event_code}'"
     sf_address = sf_client.query(soql).first
     street = sf_address["Conference_Location__r"]["ShippingStreet"]
-    address1, address2 = street.split("\n")
+    address1, address2 = street.split("\n") if street
     @event_address = {
       address1: address1,
       address2: address2,
@@ -310,7 +310,6 @@ class LSExtract
   end
 
   def get_report_line(job, sale)
-    puts "Sale: " + sale["saleID"].to_s
     # If the sale has no customer, use a guest customer
     sale["Customer"] ||= guest_customer_data(job)
 

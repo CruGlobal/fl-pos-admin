@@ -59,7 +59,7 @@ class WooImport
       return
     end
 
-    jobs_to_run = Job.where(type: "WOO_IMPORT", status: [:created, :paused])
+    jobs_to_run = Job.where(type: "WOO_IMPORT", status: [:created, :paused, :error])
     if jobs_to_run.count == 0
       Rails.logger.info "POLLING: No WOO_IMPORT jobs found."
       return
@@ -148,7 +148,13 @@ class WooImport
         order["id"] = response["id"]
       else
         log job, "Order creation failed: #{response}"
-        order["error"] = response.body
+
+        # assume duplicates were sent in a previous job, so don't log them as errors
+        if response["code"] == "duplicate_lightspeed_order"
+          order["id"] = 1 # set to 1 to fake success
+        else
+          order["error"] = response.body
+        end
       end
     end
     woo_list
@@ -243,7 +249,6 @@ class WooImport
         email: email_address
       }
     end
-    puts create_object.inspect
     create_object
   end
 

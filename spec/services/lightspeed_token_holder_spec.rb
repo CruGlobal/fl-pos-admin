@@ -18,7 +18,5 @@ describe LightspeedTokenHolder do
     old_token = token_holder.token
     token_holder.refresh_oauth_token
     expect(token_holder.token).not_to eq(old_token)
-    puts "Old token: #{old_token}"
-    puts "New token: #{token_holder.token}"
   end
 end

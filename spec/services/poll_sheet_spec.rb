@@ -23,7 +23,6 @@ describe PollSheet do
     allow_any_instance_of(Google::Apis::SheetsV4::SheetsService).to receive(:get_spreadsheet).and_return(spreadsheet)
     allow_any_instance_of(Google::Apis::SheetsV4::SheetsService).to receive(:get_spreadsheet_values).and_return(Google::Apis::SheetsV4::ValueRange.new(values: [["Status", "READY FOR WOO IMPORT"]]))
 
-    vals = ps.get_ready_sheets
-    puts "VALS: #{vals[0]}"
+    ps.get_ready_sheets
   end
 end
