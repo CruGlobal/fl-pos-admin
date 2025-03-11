@@ -159,6 +159,7 @@ class SFImport
     # The skus hash is used for uniqueness. Only one object per sku is allowed.
     skus = {}
     sales.each do |sale|
+      next unless sale["SaleLines"]
       next unless sale["SaleLines"]["SaleLine"]
       lines = sale["SaleLines"]["SaleLine"]
       unless lines.is_a? Array

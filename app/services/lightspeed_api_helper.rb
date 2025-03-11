@@ -204,6 +204,8 @@ class LightspeedApiHelper
   end
 
   def get_all_product_codes(sale)
+    return [] if sale["SaleLines"].nil?
+
     codes = []
     sale["SaleLines"].each do |line|
       line.each do |salelines|
@@ -218,6 +220,8 @@ class LightspeedApiHelper
   end
 
   def get_all_quantities(sale)
+    return [] if sale["SaleLines"].nil?
+
     quantities = []
     sale["SaleLines"].each do |line|
       line.each do |salelines|
@@ -244,6 +248,8 @@ class LightspeedApiHelper
   end
 
   def get_all_unit_prices(sale)
+    return [] if sale["SaleLines"].nil?
+
     prices = []
     sale["SaleLines"].each do |line|
       line.each do |salelines|
@@ -260,6 +266,8 @@ class LightspeedApiHelper
   end
 
   def get_all_unit_taxes(sale, tax_total)
+    return [] if sale["SaleLines"].nil?
+
     taxes = []
     total = 0
     sale["SaleLines"].each do |line|
@@ -290,6 +298,8 @@ class LightspeedApiHelper
   end
 
   def get_taxable_order_flag(sale)
+    return if sale["SaleLines"].nil?
+
     sale["SaleLines"].each do |line|
       line.each do |salelines|
         if salelines.is_a?(Array)
@@ -307,6 +317,8 @@ class LightspeedApiHelper
 
   # If any SaleLines.SaleLine.isSpecialOrder is true, then the SpecialOrderFlag should be set to 'Y'
   def get_special_order_flag(sale)
+    return "N" if sale["SaleLines"].nil?
+
     sale["SaleLines"]["SaleLine"].each do |line|
       if line["Item"]["customSku"] == LSExtract::SPECIAL_ORDER_SKU
         return "Y"
