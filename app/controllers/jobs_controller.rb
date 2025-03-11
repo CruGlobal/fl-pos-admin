@@ -123,5 +123,8 @@ class JobsController < ApplicationController
     shops = LightspeedApiHelper.new.shops
     shops.select! { |shop| !shop.Contact["custom"].start_with?("P-") }
     shops.map { |shop| [shop.name, shop.shopID] }
+  rescue Lightspeed::Error::Unauthorized => e
+    Rails.logger.error "Error: #{e.message}"
+    render :light_speed_error, status: :unprocessable_entity
   end
 end
