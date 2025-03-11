@@ -71,6 +71,13 @@ RSpec.describe JobsController, type: :controller do
       get :new
       expect(response).to be_successful
     end
+
+    it "renders the error page if there is no auth token" do
+      allow_any_instance_of(JobsController).to receive(:get_event_options).and_call_original
+      allow_any_instance_of(Lightspeed::Client).to receive(:accounts).and_raise(Lightspeed::Error::Unauthorized)
+      get :new
+      expect(response).to render_template("jobs/light_speed_error")
+    end
   end
 
   describe "GET /edit" do
@@ -78,6 +85,13 @@ RSpec.describe JobsController, type: :controller do
       job = Job.create! valid_attributes
       get :edit, params: {id: job.to_param}
       expect(response).to be_successful
+    end
+
+    it "renders the error page if there is no auth token" do
+      allow_any_instance_of(JobsController).to receive(:get_event_options).and_call_original
+      allow_any_instance_of(Lightspeed::Client).to receive(:accounts).and_raise(Lightspeed::Error::Unauthorized)
+      get :new
+      expect(response).to render_template("jobs/light_speed_error")
     end
   end
 
