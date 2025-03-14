@@ -38,12 +38,23 @@ describe WooRefresh do
   end
 
   it("it should save products to the db") do
-    allow(woo).to receive(:get_page).and_return([{"id" => 1, "name" => "Test Product", "price" => "10.00", "sku" => "12345", "description" => "Test Description", "categories" => [{"id" => 1, "name" => "Test Category"}]}])
+    allow(woo).to receive(:get_page).and_return([{"id" => 1, "name" => "Test Product", "price" => "10.00", "sku" => "12345", "description" => "Test Description", "bundled_items" => [], "categories" => [{"id" => 1, "name" => "Test Category"}]}])
 
     job = woo.create_job
     products = woo.get_page job, 1, {status: "publish", per_page: 1, page: 1}
     woo.save_products_to_db job, products
     expect(WooProduct.count).to be > 0
+  end
+
+  it "should delete products that are no longer in woo" do
+    allow(woo).to receive(:get_page).and_return([{"id" => 1, "name" => "Test Product", "price" => "10.00", "sku" => "12345", "description" => "Test Description", "bundled_items" => [], "categories" => [{"id" => 1, "name" => "Test Category"}]}])
+    create(:woo_product, product_id: 30)
+
+    job = woo.create_job
+    products = woo.get_page job, 1, {status: "publish", per_page: 1, page: 1}
+    woo.save_products_to_db job, products
+    expect(WooProduct.count).to eq(1)
+    expect(WooProduct.find_by(product_id: 30)).to be_nil
   end
 
   it("it should handle a job") do

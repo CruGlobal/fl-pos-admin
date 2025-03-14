@@ -103,6 +103,8 @@ class WooRefresh
 
   def save_products_to_db job, products
     log job, "Found #{products.count} products. Saving to database."
+    existing_products = WooProduct.all.to_a
+
     products.each do |product|
       woo_product = WooProduct.find_or_create_by(product_id: product["id"])
       woo_product.sku = product["sku"]
@@ -116,7 +118,13 @@ class WooRefresh
           wbi.save!
         end
       end
+      existing_products.delete(woo_product)
       log job, "Saved product #{woo_product.product_id} with sku #{woo_product.sku}. Bundle count: #{product["bundled_items"].count}"
+    end
+
+    existing_products.each do |product|
+      product.destroy
+      log job, "Deleted product #{product.product_id}"
     end
   rescue => e
     log job, "Error saving products to database: #{e.message}"
