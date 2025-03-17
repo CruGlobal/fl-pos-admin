@@ -146,7 +146,7 @@ class LSExtract
       WHERE EventCode__c = '#{event_code}'"
     sf_address = sf_client.query(soql).first
     return unless sf_address && sf_address["Conference_Location__r"]
-    
+
     street = sf_address["Conference_Location__r"]["ShippingStreet"]
     address1, address2 = street.split("\n") if street
     @event_address = {
@@ -329,7 +329,7 @@ class LSExtract
         "zip" => lsh.get_shipping_address(sale, "zip")
       }
     else
-      job.context["event_address"]
+      job.context["event_address"] || {}
     end
 
     {
