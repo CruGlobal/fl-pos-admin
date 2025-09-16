@@ -56,7 +56,7 @@ end
 
 gem "amazing_print"
 gem "cssbundling-rails"
-gem "ddtrace"
+gem "datadog"
 gem "dogstatsd-ruby"
 gem "google-apis-sheets_v4"
 gem "httparty"
