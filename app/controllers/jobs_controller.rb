@@ -65,7 +65,7 @@ class JobsController < ApplicationController
     if sf_job.persisted? && ls_job.persisted?
       redirect_to jobs_path, notice: "Job was successfully created."
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -80,7 +80,7 @@ class JobsController < ApplicationController
     if @job.restart_job
       redirect_to jobs_path, notice: "Job was successfully restarted."
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -89,7 +89,7 @@ class JobsController < ApplicationController
     if @job.update!(job_params)
       redirect_to jobs_path, notice: "Job was successfully updated.", status: :see_other
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -125,6 +125,6 @@ class JobsController < ApplicationController
     shops.map { |shop| [shop.name, shop.shopID] }
   rescue Lightspeed::Error::Unauthorized => e
     Rails.logger.error "Error: #{e.message}"
-    render :light_speed_error, status: :unprocessable_entity
+    render :light_speed_error, status: :unprocessable_content
   end
 end
