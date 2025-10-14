@@ -56,7 +56,7 @@ end
 
 gem "amazing_print"
 gem "cssbundling-rails"
-gem "ddtrace"
+gem "datadog"
 gem "dogstatsd-ruby"
 gem "google-apis-sheets_v4"
 gem "httparty"
@@ -84,6 +84,7 @@ group :development, :test do
   gem "factory_bot_rails"
   gem "faker"
   gem "pry-rails"
+  gem "rails-controller-testing"
   gem "rspec-rails"
   gem "simplecov-cobertura", require: false
   gem "standard"

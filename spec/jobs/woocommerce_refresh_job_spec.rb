@@ -21,4 +21,13 @@ RSpec.describe WoocommerceRefreshJob, type: :job do
     }.to raise_error("An error occurred")
     expect(job.reload.status).to eq("error")
   end
+
+  it "resets stuck jobs" do
+    job = create(:job, type: "WOO_REFRESH", status: :processing, updated_at: 2.hours.ago)
+    LightspeedStubHelpers.stub_lightspeed_account_request
+    allow_any_instance_of(WooRefresh).to receive(:poll_jobs).and_return(nil)
+    expect {
+      WoocommerceRefreshJob.perform_now
+    }.to change { job.reload.status }.from("processing").to("created")
+  end
 end
