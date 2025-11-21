@@ -16,7 +16,8 @@ class SFImport
       instance_url: ENV["SF_INSTANCE_URL"],
       host: ENV["SF_HOST"],
       client_id: ENV["SF_CLIENT_ID"],
-      client_secret: ENV["SF_CLIENT_SECRET"]
+      client_secret: ENV["SF_CLIENT_SECRET"],
+      api_version: ENV["SF_VERSION"]
     )
   end
 
