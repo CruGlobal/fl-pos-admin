@@ -1,3 +1,5 @@
+return if ENV["SECRET_KEY_BASE_DUMMY"]
+
 require "datadog/statsd"
 
 redis_conf = YAML.safe_load(ERB.new(File.read(Rails.root.join("config", "redis.yml"))).result, permitted_classes: [Symbol], aliases: true)["sidekiq"]
