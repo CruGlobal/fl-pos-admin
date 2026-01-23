@@ -36,16 +36,13 @@ COPY . .
 # Environment required to build the application
 ARG RAILS_ENV=production
 ARG BUNDLE_DEPLOYMENT="1"
-ARG STORAGE_REDIS_DB_INDEX=1
-ARG STORAGE_REDIS_HOST=redis
-ARG STORAGE_REDIS_PORT=6379
 ARG SECRET_KEY_BASE="abc123"
 
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
 
 # Compile assets
-RUN RAILS_ENV=production SECRET_KEY_BASE=abc123 bundle exec rake assets:clobber assets:precompile \
+RUN SECRET_KEY_BASE_DUMMY=1 RAILS_ENV=production SECRET_KEY_BASE=abc123 bundle exec rake assets:clobber assets:precompile \
     && chown -R webapp:webapp /home/webapp/
 
 # Define volumes used by ECS to share public html and extra nginx config with nginx container
