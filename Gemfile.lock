@@ -588,7 +588,7 @@ DEPENDENCIES
   propshaft
   pry-rails
   puma (>= 5.0)
-  rails (~> 8.0.1, >= 8.0.4.1)
+  rails (~> 8.0.1)
   rails-controller-testing
   redis
   restforce
