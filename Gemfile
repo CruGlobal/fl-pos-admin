@@ -5,6 +5,7 @@ end
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.0.1"
+gem "connection_pool", "~> 2.5"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
 # Use postgresql as the database for Active Record
@@ -55,7 +56,6 @@ group :development do
 end
 
 gem "amazing_print"
-gem "connection_pool", "< 3.0" # Conflict with redis_cache_store in Rails < 8.1.2
 gem "cssbundling-rails"
 gem "datadog"
 gem "dogstatsd-ruby"
