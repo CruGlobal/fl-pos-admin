@@ -56,6 +56,7 @@ group :development do
 end
 
 gem "amazing_print"
+gem "connection_pool", "< 3.0" # Conflict with redis_cache_store in Rails < 8.1.2
 gem "cssbundling-rails"
 gem "datadog"
 gem "dogstatsd-ruby"
