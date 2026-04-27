@@ -47,7 +47,7 @@ Sidekiq.default_job_options = {
   # import / email jobs not getting queued because the locks don't
   # always get cleared properly (perhaps on new deploys/out of memory
   # errors).
-  lock_expiration: 24.hours
+  lock_expiration: 24.hours.to_i
 }
 
 if ENV["AWS_EXECUTION_ENV"].present?
