@@ -42,5 +42,8 @@ lightspeed_auth.json
 
 /node_modules
 
+# This project uses yarn; prevent npm from creating a competing lockfile.
+package-lock.json
+
 # Ignore dev-mode lightspeed_auth.json file.
 /lightspeed_auth.json
