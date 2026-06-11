@@ -39,3 +39,37 @@ plugin :solid_queue if ENV["SOLID_QUEUE_IN_PUMA"]
 # Specify the PID file. Defaults to tmp/pids/server.pid in development.
 # In other environments, only set the PID file if requested.
 pidfile ENV["PIDFILE"] if ENV["PIDFILE"]
+
+# Keep sidekiq-cron polling alive in the always-on web process.
+#
+# sidekiq-cron starts its poller only inside Sidekiq *workers* — it patches the
+# Sidekiq server Launcher from within a Sidekiq.configure_server block, which
+# never runs in Puma. But sidekiq-foreman scales the Sidekiq worker fleet to
+# desiredCount=0 when the queues are idle, and with zero workers there is no
+# poller, so cron jobs silently stop enqueuing and never fire.
+#
+# Running a poller here, in the always-on web container, keeps cron jobs
+# enqueuing regardless of worker count; once a job lands in a queue the foreman
+# scales workers back up to run it. Safe to run alongside the workers' own
+# poller: sidekiq-cron gates each occurrence on an atomic Redis ZADD, so no job
+# is enqueued twice. Background: CruGlobal/sidekiq-foreman docs/sidekiq-cron-web-poller.md
+#
+# NOTE: Puma runs in single mode here (no `workers` directive). If clustering is
+# ever enabled (WEB_CONCURRENCY), move this to `on_worker_boot` so the poller
+# starts in each forked worker rather than the master.
+on_booted do
+  unless Rails.env.development? || Rails.env.test?
+    begin
+      require "sidekiq/cron"
+      # Mirror sidekiq-cron's server Launcher: copy the poll interval onto the
+      # config the poller reads (Poller#poll_interval_average returns
+      # config[:cron_poll_interval] with no fallback).
+      config = Sidekiq.default_configuration
+      config[:cron_poll_interval] = Sidekiq::Cron.configuration.cron_poll_interval.to_i
+      Sidekiq::Cron::Poller.new(config).start
+      Rails.logger.info("[sidekiq-cron] poller started in web process (foreman scale-to-zero mitigation)")
+    rescue => e
+      Rails.logger.error("[sidekiq-cron] failed to start web poller: #{e.class}: #{e.message}")
+    end
+  end
+end
