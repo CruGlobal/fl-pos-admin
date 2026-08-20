@@ -1,12 +1,75 @@
 version: 2
+
+registries:
+  contribsys:
+    type: rubygems-server
+    url: 'https://gems.contribsys.com/'
+    # Org-level Dependabot secret (cru-terraform github/CruGlobal/secrets/
+    # rails_variables.tf), auto-scoped to all CruGlobal Ruby repos; the
+    # SSM-backed value is the user:password pair Basic auth needs.
+    # Required here: Gemfile.lock resolves sidekiq-pro 8.0.3 from
+    # https://gems.contribsys.com/.
+    token: ${{secrets.BUNDLE_GEMS__CONTRIBSYS__COM}}
+
 updates:
 - package-ecosystem: bundler
   directory: "/"
   schedule:
     interval: daily
-  open-pull-requests-limit: 10
+  # Gems are security-only fleet-wide (ratified 2026-08-19; the original
+  # ADL-32 intent): individual majors refill the PR ceiling daily and
+  # grouped minors rewrite Gemfile pins (infobase#519). Security PRs are
+  # exempt from the limit and still open at every semver level. Tool
+  # currency (brakeman, bundler-audit) is watched by the nightly digest.
+  open-pull-requests-limit: 0
+  registries: [contribsys]
+  insecure-external-code-execution: allow
+  groups:
+    bundler-security:
+      applies-to: security-updates
+      patterns:
+      - "*"
+  # NOTE: with limit 0 above, these ignore stanzas are inert forward
+  # guards — the version-update lane never runs, and update-types-scoped
+  # ignores never gate security updates (dependabot-core
+  # IgnoreCondition#ignored_versions returns only `versions:` ranges when
+  # security_updates_only). Kept so a future limit > 0 flip inherits the
+  # pin guards below.
+  ignore:
+  # Rails minors/majors are deliberate, hand-run upgrades; security patches
+  # within the current minor still flow.
+  - dependency-name: rails
+    update-types:
+    - version-update:semver-minor
+    - version-update:semver-major
+  # minitest 6 drops minitest/mock (ararat #210 landmine); direct-major
+  # guard only — transitive lock-floats stay a review item. This repo tests
+  # on RSpec, so minitest is transitive-only here.
+  - dependency-name: minitest
+    update-types:
+    - version-update:semver-major
+  # Gemfile pins connection_pool < 3.0 (redis_cache_store conflict on
+  # Rails < 8.1.2). Drop this ignore with the pin at Rails >= 8.1.2.
+  - dependency-name: connection_pool
+    update-types:
+    - version-update:semver-major
 - package-ecosystem: github-actions
   directory: "/"
   schedule:
     interval: daily
-  open-pull-requests-limit: 10
+  # Same security-only posture as the bundler lane above: version updates
+  # are off, and security PRs still open because Dependabot runs them from
+  # a separate job that ignores open-pull-requests-limit. The
+  # actions-security group batches them into one PR per run instead of one
+  # per advisory.
+  open-pull-requests-limit: 0
+  groups:
+    actions-security:
+      applies-to: security-updates
+      patterns:
+      - "*"
+  ignore:
+  # CruGlobal/.github* is a human-managed floating org tag (this repo uses
+  # build-ecs.yml@v1 and trigger-deploy@v1), so no Dependabot bump of it is
+  # ever wanted -- blanket ignore, deliberately not a majors-only guard.
+  - dependency-name: "CruGlobal/.github*"
