@@ -20,7 +20,8 @@ updates:
   # ADL-32 intent): individual majors refill the PR ceiling daily and
   # grouped minors rewrite Gemfile pins (infobase#519). Security PRs are
   # exempt from the limit and still open at every semver level. Tool
-  # currency (brakeman, bundler-audit) is watched by the nightly digest.
+  # currency (brakeman, bundler-audit) is currently unowned — the nightly
+  # digest tracks alerts, lanes and CI shape, not tool versions.
   open-pull-requests-limit: 0
   registries: [contribsys]
   insecure-external-code-execution: allow
