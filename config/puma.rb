@@ -57,7 +57,7 @@ pidfile ENV["PIDFILE"] if ENV["PIDFILE"]
 # NOTE: Puma runs in single mode here (no `workers` directive). If clustering is
 # ever enabled (WEB_CONCURRENCY), move this to `on_worker_boot` so the poller
 # starts in each forked worker rather than the master.
-on_booted do
+after_booted do
   unless Rails.env.development? || Rails.env.test?
     begin
       require "sidekiq/cron"
