@@ -30,6 +30,9 @@ RUN apk --no-cache add --virtual build-deps build-base postgresql-dev mariadb-de
     && bundle install --deployment --jobs 20 --retry 2 \
     && apk del build-deps
 
+# Precompile bootsnap code for faster boot times
+RUN bundle exec bootsnap precompile --gemfile
+
 # Copy the application
 COPY . .
 
