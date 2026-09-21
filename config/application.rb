@@ -13,12 +13,10 @@ require "action_mailer/railtie"
 require "action_view/railtie"
 # require "action_cable/engine"
 # require "rails/test_unit/railtie"
+
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
-
-require_relative "../lib/log/logger"
-require_relative "../lib/bootstrap_pagination_renderer"
 
 module FlPosAdmin
   class Application < Rails::Application
@@ -40,8 +38,5 @@ module FlPosAdmin
 
     # Don't generate system test files.
     config.generators.system_tests = nil
-
-    # Send all logs to stdout, which docker reads and sends to datadog.
-    config.logger = Log::Logger.new($stdout) unless Rails.env.test? # we don't need a logger in test env
   end
 end
