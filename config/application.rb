@@ -22,6 +22,19 @@ require_relative "../lib/log/logger"
 require_relative "../lib/bootstrap_pagination_renderer"
 
 module FlPosAdmin
+  # Load-balancer health-check endpoint. Single source of truth: these configs
+  # reference the constants and stay in sync automatically:
+  #   - config/environments/production.rb   (ssl_options redirect exclude)
+  #   - config/environments/production.rb   (silence_healthcheck_path)
+  #   - config/environments/production.rb   (host_authorization exclude)
+  #   - config/initializers/lograge.rb      (ignore_actions, which needs the controller#action form)
+  #   - config/initializers/datadog_trace.rb (span filter that drops health-check traces)
+  # Intentionally still hardcoded -- a rename must update these by hand:
+  #   - config/routes.rb                    (route definition, which needs the path without its leading slash)
+  #   - cru-terraform: the ALB target-group health-check path
+  HEALTHCHECK_PATH = "/monitors/lb"
+  HEALTHCHECK_ACTION = "MonitorsController#lb"
+
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 8.1
