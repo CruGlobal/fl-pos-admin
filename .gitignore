@@ -30,8 +30,8 @@
 
 /public/assets
 
-# Ignore master key for decrypting credentials and more.
-/config/master.key
+# Ignore key files for decrypting credentials and more.
+/config/*.key
 
 .idea
 
@@ -47,3 +47,6 @@ package-lock.json
 
 # Ignore dev-mode lightspeed_auth.json file.
 /lightspeed_auth.json
+
+# Ignore SimpleCov output (bin/ci runs the suite with CI=true).
+/coverage/

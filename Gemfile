@@ -4,7 +4,7 @@ source "https://gems.contribsys.com/" do
 end
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 8.0.1"
+gem "rails", "~> 8.1.4"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
 # Use postgresql as the database for Active Record
@@ -42,6 +42,9 @@ group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[mri windows], require: "debug/prelude"
 
+  # Audits gems for known security defects (use config/bundler-audit.yml to ignore issues)
+  gem "bundler-audit", require: false
+
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
   gem "brakeman", require: false
 
@@ -55,22 +58,22 @@ group :development do
 end
 
 gem "amazing_print"
-gem "connection_pool", "< 3.0" # Conflict with redis_cache_store in Rails < 8.1.2
+gem "bigdecimal"
 gem "cssbundling-rails"
 gem "datadog"
 gem "dogstatsd-ruby"
 gem "google-apis-sheets_v4"
 gem "httparty"
-gem "lograge"
 gem "lightspeed_pos", github: "marketplacer/lightspeed_pos"
+gem "lograge"
 gem "marco-polo"
 gem "multi_json"
+gem "omniauth-oktaoauth", github: "CruGlobal/omniauth-oktaoauth"
+gem "omniauth-rails_csrf_protection", "~> 2.0"
 gem "ougai", "~> 1.7"
 gem "redis"
-gem "rollbar"
-gem "omniauth-oktaoauth", github: "CruGlobal/omniauth-oktaoauth"
-gem "omniauth-rails_csrf_protection", "~> 1.0"
 gem "restforce"
+gem "rollbar"
 gem "salesforce_bulk_api"
 gem "sidekiq"
 gem "sidekiq-cron"
@@ -78,10 +81,8 @@ gem "sidekiq-unique-jobs"
 gem "will_paginate"
 gem "will_paginate-bootstrap"
 gem "woocommerce_api"
-gem "bigdecimal"
 
 group :development, :test do
-  gem "bundler-audit"
   gem "dotenv-rails"
   gem "factory_bot_rails"
   gem "faker"
