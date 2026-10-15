@@ -39,10 +39,10 @@ if ENV["AWS_EXECUTION_ENV"].present?
     c.tracing.instrument :http, service_name: "#{ENV["PROJECT_NAME"]}-http"
 
     c.tracing.instrument :sidekiq, service_name: "#{ENV["PROJECT_NAME"]}-sidekiq"
-
-    # skipping the health check: if it returns true, the trace is dropped
-    # Datadog::Pipeline.before_flush(Datadog::Pipeline::SpanFilter.new do |span|
-    #  span.name == 'rack.request' && span.get_tag('http.url') == '/monitors/lb'
-    # end)
   end
+
+  # skipping the health check: if it returns true, the trace is dropped
+  Datadog::Tracing.before_flush(Datadog::Tracing::Pipeline::SpanFilter.new { |span|
+    span.name == "rack.request" && span.get_tag("http.url") == FlPosAdmin::HEALTHCHECK_PATH
+  })
 end
