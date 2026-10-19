@@ -8,7 +8,7 @@ CI.run do
 
   step "Security: Gem audit", "bin/bundler-audit check --update"
   step "Security: Importmap vulnerability audit", "bin/importmap audit"
-  step "Security: Brakeman code analysis", "bundle exec brakeman -A -q --no-pager -w2"
+  step "Security: Brakeman code analysis", "bin/brakeman --no-pager"
   step "Tests: RSpec", "env CI=true RAILS_ENV=test bundle exec rspec --color"
 
   # Optional: set a green GitHub commit status to unblock PR merge.

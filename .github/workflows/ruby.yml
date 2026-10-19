@@ -72,7 +72,7 @@ jobs:
 
 
       - name: Brakeman
-        run: bundle exec brakeman -A -q --no-pager -w2
+        run: bundle exec brakeman -A -q --no-pager
 
       - name: StandardRB
         run: bundle exec standardrb --format simple
