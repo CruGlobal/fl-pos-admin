@@ -54,7 +54,7 @@
             <a class="nav-link"><%= link_to 'Dashboard', root_path, class: "" %></a>
             <a class="nav-link"><%= link_to 'New Job', new_job_path, class: "" %></a>
             <a class="nav-link"><%= link_to 'Lightspeed Auth', lightspeedinit_path, class: "" %></a>
-            <a class="nav-link"><%= link_to 'Logout', logout_path, class: "" %></a>
+            <a class="nav-link"><%= link_to 'Logout', logout_path, class: "", data: {turbo: false} %></a>
           </div>
         </div>
       </div>
