@@ -1,0 +1,11 @@
+diff --git a/app/models/woo_product.rb b/app/models/woo_product.rb
+index 2bdae76..2c9be28 100644
+--- a/app/models/woo_product.rb
++++ b/app/models/woo_product.rb
+@@ -1,5 +1,5 @@
+ class WooProduct < ApplicationRecord
+   # Disable single table inheritance
+   self.inheritance_column = nil
+-  has_many :woo_product_bundles, foreign_key: :product_id, dependent: :destroy
++  has_many :woo_product_bundles
+ end

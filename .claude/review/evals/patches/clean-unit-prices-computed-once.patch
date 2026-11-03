@@ -1,0 +1,23 @@
+diff --git a/app/services/l_s_extract.rb b/app/services/l_s_extract.rb
+index 380f8b0..6a5b2ef 100644
+--- a/app/services/l_s_extract.rb
++++ b/app/services/l_s_extract.rb
+@@ -318,7 +318,8 @@ class LSExtract
+ 
+     last_name = sale["Customer"]["lastName"].gsub(/\*\d+\*$/, "").strip.tr("*", "")
+     tax_total = (sale["calcTax1"].to_f + sale["calcTax2"].to_f).round(2)
+-    item_subtotal = lsh.get_all_unit_prices(sale).map { |p| p.to_f }.sum.round(2)
++    unit_prices = lsh.get_all_unit_prices(sale)
++    item_subtotal = unit_prices.map { |p| p.to_f }.sum.round(2)
+ 
+     # Get shipping address from the event if it's not specified in the sale
+     ship_address = if sale["ShipTo"].present?
+@@ -347,7 +348,7 @@ class LSExtract
+       TaxableOrderFlag: lsh.get_taxable_order_flag(sale),
+       ProductCode: lsh.get_all_product_codes(sale).join("|"),
+       Quantity: lsh.get_all_quantities(sale).join("|"),
+-      UnitPrice: lsh.get_all_unit_prices(sale).join("|"),
++      UnitPrice: unit_prices.join("|"),
+       ItemSalesTax: lsh.get_all_unit_taxes(sale, tax_total).join("|"),
+       AddressLine1: lsh.get_address(sale, "address1"),
+       AddressLine2: "",

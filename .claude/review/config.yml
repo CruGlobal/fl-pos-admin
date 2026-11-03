@@ -1,0 +1,535 @@
+# agent-review configuration (v2)
+#
+# Lives at `.claude/review/config.yml` in the repo being reviewed.
+# Validate any edit with: `agent-review config validate`
+#
+# This skeleton is intentionally generic. `/agent-review:init` fills in the
+# repo-specific globs, triggers, and packages; you can also edit it by hand.
+
+version: 2
+
+# Global severity/verbosity dial.
+# chill     → fewer, high-confidence findings; raises the consensus threshold
+# standard  → default behavior
+# assertive → more findings, lower threshold, may be nitpicky
+profile: standard
+
+# Branch every review diffs against unless `--base` is passed.
+base_branch: main
+
+# ── Risk scoring ──────────────────────────────────────────────────────────────
+risk:
+  # File-pattern contributions. `tier` is descriptive; `points` drives the score.
+  # Per file, the highest-scoring matching pattern wins (patterns don't stack on
+  # one file; files sum across the diff). A 0-point entry never changes the score
+  # (max starts at 0) — it documents that a path was considered and deemed
+  # no-risk; use `excluded_paths` to actually exclude.
+  patterns:
+    - { glob: '.github/workflows/**', points: 3, tier: critical }
+    # Auth, session, and the Lightspeed OAuth token
+    - { glob: 'app/controllers/application_controller.rb', points: 3, tier: critical }
+    - { glob: 'app/controllers/sessions_controller.rb', points: 3, tier: critical }
+    - { glob: 'app/controllers/lightspeedauth_controller.rb', points: 3, tier: critical }
+    - { glob: 'app/controllers/lightspeedinit_controller.rb', points: 3, tier: critical }
+    - { glob: 'app/services/lightspeed_token_holder.rb', points: 3, tier: critical }
+    # Sale keep-lists: they decide what Lightspeed data (payments, customer PII) gets stored
+    - { glob: 'app/services/lightspeed_sale_schema.rb', points: 3, tier: critical }
+    - { glob: 'app/services/lightspeed_inventory_schema.rb', points: 3, tier: critical }
+    # Schema and migrations (solid_cache's table also holds sessions and the Lightspeed token)
+    - { glob: 'db/migrate/**', points: 3, tier: critical }
+    - { glob: 'db/*schema.rb', points: 3, tier: critical }
+    # Framework config
+    - { glob: 'config/application.rb', points: 3, tier: critical }
+    - { glob: 'config/environments/**', points: 3, tier: critical }
+    - { glob: 'config/initializers/**', points: 3, tier: critical }
+    - { glob: 'config/routes.rb', points: 3, tier: critical }
+    - { glob: 'config/database.yml', points: 3, tier: critical }
+    - { glob: 'config/brakeman.ignore', points: 3, tier: critical }
+    - { glob: 'config/bundler-audit.yml', points: 3, tier: critical }
+    # Job runtime: one-at-a-time concurrency, cron schedule, web-process cron poller
+    - { glob: 'config/sidekiq.yml', points: 2, tier: high }
+    - { glob: 'config/schedule.yml', points: 2, tier: high }
+    - { glob: 'config/puma.rb', points: 2, tier: high }
+    - { glob: 'config/redis.yml', points: 2, tier: high }
+    - { glob: 'config/cache.yml', points: 2, tier: high }
+    - { glob: 'config/ci.rb', points: 2, tier: high }
+    # Build, deploy, dependency policy, and committed dev defaults
+    - { glob: 'Dockerfile', points: 2, tier: high }
+    - { glob: 'build.sh', points: 2, tier: high }
+    - { glob: 'bin/docker-entrypoint', points: 2, tier: high }
+    - { glob: 'bin/thrust', points: 2, tier: high }
+    - { glob: '.github/dependabot.yml', points: 2, tier: high }
+    - { glob: 'Gemfile', points: 2, tier: high }
+    - { glob: '.env', points: 2, tier: high }
+    # The review harness itself: weakening it weakens every later review
+    - { glob: '.claude/review/**', points: 3, tier: critical }
+    - { glob: '.claude/settings.json', points: 2, tier: high }
+    # HTTP handlers
+    - { glob: 'app/controllers/**', points: 2, tier: high }
+    # Money math: report totals, per-line prices and taxes, refunds, Woo line items
+    - { glob: 'app/services/lightspeed_api_helper.rb', points: 2, tier: high }
+    - { glob: 'app/services/l_s_extract.rb', points: 2, tier: high }
+    - { glob: 'app/services/woo_import.rb', points: 2, tier: high }
+    # Shared cross-feature code: the job pipeline and its models
+    - { glob: 'app/services/**', points: 2, tier: high }
+    - { glob: 'app/jobs/**', points: 2, tier: high }
+    - { glob: 'app/models/**', points: 2, tier: high }
+    # Ordinary source
+    - { glob: 'app/**', points: 1, tier: medium }
+    - { glob: 'lib/**', points: 1, tier: medium }
+    - { glob: 'bin/**', points: 1, tier: medium }
+    - { glob: 'package.json', points: 1, tier: medium }
+    # Explicit 0-point entries: documentation of intent, not scoring behavior.
+    - { glob: 'spec/**', points: 0, tier: low }
+    - { glob: 'sale_formatted.json', points: 0, tier: low }
+
+  # Unknown paths are not zero-risk. Each non-excluded file that matches none of
+  # the patterns above gets this many points, preventing a newly introduced
+  # directory from being silently skipped by auto mode. Set to 0 only if your
+  # pattern map is intentionally exhaustive.
+  unmatched_file_points: 1
+
+  # Dependency manifests and lockfiles, used by the special detections below.
+  manifests: ['Gemfile', 'package.json']
+  lockfiles: ['Gemfile.lock', 'yarn.lock']
+
+  # Change-volume → points (lines changed across the diff).
+  volume_multiplier:
+    - { upTo: 50, points: 0 }
+    - { upTo: 200, points: 1 }
+    - { upTo: 500, points: 2 }
+    - { upTo: 1000, points: 3 }
+    - { upTo: null, points: 4 } # 1000+
+
+  # Scope multiplier applied to the pattern+volume subtotal.
+  scope_multiplier:
+    single_file: 1.0
+    single_feature: 1.0
+    multi_feature: 1.3
+    cross_cutting: 1.7
+    core_infra: 2.0
+
+  # Special detections. Entries with empty `paths`/`files`/`packages` never fire —
+  # fill them in to enable the detection.
+  special:
+    # - { when: new_dependency, points: 2 }        # disabled: Gemfile is not a JSON manifest, and the JSON spec fixtures would false-fire it
+    # - { when: critical_pkg_update, points: 3, packages: [] }   # same
+    - { when: lockfile_only_change, points: 1 }
+    # Globs matching schema/DB migration files, e.g. 'db/migrations/**'.
+    - { when: migration_change, points: 3, paths: ['db/migrate/**', 'db/*schema.rb'] }
+    # `files` = security-relevant config files (framework config, CSP/header
+    # config); `keywords` = diff text that signals a security-relevant edit.
+    - {
+        when: config_security_change,
+        points: 2,
+        files:
+          [
+            'config/application.rb',
+            'config/environments/*.rb',
+            'config/initializers/*.rb',
+            'config/routes.rb',
+          ],
+        keywords:
+          [
+            headers,
+            content-security,
+            csp,
+            cors,
+            hosts,
+            host_authorization,
+            force_ssl,
+            assume_ssl,
+            ssl_options,
+            filter_parameters,
+            session_store,
+            expire_after,
+            allow_other_host,
+            omniauth,
+            'Sidekiq::Web',
+          ],
+      }
+
+  # Score → risk level + required reviewer.
+  levels:
+    - { range: [0, 3], level: LOW, reviewer: entry }
+    - { range: [4, 6], level: MEDIUM, reviewer: entry }
+    - { range: [7, 9], level: HIGH, reviewer: experienced }
+    - { range: [10, null], level: CRITICAL, reviewer: 'senior maintainer' }
+
+# ── Agents ────────────────────────────────────────────────────────────────────
+# `always: true` runs the agent on every review. Otherwise the agent runs only
+# when a changed file matches `triggers.paths` or the diff contains one of
+# `triggers.content`. `rules[]` paths resolve against `.claude/review/`.
+# `triggers.specials` (optional) does NOT trigger the agent — it only records
+# which risk.special[].when detections this lane owns, so loadConfig's
+# `escalates` default can still find the right lane if you rename/remove the
+# security/data-integrity/architecture ids below.
+# `model` picks the review tier: an explicit `model:` (opus/sonnet/haiku) is
+# honored in every review mode; `smart` lanes are the ones quick mode may
+# downgrade to haiku, and only when `escalates` is false.
+# WARNING: the engine honors this operator override — explicitly setting `escalates: false` on
+# the security lane below removes it from the escalating-lane coverage guarantee (an unmatched
+# reviewable file no longer force-includes a lane that actually escalates to opus). The engine
+# still force-includes `security` by id when NO lane escalates at all, so coverage never silently
+# vanishes — but if every lane's `escalates` is set to false, that forced lane won't actually
+# escalate either. De-escalating every lane disables coverage escalation entirely: an unmatched
+# reviewable file will still get a lane, but never one that reads at opus rigor.
+agents:
+  - id: security
+    title: Security Review Agent
+    expertise: Authentication, authorization, data protection, vulnerability detection, secure coding.
+    enabled: true
+    model: smart # smart | opus | sonnet | haiku
+    always: false
+    escalates: true # deserves Opus on HIGH/CRITICAL PRs
+    triggers:
+      paths:
+        - 'app/controllers/**'
+        - 'app/services/lightspeed_token_holder.rb'
+        - 'app/services/lightspeed_sale_schema.rb'
+        - 'app/services/lightspeed_inventory_schema.rb'
+        - 'app/services/lightspeed_api_helper.rb'
+        - 'config/application.rb'
+        - 'config/environments/**'
+        - 'config/initializers/**'
+        - 'config/routes.rb'
+        - 'config/brakeman.ignore'
+        - 'config/bundler-audit.yml'
+        - '.github/workflows/**'
+        - 'Dockerfile'
+        - 'bin/docker-entrypoint'
+        - 'lib/log/**'
+        - '.env'
+        - 'Gemfile.lock'
+        - 'spec/fixtures/**'
+      content:
+        - 'session['
+        - 'id_token'
+        - 'skip_before_action'
+        - 'authenticate_user'
+        - 'allow_other_host'
+        - 'redirect_to'
+        - 'ENV['
+        - 'ENV.fetch'
+        - 'access_token'
+        - 'refresh_token'
+        - 'client_secret'
+        - 'lightspeed_auth'
+        - 'connection.execute'
+        - 'sf_client.query'
+        - 'SELECT '
+        - 'html_safe'
+        - 'raw('
+        - 'load_relations'
+        - 'SalePayment'
+        - 'PaymentType'
+        - 'CCCharge'
+        - 'ccChargeID'
+        - 'payment_method'
+        - 'filter_parameters'
+        - 'Sidekiq::Web'
+        - 'data-turbo'
+        - 'params.expect'
+      specials: [config_security_change]
+    rules: ['rules/security.md']
+
+  - id: architecture
+    title: Architecture Review Agent
+    expertise: System design, patterns, technical debt, maintainability, scalability.
+    enabled: true
+    always: true
+    escalates: true # deserves Opus on HIGH/CRITICAL PRs
+    rules: ['rules/architecture.md']
+
+  - id: data-integrity
+    title: Data Integrity Review Agent
+    expertise: Data flow, persistence, caching, input validation, type safety, data consistency.
+    enabled: true
+    always: false
+    escalates: true # deserves Opus on HIGH/CRITICAL PRs
+    triggers:
+      paths:
+        - 'db/**'
+        - 'app/models/**'
+        - 'app/services/**'
+        - 'app/jobs/**'
+        - 'config/database.yml'
+        - 'config/cache.yml'
+        - 'config/initializers/session_store.rb'
+      content:
+        - 'save!'
+        - 'update!'
+        - 'update('
+        - 'destroy'
+        - 'delete'
+        - 'DELETE FROM'
+        - 'connection.execute'
+        - 'transaction'
+        - 'find_or_create_by'
+        - 'create!'
+        - 'context['
+        - 'to_json'
+        - 'JSON.parse'
+        - 'dependent:'
+        - 'foreign_key'
+        - 'add_column'
+        - 'remove_column'
+        - 'change_column'
+        - 'add_index'
+        - 'add_foreign_key'
+        - 'Rails.cache'
+      specials: [migration_change]
+    rules: ['rules/data-integrity.md']
+
+  - id: testing
+    title: Testing & Quality Review Agent
+    expertise: Test coverage, test quality, edge cases, error handling, code quality.
+    enabled: true
+    always: true
+    rules: ['rules/testing.md']
+
+  - id: standards
+    title: Standards Compliance Review Agent
+    expertise: Project-specific coding standards, patterns, and conventions.
+    enabled: true
+    always: true
+    rules: ['rules/standards.md']
+
+  # Table specialist (financial): no payment SDK, but the app computes every order total, line
+  # price, line tax, discount, and refund that reaches the Google Sheet and WooCommerce.
+  - id: financial
+    title: Financial Calculations Review Agent
+    expertise: Money math on sale data, including order totals, line prices, sales tax splitting and rounding, discounts, refund netting, and the cents that flow into WooCommerce orders and the Google Sheet.
+    enabled: true
+    always: false
+    triggers:
+      paths:
+        - 'app/services/lightspeed_api_helper.rb'
+        - 'app/services/l_s_extract.rb'
+        - 'app/services/woo_import.rb'
+        - 'app/services/lightspeed_sale_schema.rb'
+      content:
+        - 'calcTotal'
+        - 'calcSubtotal'
+        - 'calcTax'
+        - 'calcLineDiscount'
+        - 'discountAmount'
+        - 'discountPercent'
+        - 'displayableSubtotal'
+        - 'OrderTotal'
+        - 'ItemSubtotal'
+        - 'SalesTax'
+        - 'ItemSalesTax'
+        - 'UnitPrice'
+        - 'total_tax'
+        - 'subtotal'
+        - 'custom_round'
+        - '.round(2)'
+        - '%.2f'
+        - 'refund'
+    rules: ['rules/financial.md']
+
+  # Novel lane (not from the standard specialist table): the whole app is a Sidekiq-driven job
+  # pipeline (six job types, a Job status machine, cron, unique locks, concurrency 1), and the
+  # job layer produced the most fix-chains in history (PRs #42, #43, #45, #49, #53, #84).
+  - id: background-jobs
+    title: Background Jobs Review Agent
+    expertise: Sidekiq Pro jobs, sidekiq-cron schedules, unique-job locks, retries, the Job status state machine and poll_jobs handoffs, concurrency and idempotency.
+    enabled: true
+    always: false
+    triggers:
+      paths:
+        - 'app/jobs/**'
+        - 'app/models/job.rb'
+        - 'app/services/clean_jobs.rb'
+        - 'app/services/poll_sheet.rb'
+        - 'app/services/woo_refresh.rb'
+        - 'app/services/woo_import.rb'
+        - 'app/services/l_s_extract.rb'
+        - 'app/services/s_f_import.rb'
+        - 'config/initializers/sidekiq.rb'
+        - 'config/sidekiq.yml'
+        - 'config/schedule.yml'
+        - 'config/puma.rb'
+        - 'config/redis.yml'
+      content:
+        - 'perform_later'
+        - 'perform_now'
+        - 'set(wait'
+        - 'sidekiq_options'
+        - 'until_executed'
+        - 'poll_jobs'
+        - 'handle_job'
+        - 'status_processing!'
+        - 'status_error!'
+        - 'status_paused!'
+        - 'status_created!'
+        - 'status_complete!'
+        - 'restart_job'
+        - 'Sidekiq'
+        - 'cron'
+        - 'concurrency'
+    rules: ['rules/background-jobs.md']
+
+  # Novel lane (not from the standard specialist table): four outside systems (Lightspeed,
+  # WooCommerce, Salesforce, Google Sheets) with shifting payload shapes, an OAuth token that only
+  # a person can mint, and a sheet layout shared by three services (PRs #16, #19, #29, #33, #40,
+  # #41, #48).
+  - id: integrations
+    title: External Integrations Review Agent
+    expertise: Lightspeed R-Series, WooCommerce, Salesforce and Google Sheets API contracts, including OAuth token storage and refresh, pagination, field mapping and nil-shaped payloads, the shared sheet column layout, and duplicate handling.
+    enabled: true
+    always: false
+    triggers:
+      paths:
+        - 'app/services/lightspeed_api_helper.rb'
+        - 'app/services/lightspeed_token_holder.rb'
+        - 'app/services/lightspeed_sale_schema.rb'
+        - 'app/services/lightspeed_inventory_schema.rb'
+        - 'app/services/l_s_extract.rb'
+        - 'app/services/s_f_import.rb'
+        - 'app/services/woo_import.rb'
+        - 'app/services/woo_refresh.rb'
+        - 'app/services/poll_sheet.rb'
+        - 'app/services/sheet_tab_names_service.rb'
+        - 'app/controllers/lightspeedauth_controller.rb'
+        - 'app/controllers/lightspeedinit_controller.rb'
+        - 'app/controllers/google_sheets_controller.rb'
+        - 'config/initializers/woocommerce_api_patch.rb'
+        - 'spec/support/lightspeed_stub_helpers.rb'
+      content:
+        - 'Lightspeed'
+        - 'ls_account'
+        - 'load_relations'
+        - 'strip_to_named_fields'
+        - 'Restforce'
+        - 'sf_client'
+        - 'SalesforceBulkApi'
+        - '__c'
+        - 'WooCommerce::API'
+        - 'woo.post'
+        - 'woo.get'
+        - 'SheetsService'
+        - 'get_spreadsheet'
+        - 'update_spreadsheet_value'
+        - 'batch_update_spreadsheet'
+        - 'SHEET_ID'
+        - 'HTTParty'
+        - '@columns['
+    rules: ['rules/integrations.md']
+
+  # Advisory lane: rules/simplification.md caps pure cleanups below the blocker
+  # threshold and requires cited proof for every reuse claim. Keep this entry
+  # LAST — quick mode's third slot takes the first plan entry after
+  # testing/standards, and it must never land on this lane. Costs one extra
+  # smart-tier lane per standard/deep review; set `enabled: false` to opt out.
+  - id: simplification
+    title: Simplification & Reuse Review Agent
+    expertise: Code reuse, duplication, unnecessary abstraction, dead weight, wasteful computation on real data paths.
+    enabled: true
+    always: true
+    rules: ['rules/simplification.md']
+
+# ── Per-path rules ────────────────────────────────────────────────────────────
+# Extra rule docs applied to EVERY agent reviewing a matching file.
+# Example: - { paths: ['<ui-components>/**'], rules: ['rules/ux.md'] }
+path_rules: []
+
+# ── Exclusions — never reviewed, never scored ─────────────────────────────────
+excluded_paths:
+  - '**/*.snap'
+  - '**/*.generated.*'
+  - 'docs/**'
+  - '.claude/review/rules/**' # prose rule docs — config/guidance, not reviewable code
+  # Package-manager artifacts — generated/vendored, never reviewable
+  - 'yarn.lock'
+  - 'package-lock.json'
+  - 'pnpm-lock.yaml'
+  # Gemfile.lock stays reviewable on purpose: lock-only bumps can float in a hidden transitive
+  # major or drop a default gem the app still requires.
+  # This repo's generated, encrypted, and static files
+  - 'log/**'
+  - 'tmp/**'
+  - 'public/**'
+  - 'app/assets/builds/**'
+  - 'config/credentials.yml.enc'
+  - '.claude/review/evals/results/**'
+
+# ── Deterministic evidence ────────────────────────────────────────────────────
+# ast-grep runs trusted, repo-authored AST rules before the model. Only matches
+# on added lines become ledger findings. Enable after creating the referenced
+# sgconfig + rule directory (see templates/static/README.md).
+static_analysis:
+  ast_grep:
+    enabled: false
+    config: static/sgconfig.yml
+    version: 0.45.0 # pin the CI binary; do not use "latest"
+    severity: { error: 8, warning: 6, info: 4, hint: 2 }
+    excluded_paths: []
+
+# Snapshot existing GitHub checks and their annotations into the review prompt.
+# This does not replace branch protection and does not turn a flaky test into a
+# model-authored blocker.
+# This repo's checks: test (RSpec + Codecov), lint (Brakeman + StandardRB), audit (bundler-audit
+# + importmap audit, not required). Build & Deploy ECS runs on push to main/staging only.
+ci:
+  enabled: true
+  ignore_checks: []
+
+# Optional SHA-pinned API/client/documentation repositories. Enable only after
+# creating context/repositories.json; cross-repo private access requires the
+# optional context_token secret in the consumer workflow.
+context:
+  enabled: false
+  manifest: context/repositories.json
+
+# Review engine: agent-review (the default) | code-review. Leave this block out for
+# agent-review. Uncomment it only for code-review: plugin 1.0.0 cannot load a config that has it.
+# code_review keys: effort low|medium|high|xhigh|max, model opus|sonnet|haiku,
+# replaces and always are lists of agent ids; max_findings is optional (an integer >= 1 or all).
+engine:
+  name: code-review
+  code_review:
+    effort: xhigh
+    model: opus
+    replaces: [architecture, simplification]
+    always: [security, testing, standards]
+    # max_findings: 15   # optional; leave out to use /code-review's own cap
+
+# Where reviews run: local | local-and-ci (the default). Leave this key out for local-and-ci.
+# Uncomment it only for local: plugin 1.0.0 cannot load a config that has it.
+reviews_run: local
+
+# People-only approval. The bot never approves a PR that needs a person. Leave this block out
+# unless the repo sets it; both keys are optional (always defaults to false, paths to []).
+# human_approval:
+#   always: false   # true: every PR in this repo needs a person's approval
+#   paths: ['app/payments/**']   # a PR that touches any of these globs needs a person's approval
+
+# Reports approve by default (`advisory`). Set `shadow` to post advice only; the
+# review workflow refuses a caller whose rollout_mode disagrees with this value,
+# so change the caller templates and this key together. `agent-review rollout`
+# still scores the seeded suite and dismissal telemetry for teams that want the
+# gate before turning approval on.
+rollout:
+  mode: advisory
+  label: agent-review
+  minimum_evaluated_runs: 50
+  minimum_dispositions: 30
+  thresholds:
+    dismissal_rate: 0.35
+    false_positive_dismissal_rate: 0.20
+
+# ── Index layer: file-level import graph for impact analysis ──────────────────
+index: { enabled: false, path: '.claude/review/index' } # impact analysis parses ES/CJS imports only; this repo is Ruby
+
+# ── Learning layer: approval-gated feedback loop ──────────────────────────────
+learning:
+  enabled: true
+  path: '.claude/review/learnings'
+  approval_required: true # not yet enforced — reserved; promotion is always approval-gated today
+  min_support: 3
+  scope: local # not yet enforced — reserved (local | shared)
+
+enforcement:
+  mode: warn # warn | block — reserved for future merge-gating
