@@ -1,0 +1,36 @@
+diff --git a/app/services/lightspeed_sale_schema.rb b/app/services/lightspeed_sale_schema.rb
+index c0b6a54..c85ebe2 100644
+--- a/app/services/lightspeed_sale_schema.rb
++++ b/app/services/lightspeed_sale_schema.rb
+@@ -14,7 +14,8 @@ class LightspeedSaleSchema
+       "ShipTo",
+       "calcTax1",
+       "calcTax2",
+-      "shipToID"
++      "shipToID",
++      "SalePayments"
+     ],
+     "SaleLines" => {
+       "arrayable" => false,
+@@ -54,8 +55,19 @@ class LightspeedSaleSchema
+       "SalePayment" => {
+         "arrayable" => true,
+         "root" => [
+-          "amount"
+-        ]
++          "amount",
++          "paymentTypeID",
++          "PaymentType",
++          "CCCharge"
++        ],
++        "PaymentType" => {
++          "arrayable" => false,
++          "root" => ["name"]
++        },
++        "CCCharge" => {
++          "arrayable" => false,
++          "root" => ["xnum", "cardType", "authCode"]
++        }
+       }
+     },
+     "Customer" => {

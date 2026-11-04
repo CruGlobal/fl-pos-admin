@@ -1,0 +1,33 @@
+diff --git a/app/services/l_s_extract.rb b/app/services/l_s_extract.rb
+index 380f8b0..2837241 100644
+--- a/app/services/l_s_extract.rb
++++ b/app/services/l_s_extract.rb
+@@ -169,8 +169,8 @@ class LSExtract
+     refund_lines = report.select { |line| line[:OrderTotal] < 0 }
+     refund_lines.each do |refund_line|
+       refunded_product_codes = refund_line[:ProductCode].split("|")
+-      email = refund_line[:EmailAddress]
+-      customer_lines = report.select { |line| line[:EmailAddress] == email }
++      email = refund_line[:Email]
++      customer_lines = report.select { |line| line[:Email] == email }
+       customer_lines.delete(refund_line) # Don't refund the refund line itself
+ 
+       # Find the original sale
+@@ -361,7 +361,7 @@ class LSExtract
+       ShipState: ship_address["state"],
+       ShipZipPostal: ship_address["zip"],
+       ShipCountry: "US",
+-      EmailAddress: lsh.get_email_addresses(sale)&.join("|") || CUSTOMER_ANONYMOUS_EMAIL,
++      Email: lsh.get_email_addresses(sale)&.join("|") || CUSTOMER_ANONYMOUS_EMAIL,
+       POSImportID: sale["saleID"]
+     }
+   end
+@@ -396,7 +396,7 @@ class LSExtract
+       "ShipState",
+       "ShipZipPostal",
+       "ShipCountry",
+-      "EmailAddress",
++      "Email",
+       "POSImportID"
+     ]
+ 

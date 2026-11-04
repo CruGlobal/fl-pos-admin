@@ -1,0 +1,12 @@
+diff --git a/app/controllers/lightspeedauth_controller.rb b/app/controllers/lightspeedauth_controller.rb
+index 61cb184..7d4ce2e 100644
+--- a/app/controllers/lightspeedauth_controller.rb
++++ b/app/controllers/lightspeedauth_controller.rb
+@@ -1,4 +1,7 @@
+ class LightspeedauthController < ApplicationController
++  # Lightspeed redirects the browser here after access is approved
++  skip_before_action :authenticate_user
++
+   def index
+     lth = LightspeedTokenHolder.new
+     # Get the code from the request

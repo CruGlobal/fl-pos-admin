@@ -1,0 +1,125 @@
+# Development evaluation set for fl-pos-admin (VISIBLE to anyone who reads this repo, and this
+# repo is public). Reviewers and rule edits can overfit to these answers, so keep a separate
+# private holdout suite (another branch or a private repo) for the real quality gate. See the
+# plugin's templates/evals/README.md for prepare/score usage.
+version: 1
+name: fl-pos-admin-dev
+blocker_threshold: 7
+thresholds:
+  blocker_recall: 0.85
+  blocker_precision: 0.80
+  clean_false_blocker_rate: 0.05
+  false_positive_dismissal_rate: 0.20
+  category_recall: 0.70
+  minimum_runs: 50
+cases:
+  # security: the Lightspeed OAuth callback skips sign-in, so anyone can swap in their own token.
+  - id: lightspeed-callback-skips-auth
+    kind: seeded_bug
+    category: security
+    patch: patches/lightspeed-callback-skips-auth.patch
+    expected:
+      - id: public-oauth-callback
+        must_block: true
+        min_severity: 7
+        category: security
+        match:
+          paths: ['app/controllers/lightspeedauth_controller.rb']
+          categories: [security, authentication, authorization, access]
+          message_any: [authenticat, skip_before_action, sign-in, signed in, unauthenticated, anyone, token]
+
+  # security (card-data boundary): the sale keep-list now stores payment type and card-charge
+  # fields in jobs.context, which would put this repo in PCI scope.
+  - id: sale-schema-keeps-card-charge
+    kind: seeded_bug
+    category: security
+    patch: patches/sale-schema-keeps-card-charge.patch
+    expected:
+      - id: card-data-stored
+        must_block: true
+        min_severity: 7
+        category: security
+        match:
+          paths: ['app/services/lightspeed_sale_schema.rb']
+          categories: [security, data-integrity, privacy, pci]
+          message_any: [card, CCCharge, xnum, PCI, payment, authCode]
+
+  # background-jobs (mined: PR #43, #45, #53): five workers break the one-at-a-time guarantee the
+  # poll_jobs checks rely on, so two imports can create duplicate Woo orders.
+  - id: sidekiq-concurrency-raised
+    kind: seeded_bug
+    category: background-jobs
+    patch: patches/sidekiq-concurrency-raised.patch
+    expected:
+      - id: parallel-jobs-race
+        must_block: true
+        min_severity: 7
+        category: background-jobs
+        match:
+          paths: ['config/sidekiq.yml']
+          categories: [correctness, data-integrity, background-jobs, concurrency]
+          message_any: [concurrency, parallel, at the same time, at once, race, duplicate, one at a time]
+
+  # data-integrity (mined: PR #51, #52): without foreign_key and dependent, destroying a product
+  # that has bundles hits the woo_product_bundles foreign key and the refresh stops deleting.
+  - id: woo-product-bundles-not-destroyed
+    kind: seeded_bug
+    category: data-integrity
+    patch: patches/woo-product-bundles-not-destroyed.patch
+    expected:
+      - id: bundle-fk-on-destroy
+        must_block: true
+        min_severity: 7
+        category: data-integrity
+        match:
+          paths: ['app/models/woo_product.rb']
+          categories: [data-integrity, correctness]
+          message_any: [foreign key, foreign_key, dependent, product_id, woo_product_id, bundle, destroy]
+
+  # financial (mined: PR #24, #25): the per-unit price replaces the discounted line total, so
+  # ItemSubtotal and every Woo line total are wrong for quantities above one or any discount.
+  - id: unit-price-ignores-quantity-and-discount
+    kind: seeded_bug
+    category: financial
+    patch: patches/unit-price-ignores-quantity-and-discount.patch
+    expected:
+      - id: line-total-wrong
+        must_block: true
+        min_severity: 7
+        category: financial
+        match:
+          paths: ['app/services/lightspeed_api_helper.rb']
+          categories: [correctness, data-integrity, financial]
+          message_any: [quantity, discount, displayableSubtotal, unitPrice, line total, subtotal, reconcil]
+
+  # integrations (mined: PR #29): the sheet header is renamed on the LSExtract side only, so
+  # WooImport's @columns["EmailAddress"] is nil and row[nil] raises for every order.
+  - id: sheet-email-header-renamed
+    kind: seeded_bug
+    category: integrations
+    patch: patches/sheet-email-header-renamed.patch
+    expected:
+      - id: sheet-contract-broken
+        must_block: true
+        min_severity: 7
+        category: integrations
+        match:
+          paths: ['app/services/l_s_extract.rb']
+          categories: [correctness, data-integrity, integrations]
+          message_any: [EmailAddress, header, column, WooImport, '@columns', sheet]
+
+  # Clean controls: behavior-preserving edits in the same hot files.
+  - id: clean-sku-constant
+    kind: clean_control
+    patch: patches/clean-sku-constant.patch
+    expected: []
+
+  - id: clean-reject-private-shops
+    kind: clean_control
+    patch: patches/clean-reject-private-shops.patch
+    expected: []
+
+  - id: clean-unit-prices-computed-once
+    kind: clean_control
+    patch: patches/clean-unit-prices-computed-once.patch
+    expected: []

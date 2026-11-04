@@ -1,0 +1,10 @@
+diff --git a/config/sidekiq.yml b/config/sidekiq.yml
+index 8f688f8..a6dc504 100644
+--- a/config/sidekiq.yml
++++ b/config/sidekiq.yml
+@@ -1,4 +1,4 @@
+-:concurrency: 1
++:concurrency: 5
+ :queues:
+   - default
+ 

@@ -1,0 +1,13 @@
+diff --git a/app/controllers/jobs_controller.rb b/app/controllers/jobs_controller.rb
+index b235c15..5063866 100644
+--- a/app/controllers/jobs_controller.rb
++++ b/app/controllers/jobs_controller.rb
+@@ -121,7 +121,7 @@ class JobsController < ApplicationController
+ 
+   def get_event_options
+     shops = LightspeedApiHelper.new.shops
+-    shops.select! { |shop| !shop.Contact["custom"].start_with?("P-") }
++    shops.reject! { |shop| shop.Contact["custom"].start_with?("P-") }
+     shops.map { |shop| [shop.name, shop.shopID] }
+   rescue Lightspeed::Error::Unauthorized => e
+     Rails.logger.error "Error: #{e.message}"

@@ -1,0 +1,13 @@
+diff --git a/app/services/lightspeed_api_helper.rb b/app/services/lightspeed_api_helper.rb
+index 7110e04..9f8e97a 100644
+--- a/app/services/lightspeed_api_helper.rb
++++ b/app/services/lightspeed_api_helper.rb
+@@ -256,7 +256,7 @@ class LightspeedApiHelper
+         if salelines.is_a?(Array)
+           salelines.each do |sl|
+             # discount = get_discount(sl)
+-            price = sl["displayableSubtotal"].to_f.round(2)
++            price = sl["unitPrice"].to_f.round(2)
+             prices << price
+           end
+         end
