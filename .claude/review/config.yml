@@ -80,7 +80,7 @@ risk:
     - { glob: 'bin/**', points: 1, tier: medium }
     - { glob: 'package.json', points: 1, tier: medium }
     # Explicit 0-point entries: documentation of intent, not scoring behavior.
-    - { glob: 'spec/**', points: 0, tier: low }
+    - { glob: 'spec/**', points: 1, tier: low }
     - { glob: 'sale_formatted.json', points: 0, tier: low }
 
   # Unknown paths are not zero-risk. Each non-excluded file that matches none of
@@ -454,6 +454,9 @@ excluded_paths:
   - 'app/assets/builds/**'
   - 'config/credentials.yml.enc'
   - '.claude/review/evals/results/**'
+  - '.claude/review/learnings/feedback.jsonl'
+  - '.claude/review/metrics/**'
+  - '.claude/review/index/**'
 
 # ── Deterministic evidence ────────────────────────────────────────────────────
 # ast-grep runs trusted, repo-authored AST rules before the model. Only matches
