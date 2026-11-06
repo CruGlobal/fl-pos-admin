@@ -79,8 +79,8 @@ risk:
     - { glob: 'lib/**', points: 1, tier: medium }
     - { glob: 'bin/**', points: 1, tier: medium }
     - { glob: 'package.json', points: 1, tier: medium }
+    - { glob: 'spec/**', points: 1, tier: medium }
     # Explicit 0-point entries: documentation of intent, not scoring behavior.
-    - { glob: 'spec/**', points: 1, tier: low }
     - { glob: 'sale_formatted.json', points: 0, tier: low }
 
   # Unknown paths are not zero-risk. Each non-excluded file that matches none of
