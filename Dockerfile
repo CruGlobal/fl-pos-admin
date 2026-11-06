@@ -25,10 +25,23 @@ ARG SIDEKIQ_CREDS
 RUN gem install bundler -v $(awk '/^BUNDLED WITH/ { getline; print $1; exit }' Gemfile.lock) \
     && bundle config --global gems.contribsys.com $SIDEKIQ_CREDS
 
-# Install build-dependencies, then install gems, subsequently removing build-dependencies
+# Install build-dependencies, then install gems, subsequently removing build-dependencies.
+# Then drop what installed gems ship for their own development and this app doesn't use:
+# the gem cache, git-gem .git folders, top-level spec/test/example folders, and every
+# Gemfile.lock inside an installed gem (including brakeman's vendored gems and Ruby's bundled
+# rbs). Image scanners read those lock files as installed packages; bundler-audit's spec
+# folder alone ships deliberately vulnerable ones. --deployment installs gems under
+# vendor/bundle/ruby/<version>/, so the cleanup runs there and never reaches the app's own
+# Gemfile.lock. The mkdir keeps find from failing if the app ever stops using git-sourced gems.
 RUN apk --no-cache add --virtual build-deps build-base postgresql-dev mariadb-dev yaml-dev \
     && bundle install --deployment --jobs 20 --retry 2 \
-    && apk del build-deps
+    && apk del build-deps \
+    && cd /home/webapp/app/vendor/bundle/ruby/*/ \
+    && mkdir -p bundler/gems \
+    && rm -rf cache bundler/gems/*/.git \
+    && find gems bundler/gems -mindepth 2 -maxdepth 2 -type d \
+         \( -name spec -o -name test -o -name tests -o -name example -o -name examples \) -exec rm -rf {} + \
+    && find gems bundler/gems /usr/local/lib/ruby/gems -type f -name Gemfile.lock -exec rm -f {} +
 
 # Copy the application
 COPY . .
