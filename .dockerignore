@@ -49,3 +49,8 @@
 # Ignore Docker-related files
 /.dockerignore
 /Dockerfile*
+
+# Ignore agent-review config, rules and eval patches, and the Claude Code guides
+/.claude
+**/CLAUDE.md
+**/AGENTS.md
